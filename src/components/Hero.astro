@@ -20,6 +20,7 @@ const endGroup = [
 	<DivineFlow
 		options={{
 			theme: "crimson",
+			variance: 0.7,
 			originY: 0.46,
 			lineCount: 8,
 			scatterCount: 3,
@@ -38,8 +39,16 @@ const endGroup = [
 	/>
 
 	<h1 id="hero-title" class="hero__name">
-		<span class="hero__first">Daniel</span>
-		<span class="hero__last">Khojaste</span>
+		<span class="hero__name-layer hero__name-layer--base">
+			<span class="hero__first">Daniel</span>
+			<span class="hero__last">Khojaste</span>
+		</span>
+		<!-- Ghost copy above the throne, masked to the throne's silhouette by scripts/name-ghost.ts,
+		     so the name shows faintly where it crosses the photo. -->
+		<span class="hero__name-layer hero__name-layer--ghost" aria-hidden="true" data-name-ghost>
+			<span class="hero__first">Daniel</span>
+			<span class="hero__last">Khojaste</span>
+		</span>
 	</h1>
 
 	<div class="hero__figure">
@@ -106,13 +115,21 @@ const endGroup = [
 	</div>
 </section>
 
+<script>
+	import { syncNameGhosts } from "../scripts/name-ghost";
+
+	syncNameGhosts();
+</script>
+
 <style>
 	/*
 	 * Desktop: everything is absolutely placed in a full-viewport stage and sized with container query
 	 * units (cqw/cqh), so the composition scales with the hero itself, including when the 600px floor
 	 * kicks in. Compact (small or portrait screens): a vertical flex stack.
 	 *
-	 * Layering, back to front: glow, DivineFlow (0) → name (1) → throne (2) → vignette (3) → text (4).
+	 * Layering, back to front: glow, DivineFlow (0) → name (1) → throne (2) → name ghost and
+	 * vignette (3) → text (4). The h1 itself has no z-index, so its two layers can sit on either side
+	 * of the throne.
 	 */
 	.hero {
 		position: relative;
@@ -143,14 +160,12 @@ const endGroup = [
 	}
 
 	.hero__name {
+		/* Opacity of the name where it crosses the throne. */
+		--name-ghost-opacity: 0.42;
+
 		position: absolute;
 		inset-inline: 0;
 		top: 11.5cqh;
-		z-index: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1.3cqh;
 		margin: 0;
 		font-family: var(--font-display);
 		font-stretch: 125%;
@@ -158,6 +173,40 @@ const endGroup = [
 		text-align: center;
 		text-transform: uppercase;
 		user-select: none;
+	}
+
+	.hero__name-layer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.3cqh;
+	}
+
+	.hero__name-layer--base {
+		position: relative;
+		z-index: 1;
+	}
+
+	/* Aligned to the throne by scripts/name-ghost.ts; hidden until the mask is in place. */
+	.hero__name-layer--ghost {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		visibility: hidden;
+		opacity: var(--name-ghost-opacity);
+		pointer-events: none;
+		-webkit-mask-image: var(--throne-mask, none);
+		mask-image: var(--throne-mask, none);
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-size: var(--mask-w, 0) var(--mask-h, 0);
+		mask-size: var(--mask-w, 0) var(--mask-h, 0);
+		-webkit-mask-position: var(--mask-x, 0) var(--mask-y, 0);
+		mask-position: var(--mask-x, 0) var(--mask-y, 0);
+	}
+
+	.hero__name-layer--ghost[data-ready] {
+		visibility: visible;
 	}
 
 	.hero__first {
@@ -187,7 +236,7 @@ const endGroup = [
 		left: 50%;
 		bottom: 0;
 		z-index: 2;
-		height: 82cqh;
+		height: 90cqh;
 		aspect-ratio: 723 / 1210;
 		translate: -50% 0;
 		pointer-events: none;
@@ -342,6 +391,9 @@ const endGroup = [
 		.hero__name {
 			position: relative;
 			inset: auto;
+		}
+
+		.hero__name-layer {
 			gap: 1.1cqh;
 		}
 
@@ -362,7 +414,7 @@ const endGroup = [
 			width: 100%;
 			height: auto;
 			aspect-ratio: auto;
-			margin-top: -1.5cqh;
+			margin-top: -5cqh;
 			translate: none;
 		}
 
@@ -390,7 +442,7 @@ const endGroup = [
 			translate: none;
 			align-items: flex-start;
 			gap: 16px;
-			margin-top: -2cqh;
+			margin-top: -4cqh;
 		}
 
 		.hero__group {
