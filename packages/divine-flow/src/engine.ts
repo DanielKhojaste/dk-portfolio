@@ -48,7 +48,7 @@ export function createDivineFlow(
 	const canvas = options.canvas ?? document.createElement("canvas");
 	if (ownsCanvas) {
 		canvas.setAttribute("aria-hidden", "true");
-		canvas.dataset.divineFlow = "";
+		canvas.dataset.divineFlowCanvas = "";
 		if (options.className) canvas.className = options.className;
 		Object.assign(canvas.style, {
 			position: "absolute",

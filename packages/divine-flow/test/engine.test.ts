@@ -119,6 +119,7 @@ describe("createDivineFlow", () => {
 		expect(container.querySelector("canvas")).toBe(flow.canvas);
 		expect(flow.canvas.getAttribute("aria-hidden")).toBe("true");
 		expect(flow.canvas.className).toBe("flow");
+		expect(flow.canvas.hasAttribute("data-divine-flow-canvas")).toBe(true);
 		expect(contexts[0]!.calls).toContain("stroke");
 		expect(flow.isRunning).toBe(true);
 		expect(rafQueue.size).toBe(1);
