@@ -133,3 +133,19 @@ describe("geometry", () => {
 		expect(samplesForWidth(10_000)).toBe(72);
 	});
 });
+
+describe("threadShade", () => {
+	it("is zero without variance and stable, bounded and varied with it", async () => {
+		const { threadShade } = await import("../src/renderer.js");
+		const threads = createThreads(config);
+		expect(threadShade(threads[0]!, 0)).toEqual({ hue: 0, light: 0 });
+
+		const shades = threads.map((t) => threadShade(t, 1));
+		expect(threads.map((t) => threadShade(t, 1))).toEqual(shades);
+		for (const s of shades) {
+			expect(Math.abs(s.hue)).toBeLessThanOrEqual(14);
+			expect(Math.abs(s.light)).toBeLessThanOrEqual(0.14);
+		}
+		expect(new Set(shades.map((s) => s.hue.toFixed(3))).size).toBeGreaterThan(threads.length / 2);
+	});
+});

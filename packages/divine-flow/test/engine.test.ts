@@ -9,16 +9,24 @@ function fakeContext(canvas: HTMLCanvasElement) {
 	const calls: string[] = [];
 	const gradient = { addColorStop: vi.fn() };
 	const target: Record<string | symbol, unknown> = { canvas };
+	let gradients = 0;
+	const images: unknown[] = [];
 	return {
 		calls,
+		gradients: () => gradients,
+		images,
 		ctx: new Proxy(target, {
 			get(obj, key) {
 				if (key in obj) return obj[key];
 				if (key === "createLinearGradient" || key === "createRadialGradient") {
-					return () => gradient;
+					return () => {
+						gradients += 1;
+						return gradient;
+					};
 				}
-				return (..._args: unknown[]) => {
+				return (...args: unknown[]) => {
 					calls.push(String(key));
+					if (key === "drawImage") images.push(args[0]);
 				};
 			},
 			set(obj, key, value) {
@@ -60,6 +68,13 @@ beforeEach(() => {
 		return fake.ctx as unknown as CanvasRenderingContext2D;
 	} as unknown as HTMLCanvasElement["getContext"]);
 
+	vi.stubGlobal(
+		"Path2D",
+		class {
+			moveTo() {}
+			lineTo() {}
+		},
+	);
 	vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
 		rafId += 1;
 		rafQueue.set(rafId, cb);
@@ -116,7 +131,7 @@ describe("createDivineFlow", () => {
 	it("appends a decorative canvas and draws a first frame", () => {
 		const { container, flow } = mount({ className: "flow" });
 
-		expect(container.querySelector("canvas")).toBe(flow.canvas);
+		expect(container.querySelector("canvas[data-divine-flow-canvas]")).toBe(flow.canvas);
 		expect(flow.canvas.getAttribute("aria-hidden")).toBe("true");
 		expect(flow.canvas.className).toBe("flow");
 		expect(flow.canvas.hasAttribute("data-divine-flow-canvas")).toBe(true);
@@ -175,6 +190,32 @@ describe("createDivineFlow", () => {
 		expect(rafQueue.size).toBe(0);
 	});
 
+	it("creates gradients once, not every frame", () => {
+		mount({ theme: "crimson", emberCount: 20 });
+		const count = () => contexts.reduce((sum, c) => sum + c.gradients(), 0);
+		const afterMount = count();
+		expect(afterMount).toBeGreaterThan(0);
+		flushFrame(16);
+		flushFrame(33);
+		flushFrame(50);
+		expect(count()).toBe(afterMount);
+	});
+
+	it("caps the frame rate with maxFps", () => {
+		mount({ maxFps: 30 });
+		// Count stroke calls on the main context to see which frames were actually drawn.
+		const strokes = () => contexts[0]!.calls.filter((c) => c === "stroke").length;
+		const before = strokes();
+		flushFrame(1000);
+		const afterFirst = strokes();
+		flushFrame(1016); // 16ms later: under the 33ms budget, skipped
+		expect(strokes()).toBe(afterFirst);
+		flushFrame(1034); // 34ms after the last drawn frame: drawn
+		expect(strokes()).toBeGreaterThan(afterFirst);
+		expect(afterFirst).toBeGreaterThan(before);
+		expect(rafQueue.size).toBe(1);
+	});
+
 	it("stops and starts", () => {
 		const { flow } = mount();
 		flow.stop();
@@ -209,6 +250,26 @@ describe("createDivineFlow", () => {
 		expect(flow.options.lineCount).toBe(3);
 		expect(flow.options.originY).toBe(0.3);
 		expect(flow.options.palette.glow).toEqual([228, 52, 64]);
+	});
+
+	it("uses a separate, CSS-blended bloom canvas when plus-lighter is supported", () => {
+		vi.stubGlobal("CSS", { supports: () => true });
+		const { container, flow } = mount();
+		const bloom = container.querySelector("canvas[data-divine-flow-bloom]");
+		expect(bloom).not.toBeNull();
+		expect(bloom!.nextElementSibling).toBe(flow.canvas);
+		expect(flow.canvas.style.mixBlendMode).toBe("plus-lighter");
+		// The bloom is never drawn into the main canvas in layered mode.
+		expect(contexts[0]!.images).not.toContain(bloom);
+		flow.destroy();
+		expect(container.querySelectorAll("canvas")).toHaveLength(0);
+	});
+
+	it("composites the bloom into the main canvas without plus-lighter support", () => {
+		vi.stubGlobal("CSS", { supports: () => false });
+		const { container } = mount();
+		expect(container.querySelectorAll("canvas")).toHaveLength(1);
+		expect(contexts[0]!.images).toContain(contexts[1]!.ctx.canvas);
 	});
 
 	it("draws into a provided canvas and leaves it in place on destroy", () => {

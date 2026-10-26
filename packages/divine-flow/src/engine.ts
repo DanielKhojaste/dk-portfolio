@@ -1,6 +1,6 @@
 import { makePointBuffer, samplesForWidth, type FlowLayout } from "./geometry.js";
 import { resolveOptions } from "./options.js";
-import { drawFrame, type FrameState } from "./renderer.js";
+import { buildRenderCache, drawFrame, type FrameState, type RenderCache } from "./renderer.js";
 import { createScene, type Scene } from "./scene.js";
 import type { DivineFlowInstance, DivineFlowOptions, ResolvedDivineFlowOptions } from "./types.js";
 
@@ -61,8 +61,32 @@ export function createDivineFlow(
 		container.appendChild(canvas);
 	}
 
-	const ctx = get2d(canvas, { alpha: true, desynchronized: true });
+	// Layered mode: the low-res bloom gets its own canvas element that the browser scales on the GPU,
+	// and the filament canvas is blended over it additively with CSS. This avoids upscaling the bloom
+	// into the full-resolution canvas on every frame. Only possible when the engine owns the canvas.
+	const layered =
+		ownsCanvas &&
+		typeof CSS !== "undefined" &&
+		typeof CSS.supports === "function" &&
+		CSS.supports("mix-blend-mode", "plus-lighter");
+
 	const bloomCanvas = document.createElement("canvas");
+	if (layered) {
+		bloomCanvas.setAttribute("aria-hidden", "true");
+		bloomCanvas.dataset.divineFlowBloom = "";
+		Object.assign(bloomCanvas.style, {
+			position: "absolute",
+			inset: "0",
+			width: "100%",
+			height: "100%",
+			display: "block",
+			pointerEvents: "none",
+		});
+		canvas.style.mixBlendMode = "plus-lighter";
+		container.insertBefore(bloomCanvas, canvas);
+	}
+
+	const ctx = get2d(canvas, layered ? { alpha: true } : { alpha: true, desynchronized: true });
 	const bloomCtx = get2d(bloomCanvas, { alpha: true });
 
 	const motionQuery =
@@ -73,7 +97,10 @@ export function createDivineFlow(
 	let width = 1;
 	let height = 1;
 	let samples = samplesForWidth(width);
+	let dpr = 1;
+	let cache: RenderCache | null = null;
 	let raf = 0;
+	let lastFrame = -Infinity;
 	let running = true;
 	let destroyed = false;
 	let onScreen = true;
@@ -100,9 +127,15 @@ export function createDivineFlow(
 		resolved.motion > 0 &&
 		(!resolved.pauseWhenHidden || (!document.hidden && onScreen));
 
-	function renderFrame(timeMs: number = performance.now()) {
-		if (destroyed) return;
-		const state: FrameState = {
+	const createCanvas = (w: number, h: number) => {
+		const sprite = document.createElement("canvas");
+		sprite.width = w;
+		sprite.height = h;
+		return sprite;
+	};
+
+	function frameState() {
+		return {
 			ctx,
 			bloomCtx,
 			scene,
@@ -111,14 +144,34 @@ export function createDivineFlow(
 			layout: layout(),
 			palette: resolved.palette,
 			emberSpeed: resolved.emberSpeed,
+			composeBloom: !layered,
 		};
+	}
+
+	/** Gradients and sprites depend on size, DPR, palette and scene, so rebuild them only then. */
+	function rebuildCache() {
+		cache = buildRenderCache(frameState(), {
+			variance: resolved.variance,
+			dpr,
+			createCanvas,
+		});
+	}
+
+	function renderFrame(timeMs: number = performance.now()) {
+		if (destroyed) return;
+		if (!cache) rebuildCache();
+		const state: FrameState = { ...frameState(), cache: cache! };
 		drawFrame(state, timeMs / 1000);
 	}
 
 	function tick(now: number) {
 		raf = 0;
 		if (!shouldAnimate()) return;
-		renderFrame(now);
+		// Frame-rate cap with a 1ms tolerance so a 60Hz display never skips frames at maxFps 60.
+		if (now - lastFrame >= 1000 / resolved.maxFps - 1) {
+			lastFrame = now;
+			renderFrame(now);
+		}
 		raf = requestAnimationFrame(tick);
 	}
 
@@ -137,7 +190,7 @@ export function createDivineFlow(
 		const rect = measure(container);
 		width = Math.max(1, Math.round(rect.width));
 		height = Math.max(1, Math.round(rect.height));
-		const dpr = Math.min(window.devicePixelRatio || 1, resolved.maxDpr);
+		dpr = Math.min(window.devicePixelRatio || 1, resolved.maxDpr);
 		samples = samplesForWidth(width);
 
 		canvas.width = Math.round(width * dpr);
@@ -151,6 +204,7 @@ export function createDivineFlow(
 		bloomCtx.setTransform(bloomCanvas.width / width, 0, 0, bloomCanvas.height / height, 0, 0);
 		bloomCtx.lineCap = "round";
 		bloomCtx.lineJoin = "round";
+		rebuildCache();
 
 		// Animated frames redraw on the next tick; still frames need an explicit redraw.
 		if (!shouldAnimate()) renderFrame();
@@ -218,6 +272,7 @@ export function createDivineFlow(
 			resolved = resolveOptions(input);
 			scene = createScene(resolved);
 			buffers = scene.threads.map(makePointBuffer);
+			cache = null;
 			resize();
 			renderFrame();
 			schedule();
@@ -235,6 +290,7 @@ export function createDivineFlow(
 			document.removeEventListener("visibilitychange", onVisibility);
 			motionQuery?.removeEventListener?.("change", onMotionChange);
 			if (ownsCanvas) canvas.remove();
+			if (layered) bloomCanvas.remove();
 		},
 	};
 }
