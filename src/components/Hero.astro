@@ -1,0 +1,434 @@
+---
+import { Picture } from "astro:assets";
+import throne from "../assets/images/throne.png";
+import DivineFlow from "./DivineFlow.astro";
+
+/** Left and right info groups. Bracketed values are placeholders until real copy lands. */
+const startGroup = [
+	{ label: "Software Developer", value: "temporary slogan", accent: true },
+	{ label: "Based in", value: "[Your city]" },
+];
+const endGroup = [
+	{ label: "Currently", value: "[Your current project]" },
+	{ label: "Off the keyboard", value: "Coaching [your sport]" },
+];
+---
+
+<section class="hero" aria-labelledby="hero-title">
+	<div class="hero__glow" aria-hidden="true"></div>
+
+	<DivineFlow
+		options={{
+			theme: "crimson",
+			originY: 0.46,
+			lineCount: 8,
+			scatterCount: 3,
+			innerGap: 130,
+			motion: 1.6,
+			emberCount: 70,
+			emberSpeed: 0.9,
+		}}
+		compactOptions={{
+			originY: 0.4,
+			lineCount: 6,
+			scatterCount: 2,
+			innerGap: 70,
+			emberCount: 36,
+		}}
+	/>
+
+	<h1 id="hero-title" class="hero__name">
+		<span class="hero__first">Daniel</span>
+		<span class="hero__last">Khojaste</span>
+	</h1>
+
+	<div class="hero__figure">
+		<Picture
+			src={throne}
+			alt="Daniel sitting on a throne made of golf clubs, lit in red"
+			formats={["avif", "webp"]}
+			fallbackFormat="webp"
+			widths={[360, 540, 723]}
+			sizes="(max-width: 1023px) 80vw, 34vw"
+			loading="eager"
+			fetchpriority="high"
+			draggable="false"
+			class="hero__throne"
+		/>
+	</div>
+
+	<div class="hero__vignette" aria-hidden="true"></div>
+
+	<div class="hero__info">
+		<dl class="hero__group hero__group--start" data-hero-group>
+			{
+				startGroup.map((item) => (
+					<div class="hero__item">
+						<dt class:list={["hero__label", { "hero__label--accent": item.accent }]}>
+							{item.label}
+						</dt>
+						<dd class="hero__value">{item.value}</dd>
+					</div>
+				))
+			}
+		</dl>
+		<dl class="hero__group hero__group--end" data-hero-group>
+			{
+				endGroup.map((item) => (
+					<div class="hero__item">
+						<dt class="hero__label">{item.label}</dt>
+						<dd class="hero__value">{item.value}</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+
+	<div class="hero__actions">
+		<a class="button button--primary" href="#work">
+			View my work
+			<svg
+				width="18"
+				height="18"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M5 12h14"></path>
+				<path d="M13 6l6 6-6 6"></path>
+			</svg>
+		</a>
+		<a class="button button--ghost" href="#contact">Get in touch</a>
+	</div>
+</section>
+
+<style>
+	/*
+	 * Desktop: everything is absolutely placed in a full-viewport stage and sized with container query
+	 * units (cqw/cqh), so the composition scales with the hero itself, including when the 600px floor
+	 * kicks in. Compact (small or portrait screens): a vertical flex stack.
+	 *
+	 * Layering, back to front: glow, DivineFlow (0) → name (1) → throne (2) → vignette (3) → text (4).
+	 */
+	.hero {
+		position: relative;
+		isolation: isolate;
+		height: 100svh;
+		min-height: 600px;
+		overflow: hidden;
+		container: hero / size;
+		background: var(--color-bg);
+	}
+
+	.hero__glow {
+		position: absolute;
+		left: 50%;
+		top: 46%;
+		z-index: 0;
+		width: min(112cqh, 100cqw);
+		aspect-ratio: 1;
+		translate: -50% -50%;
+		border-radius: 50%;
+		background: radial-gradient(
+			closest-side,
+			rgb(190 28 40 / 0.48),
+			rgb(120 14 22 / 0.2) 50%,
+			rgb(8 4 5 / 0) 100%
+		);
+		pointer-events: none;
+	}
+
+	.hero__name {
+		position: absolute;
+		inset-inline: 0;
+		top: 11.5cqh;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.3cqh;
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		line-height: 1;
+		text-align: center;
+		text-transform: uppercase;
+		user-select: none;
+	}
+
+	.hero__first {
+		font-size: clamp(22px, min(3cqw, 4.9cqh), 60px);
+		font-weight: 800;
+		letter-spacing: 0.5em;
+		text-indent: 0.5em;
+		color: var(--color-text);
+	}
+
+	.hero__last {
+		font-size: min(12.2cqw, 19.6cqh);
+		font-weight: 900;
+		letter-spacing: -0.01em;
+		color: var(--color-text);
+	}
+
+	@supports (-webkit-text-stroke: 1px) {
+		.hero__last {
+			color: transparent;
+			-webkit-text-stroke: clamp(1.25px, 0.14cqw, 2.5px) #fff;
+		}
+	}
+
+	.hero__figure {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		z-index: 2;
+		height: 82cqh;
+		aspect-ratio: 723 / 1210;
+		translate: -50% 0;
+		pointer-events: none;
+	}
+
+	.hero__figure :global(picture),
+	.hero__figure :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.hero__figure :global(img) {
+		object-fit: contain;
+		object-position: center bottom;
+		-webkit-mask-image: linear-gradient(#000 64%, transparent 98%);
+		mask-image: linear-gradient(#000 64%, transparent 98%);
+		user-select: none;
+	}
+
+	.hero__vignette {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		background: radial-gradient(
+			ellipse 78% 72% at 50% 45%,
+			rgb(0 0 0 / 0) 55%,
+			rgb(0 0 0 / 0.62) 100%
+		);
+		pointer-events: none;
+	}
+
+	.hero__info {
+		position: absolute;
+		inset-inline: var(--gutter);
+		top: 58.3cqh;
+		z-index: 4;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		translate: 0 -50%;
+		pointer-events: none;
+	}
+
+	.hero__group {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		width: clamp(200px, 21cqw, 300px);
+		margin: 0;
+		pointer-events: auto;
+	}
+
+	.hero__group--end {
+		text-align: right;
+	}
+
+	.hero__item {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.hero__label {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.hero__label--accent {
+		color: var(--color-accent-soft);
+	}
+
+	.hero__value {
+		margin: 0;
+		font-size: 16px;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.hero__actions {
+		position: absolute;
+		inset-inline: 0;
+		bottom: 6.2cqh;
+		z-index: 4;
+		display: flex;
+		justify-content: center;
+		gap: 14px;
+	}
+
+	.button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		height: 54px;
+		padding: 0 28px;
+		border-radius: var(--radius-pill);
+		font-size: 15px;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			background-color 0.2s var(--ease-out),
+			border-color 0.2s var(--ease-out),
+			transform 0.2s var(--ease-out);
+	}
+
+	.button svg {
+		transition: translate 0.2s var(--ease-out);
+	}
+
+	.button:hover svg {
+		translate: 3px 0;
+	}
+
+	.button--primary {
+		background: var(--color-accent);
+		color: #fff;
+	}
+
+	.button--primary:hover {
+		background: #b01a24;
+	}
+
+	.button--ghost {
+		border: 1px solid var(--color-line-strong);
+		background: rgb(8 4 5 / 0.4);
+		color: var(--color-text);
+	}
+
+	.button--ghost:hover {
+		border-color: rgb(245 236 236 / 0.6);
+	}
+
+	/* ---------- Compact: phones, tablets and portrait screens ---------- */
+	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
+		.hero {
+			display: flex;
+			flex-direction: column;
+			min-height: 640px;
+			padding: 74px var(--gutter) 28px;
+		}
+
+		.hero__glow {
+			top: 40%;
+			width: min(180cqw, 90cqh);
+		}
+
+		.hero__name {
+			position: relative;
+			inset: auto;
+			gap: 1.1cqh;
+		}
+
+		.hero__first {
+			font-size: clamp(18px, 5.6cqw, 40px);
+		}
+
+		.hero__last {
+			font-size: min(12.1cqw, 9cqh);
+		}
+
+		.hero__figure {
+			position: relative;
+			left: auto;
+			bottom: auto;
+			flex: 1 1 auto;
+			min-height: 0;
+			width: 100%;
+			height: auto;
+			aspect-ratio: auto;
+			margin-top: -1.5cqh;
+			translate: none;
+		}
+
+		.hero__figure :global(picture) {
+			position: absolute;
+			inset: 0;
+		}
+
+		.hero__figure :global(img) {
+			-webkit-mask-image: linear-gradient(#000 60%, transparent 96%);
+			mask-image: linear-gradient(#000 60%, transparent 96%);
+		}
+
+		.hero__vignette {
+			background: radial-gradient(
+				ellipse 90% 60% at 50% 40%,
+				rgb(0 0 0 / 0) 50%,
+				rgb(0 0 0 / 0.6) 100%
+			);
+		}
+
+		.hero__info {
+			position: relative;
+			inset: auto;
+			translate: none;
+			align-items: flex-start;
+			gap: 16px;
+			margin-top: -2cqh;
+		}
+
+		.hero__group {
+			gap: 14px;
+			width: auto;
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		.hero__item {
+			gap: 4px;
+		}
+
+		.hero__label {
+			font-size: 10px;
+			letter-spacing: 0.18em;
+		}
+
+		.hero__value {
+			font-size: 14px;
+			line-height: 1.35;
+		}
+
+		.hero__actions {
+			position: relative;
+			inset: auto;
+			gap: 10px;
+			margin-top: 24px;
+		}
+
+		.button {
+			flex: 1 1 0;
+			height: 52px;
+			padding: 0 16px;
+		}
+
+		.button svg {
+			display: none;
+		}
+	}
+</style>

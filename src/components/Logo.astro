@@ -1,0 +1,65 @@
+---
+/**
+ * The DK signature logo, inlined so it can be coloured with `currentColor` and drawn with GSAP.
+ * With `draw`, the client script traces each outline and then fades the fill in (see scripts/logo-draw.ts).
+ * Without JavaScript the filled logo simply shows.
+ */
+import logoSvg from "../assets/brand/dk-logo.svg?raw";
+
+interface Props {
+	class?: string;
+	/** Animate the logo on page load. */
+	draw?: boolean;
+}
+
+const { class: className, draw = false } = Astro.props;
+const paths = [...logoSvg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((match) => match[1]!);
+---
+
+<svg
+	class:list={["logo", className]}
+	viewBox="0 0 62 53"
+	fill="currentColor"
+	aria-hidden="true"
+	focusable="false"
+	data-logo-draw={draw ? "" : undefined}
+>
+	{paths.map((d) => <path class="logo__fill" d={d} />)}
+</svg>
+
+<style>
+	.logo {
+		display: block;
+		width: auto;
+		height: 100%;
+		overflow: visible;
+	}
+
+	/* With JS, hide the fill until the draw animation reveals it. If the script never runs, a delayed
+	   CSS animation shows the logo anyway. */
+	:global(.js) .logo[data-logo-draw] :global(.logo__fill) {
+		opacity: 0;
+		animation: logo-fallback 0.01ms 4s forwards;
+	}
+
+	.logo :global(.logo__stroke) {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 0.45;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	@keyframes logo-fallback {
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.js) .logo[data-logo-draw] :global(.logo__fill) {
+			opacity: 1;
+			animation: none;
+		}
+	}
+</style>

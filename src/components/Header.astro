@@ -1,0 +1,127 @@
+---
+import Logo from "./Logo.astro";
+---
+
+<header class="site-header">
+	<a class="site-header__home" href="/" aria-label="Daniel Khojaste, home">
+		<Logo draw />
+	</a>
+
+	<!-- The menu overlay lands in v0.2.0; the button is in place so the header layout is final. -->
+	<button
+		class="menu-button"
+		type="button"
+		aria-label="Open menu"
+		aria-expanded="false"
+		data-menu-button
+	>
+		<span class="menu-button__label" aria-hidden="true">Menu</span>
+		<span class="menu-button__icon" aria-hidden="true">
+			<svg
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.4"
+				stroke-linecap="round"
+			>
+				<path d="M4 8h16"></path>
+				<path d="M4 16h16"></path>
+			</svg>
+		</span>
+	</button>
+</header>
+
+<script>
+	import { drawLogos } from "../scripts/logo-draw";
+
+	drawLogos();
+</script>
+
+<style>
+	.site-header {
+		position: absolute;
+		inset: 0 0 auto;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: clamp(14px, 3.5vh, 32px) var(--gutter) 0;
+	}
+
+	.site-header__home {
+		display: flex;
+		align-items: center;
+		height: 48px;
+		padding-block: 5px;
+		color: var(--color-text);
+	}
+
+	.menu-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		height: 48px;
+		padding: 0 6px 0 18px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-pill);
+		background: rgb(8 4 5 / 0.35);
+		backdrop-filter: blur(6px);
+		color: var(--color-text);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition:
+			border-color 0.2s var(--ease-out),
+			background-color 0.2s var(--ease-out);
+	}
+
+	.menu-button:hover {
+		border-color: var(--color-line-strong);
+		background: rgb(245 236 236 / 0.06);
+	}
+
+	.menu-button__icon {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: var(--color-text);
+		color: var(--color-bg);
+		transition: transform 0.3s var(--ease-out);
+	}
+
+	.menu-button:hover .menu-button__icon {
+		transform: rotate(90deg);
+	}
+
+	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
+		.site-header__home {
+			height: 44px;
+			padding-block: 6px;
+		}
+
+		.menu-button {
+			width: 44px;
+			height: 44px;
+			padding: 0;
+			justify-content: center;
+			border: 0;
+			background: var(--color-text);
+			backdrop-filter: none;
+		}
+
+		.menu-button__label {
+			display: none;
+		}
+
+		.menu-button__icon {
+			width: 44px;
+			height: 44px;
+		}
+	}
+</style>
