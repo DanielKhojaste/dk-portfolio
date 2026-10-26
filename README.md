@@ -5,7 +5,7 @@ Personal portfolio of Daniel Khojaste, software developer. Built with [Astro](ht
 
 ## Requirements
 
-- Node.js 22.23.4 or newer (Astro 7 requirement)
+- Node.js 22.23.4 or newer (Astro 7 requirement); `.nvmrc` pins the version CI uses (`nvm use`)
 
 ## Scripts
 
