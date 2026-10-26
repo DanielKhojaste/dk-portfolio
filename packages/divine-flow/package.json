@@ -1,0 +1,44 @@
+{
+	"name": "divine-flow",
+	"version": "0.1.0",
+	"description": "Slow, glowing light filaments, sparkles and drifting embers on a canvas. Framework-agnostic.",
+	"private": true,
+	"type": "module",
+	"license": "UNLICENSED",
+	"author": "Daniel Khojaste",
+	"keywords": [
+		"canvas",
+		"animation",
+		"background",
+		"particles",
+		"light",
+		"glow",
+		"hero"
+	],
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"dev": "tsc -p tsconfig.build.json --watch",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"devDependencies": {
+		"jsdom": "^30.1.3",
+		"typescript": "^6.0.3",
+		"vitest": "^5.0.5"
+	}
+}
