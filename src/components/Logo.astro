@@ -1,19 +1,24 @@
 ---
 /**
- * The DK signature logo, inlined so it can be coloured with `currentColor` and drawn with GSAP.
- * With `draw`, the client script traces each outline and then fades the fill in (see scripts/logo-draw.ts).
- * Without JavaScript the filled logo simply shows.
+ * The DK signature logo, inlined so it can be coloured with `currentColor`.
+ * With `draw`, the ink sits behind an SVG mask made of hand-traced pen strokes; the client script
+ * (scripts/logo-draw.ts) draws those strokes in writing order, so the logo appears as if written.
+ * Without JavaScript the pens are fully drawn, so the logo simply shows.
  */
 import logoSvg from "../assets/brand/dk-logo.svg?raw";
+import { dkLogoPens } from "../assets/brand/dk-logo-pens";
 
 interface Props {
 	class?: string;
-	/** Animate the logo on page load. */
+	/** Write the logo on page load. */
 	draw?: boolean;
 }
 
+let instance = 0;
+
 const { class: className, draw = false } = Astro.props;
 const paths = [...logoSvg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((match) => match[1]!);
+const maskId = `logo-pen-${++instance}`;
 ---
 
 <svg
@@ -24,7 +29,20 @@ const paths = [...logoSvg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((match) => m
 	focusable="false"
 	data-logo-draw={draw ? "" : undefined}
 >
-	{paths.map((d) => <path class="logo__fill" d={d} />)}
+	{
+		draw && (
+			<defs>
+				<mask id={maskId} maskUnits="userSpaceOnUse" x="-4" y="-4" width="70" height="61">
+					{dkLogoPens.map((pen) => (
+						<path class="logo__pen" d={pen.d} stroke-width={pen.width} />
+					))}
+				</mask>
+			</defs>
+		)
+	}
+	<g class="logo__ink" mask={draw ? `url(#${maskId})` : undefined}>
+		{paths.map((d) => <path d={d} />)}
+	</g>
 </svg>
 
 <style>
@@ -35,30 +53,33 @@ const paths = [...logoSvg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((match) => m
 		overflow: visible;
 	}
 
-	/* With JS, hide the fill until the draw animation reveals it. If the script never runs, a delayed
-	   CSS animation shows the logo anyway. */
-	:global(.js) .logo[data-logo-draw] :global(.logo__fill) {
-		opacity: 0;
-		animation: logo-fallback 0.01ms 4s forwards;
-	}
-
-	.logo :global(.logo__stroke) {
+	.logo :global(.logo__pen) {
 		fill: none;
-		stroke: currentColor;
-		stroke-width: 0.45;
+		stroke: #fff;
 		stroke-linecap: round;
 		stroke-linejoin: round;
+	}
+
+	/* With JS, start with nothing written. If the script never runs, a delayed CSS animation reveals
+	   the logo anyway. */
+	:global(.js) .logo[data-logo-draw] :global(.logo__pen) {
+		/* Hidden as well as undrawn: a zero-length dash with round caps still paints a dot. */
+		opacity: 0;
+		stroke-dasharray: 0 999;
+		animation: logo-fallback 0.01ms 4s forwards;
 	}
 
 	@keyframes logo-fallback {
 		to {
 			opacity: 1;
+			stroke-dasharray: 999 0;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		:global(.js) .logo[data-logo-draw] :global(.logo__fill) {
+		:global(.js) .logo[data-logo-draw] :global(.logo__pen) {
 			opacity: 1;
+			stroke-dasharray: none;
 			animation: none;
 		}
 	}
