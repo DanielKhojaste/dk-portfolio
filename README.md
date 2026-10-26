@@ -16,7 +16,7 @@ Personal portfolio of Daniel Khojaste, software developer. Built with [Astro](ht
 | `npm run dev`          | Build workspace packages, then start the dev server on `:4321` |
 | `npm run build`        | Build packages, type-check (`astro check`) and build the site  |
 | `npm run preview`      | Serve the production build                                     |
-| `npm run test:unit`    | Run unit tests in every workspace package (Vitest)             |
+| `npm run test:unit`    | Run site and workspace package unit tests (Vitest)             |
 | `npm run test:e2e`     | Build + preview the site and run Playwright tests              |
 | `npm test`             | Unit tests, then end-to-end tests                              |
 | `npm run format`       | Format everything with Prettier                                |
@@ -28,8 +28,11 @@ First end-to-end run on a new machine: `npx playwright install chromium`.
 
 ```
 src/
+  assets/       throne photo and DK logo (optimised by Astro at build time)
+  components/   Header, Logo, Hero, DivineFlow wrapper
   layouts/      BaseLayout (fonts, meta, global styles)
   pages/        routes
+  scripts/      client scripts (logo draw, DivineFlow mount) + unit tests
   styles/       global tokens and resets
 packages/
   divine-flow/  framework-agnostic canvas renderer (npm package-to-be)
