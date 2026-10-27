@@ -2,15 +2,25 @@
 import { Picture } from "astro:assets";
 import throne from "../assets/images/throne.png";
 import DivineFlow from "./DivineFlow.astro";
+import InfoValue from "./InfoValue.astro";
 
-/** Left and right info groups. Bracketed values are placeholders until real copy lands. */
-const startGroup = [
-	{ label: "Software Developer", value: "temporary slogan", accent: true },
-	{ label: "Based in", value: "[Your city]" },
+import { profile } from "../data/site";
+
+interface InfoItem {
+	label: string;
+	value: string;
+	href?: string;
+	accent?: boolean;
+}
+
+/** Left and right info groups. */
+const startGroup: InfoItem[] = [
+	{ label: profile.role, value: profile.slogan, accent: true },
+	{ label: "Based in", value: profile.location },
 ];
-const endGroup = [
-	{ label: "Currently", value: "[Your current project]" },
-	{ label: "Off the keyboard", value: "Coaching [your sport]" },
+const endGroup: InfoItem[] = [
+	{ label: "Currently", value: profile.currently.label, href: profile.currently.href },
+	{ label: "Off the keyboard", value: profile.coaching },
 ];
 ---
 
@@ -32,7 +42,7 @@ const endGroup = [
 			emberSpeed: 0.9,
 		}}
 		compactOptions={{
-			originY: 0.4,
+			originY: 0.46,
 			lineCount: 6,
 			scatterCount: 2,
 			innerGap: 70,
@@ -78,7 +88,9 @@ const endGroup = [
 						<dt class:list={["hero__label", { "hero__label--accent": item.accent }]}>
 							{item.label}
 						</dt>
-						<dd class="hero__value">{item.value}</dd>
+						<dd class="hero__value">
+							<InfoValue {...item} />
+						</dd>
 					</div>
 				))
 			}
@@ -88,7 +100,9 @@ const endGroup = [
 				endGroup.map((item) => (
 					<div class="hero__item">
 						<dt class="hero__label">{item.label}</dt>
-						<dd class="hero__value">{item.value}</dd>
+						<dd class="hero__value">
+							<InfoValue {...item} />
+						</dd>
 					</div>
 				))
 			}
@@ -162,8 +176,13 @@ const endGroup = [
 	}
 
 	.hero__name {
-		/* Opacity of the name where it crosses the throne. */
-		--name-ghost-opacity: 0.42;
+		/*
+		 * How the name looks where it crosses the throne: the throne itself shows through the letters,
+		 * run through this filter. Alternatives that also work well:
+		 *   bright red: brightness(1.9) saturate(1.1)
+		 *   warm gold:  brightness(2.2) saturate(1.4) hue-rotate(18deg)
+		 */
+		--name-ghost-filter: grayscale(1) brightness(2.6) contrast(1.2);
 
 		position: absolute;
 		inset-inline: 0;
@@ -189,13 +208,18 @@ const endGroup = [
 		z-index: 1;
 	}
 
-	/* Aligned to the throne by scripts/name-ghost.ts; hidden until the mask is in place. */
+	/*
+	 * Ghost copy above the throne, masked to the throne's silhouette and aligned by
+	 * scripts/name-ghost.ts. Inside the letters of the last name the throne photo shows through
+	 * (background-clip: text) with --name-ghost-filter applied, so the name turns to engraved silver
+	 * where it crosses the photo. Hidden until the mask is in place.
+	 */
 	.hero__name-layer--ghost {
 		position: absolute;
 		inset: 0;
 		z-index: 3;
 		visibility: hidden;
-		opacity: var(--name-ghost-opacity);
+		filter: var(--name-ghost-filter);
 		pointer-events: none;
 		-webkit-mask-image: var(--throne-mask, none);
 		mask-image: var(--throne-mask, none);
@@ -209,6 +233,21 @@ const endGroup = [
 
 	.hero__name-layer--ghost[data-ready] {
 		visibility: visible;
+	}
+
+	.hero__name-layer--ghost .hero__first {
+		color: rgb(255 255 255 / 0.9);
+	}
+
+	.hero__name-layer--ghost .hero__last {
+		color: transparent;
+		-webkit-text-stroke-color: #fff;
+		background-image: var(--throne-mask, none);
+		background-repeat: no-repeat;
+		background-size: var(--mask-w, 0) var(--mask-h, 0);
+		background-position: var(--bg-x, 0) var(--bg-y, 0);
+		-webkit-background-clip: text;
+		background-clip: text;
 	}
 
 	.hero__first {
@@ -377,78 +416,74 @@ const endGroup = [
 	}
 
 	/* ---------- Compact: phones, tablets and portrait screens ---------- */
+	/*
+	 * Compact: phones, tablets and portrait screens. Same composition as desktop: name at the top,
+	 * throne anchored to the bottom and as large as the screen allows, info and buttons over the
+	 * throne's faded lower part. Everything is placed in cq units of the hero (100svh), so the whole
+	 * hero fits the visible screen on phones without scrolling. The 480px floor only kicks in for
+	 * landscape phones.
+	 */
 	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
 		.hero {
-			display: flex;
-			flex-direction: column;
-			min-height: 640px;
-			padding: 74px var(--gutter) 28px;
+			--actions-bottom: max(20px, 3.4cqh);
+			--actions-height: 52px;
+
+			min-height: 480px;
 		}
 
 		.hero__glow {
-			top: 40%;
-			width: min(180cqw, 90cqh);
+			top: 48%;
+			width: min(160cqw, 95cqh);
 		}
 
 		.hero__name {
-			position: relative;
-			inset: auto;
+			top: max(64px, 9cqh);
 		}
 
 		.hero__name-layer {
-			gap: 1.1cqh;
+			gap: 1cqh;
 		}
 
 		.hero__first {
-			font-size: clamp(18px, 5.6cqw, 40px);
+			font-size: clamp(16px, min(5.6cqw, 3.2cqh), 44px);
 		}
 
 		.hero__last {
-			font-size: min(12.1cqw, 9cqh);
+			font-size: min(12.1cqw, 7.4cqh);
 		}
 
 		.hero__figure {
-			position: relative;
-			left: auto;
-			bottom: auto;
-			flex: 1 1 auto;
-			min-height: 0;
-			width: 100%;
-			height: auto;
-			aspect-ratio: auto;
-			margin-top: -5cqh;
-			translate: none;
-		}
-
-		.hero__figure :global(picture) {
-			position: absolute;
-			inset: 0;
+			height: 82cqh;
+			max-width: 100cqw;
 		}
 
 		.hero__figure :global(img) {
-			-webkit-mask-image: linear-gradient(#000 60%, transparent 96%);
-			mask-image: linear-gradient(#000 60%, transparent 96%);
+			-webkit-mask-image: linear-gradient(#000 58%, transparent 94%);
+			mask-image: linear-gradient(#000 58%, transparent 94%);
 		}
 
+		/* Vignette plus a bottom scrim, so the info and buttons stay readable over the photo. */
 		.hero__vignette {
-			background: radial-gradient(
-				ellipse 90% 60% at 50% 40%,
-				rgb(0 0 0 / 0) 50%,
-				rgb(0 0 0 / 0.6) 100%
-			);
+			background:
+				linear-gradient(
+					to top,
+					rgb(8 4 5 / 0.92) 0,
+					rgb(8 4 5 / 0.7) calc(var(--actions-bottom) + 150px),
+					rgb(8 4 5 / 0) calc(var(--actions-bottom) + 260px)
+				),
+				radial-gradient(ellipse 95% 70% at 50% 42%, rgb(0 0 0 / 0) 50%, rgb(0 0 0 / 0.6) 100%);
 		}
 
 		.hero__info {
-			position: relative;
-			inset: auto;
-			translate: none;
-			align-items: flex-start;
+			top: auto;
+			bottom: calc(var(--actions-bottom) + var(--actions-height) + max(14px, 2.4cqh));
+			align-items: flex-end;
 			gap: 16px;
-			margin-top: -4cqh;
+			translate: none;
 		}
 
 		.hero__group {
-			gap: 14px;
+			gap: 12px;
 			width: auto;
 			flex: 1 1 0;
 			min-width: 0;
@@ -469,20 +504,40 @@ const endGroup = [
 		}
 
 		.hero__actions {
-			position: relative;
-			inset: auto;
+			inset-inline: var(--gutter);
+			bottom: var(--actions-bottom);
 			gap: 10px;
-			margin-top: 24px;
 		}
 
 		.button {
 			flex: 1 1 0;
-			height: 52px;
+			max-width: 240px;
+			height: var(--actions-height);
 			padding: 0 16px;
 		}
 
 		.button svg {
 			display: none;
+		}
+	}
+
+	/* Tablets: a touch more room for the text. */
+	@media (min-width: 640px) and (max-width: 1023px),
+		(min-width: 640px) and (max-aspect-ratio: 115/100) {
+		.hero__group {
+			flex: 0 1 300px;
+		}
+
+		.hero__label {
+			font-size: 11px;
+		}
+
+		.hero__value {
+			font-size: 16px;
+		}
+
+		.button svg {
+			display: block;
 		}
 	}
 </style>

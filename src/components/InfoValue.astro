@@ -1,0 +1,60 @@
+---
+/** A hero info value: plain text, or an external link with a small arrow. */
+interface Props {
+	value: string;
+	href?: string;
+}
+
+const { value, href } = Astro.props;
+---
+
+{
+	href ? (
+		<a class="info-link" href={href} target="_blank" rel="noopener noreferrer">
+			{value}
+			<svg
+				width="12"
+				height="12"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.4"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M7 17L17 7" />
+				<path d="M8 7h9v9" />
+			</svg>
+			<span class="sr-only">(opens in a new tab)</span>
+		</a>
+	) : (
+		value
+	)
+}
+
+<style>
+	.info-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: rgb(245 236 236 / 0.35);
+		text-underline-offset: 4px;
+		transition: text-decoration-color 0.2s var(--ease-out);
+	}
+
+	.info-link:hover {
+		text-decoration-color: var(--color-accent-soft);
+	}
+
+	.info-link svg {
+		flex: none;
+		transition: translate 0.2s var(--ease-out);
+	}
+
+	.info-link:hover svg {
+		translate: 2px -2px;
+	}
+</style>

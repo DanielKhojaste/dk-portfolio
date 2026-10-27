@@ -42,8 +42,8 @@ export function maskVariables(image: Rect, target: Rect): Record<string, string>
 }
 
 /**
- * Mask the ghost copy of the name with the throne photo's alpha, so the name only shows (faintly)
- * where it overlaps the throne. Re-aligns on resize, font load and image (re)selection.
+ * Mask the ghost copy of the name with the throne photo's alpha and paint the photo inside its
+ * letters, so the name changes look where it overlaps the throne. Re-aligns on resize, font load and image (re)selection.
  */
 export function syncNameGhost(hero: HTMLElement): () => void {
 	const ghost = hero.querySelector<HTMLElement>("[data-name-ghost]");
@@ -71,6 +71,12 @@ export function syncNameGhost(hero: HTMLElement): () => void {
 
 		const vars = maskVariables(content, ghost.getBoundingClientRect());
 		for (const [key, value] of Object.entries(vars)) ghost.style.setProperty(key, value);
+		// Each line paints the throne inside its letters, positioned relative to its own box.
+		ghost.querySelectorAll<HTMLElement>(":scope > span").forEach((line) => {
+			const offset = maskVariables(content, line.getBoundingClientRect());
+			line.style.setProperty("--bg-x", offset["--mask-x"]!);
+			line.style.setProperty("--bg-y", offset["--mask-y"]!);
+		});
 		ghost.style.setProperty("--throne-mask", `url("${img.currentSrc || img.src}")`);
 		ghost.dataset.ready = "true";
 	};
