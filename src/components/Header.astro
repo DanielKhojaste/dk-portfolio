@@ -1,5 +1,6 @@
 ---
 import Logo from "./Logo.astro";
+import Menu from "./Menu.astro";
 ---
 
 <header class="site-header">
@@ -7,15 +8,18 @@ import Logo from "./Logo.astro";
 		<Logo draw />
 	</a>
 
-	<!-- The menu overlay lands in v0.2.0; the button is in place so the header layout is final. -->
 	<button
 		class="menu-button"
 		type="button"
 		aria-label="Open menu"
 		aria-expanded="false"
+		aria-controls="site-menu"
 		data-menu-button
 	>
-		<span class="menu-button__label" aria-hidden="true">Menu</span>
+		<span class="menu-button__label" aria-hidden="true">
+			<span class="menu-button__word menu-button__word--open">Menu</span>
+			<span class="menu-button__word menu-button__word--close">Close</span>
+		</span>
 		<span class="menu-button__icon" aria-hidden="true">
 			<svg
 				width="16"
@@ -33,10 +37,14 @@ import Logo from "./Logo.astro";
 	</button>
 </header>
 
+<Menu />
+
 <script>
 	import { drawLogos } from "../scripts/logo-draw";
+	import { setupMenu } from "../scripts/menu";
 
 	drawLogos();
+	setupMenu();
 </script>
 
 <style>
@@ -48,6 +56,11 @@ import Logo from "./Logo.astro";
 		align-items: center;
 		justify-content: space-between;
 		padding: clamp(14px, 3.5vh, 32px) var(--gutter) 0;
+	}
+
+	/* Keep the close button on screen when the menu is opened from further down the page. */
+	:global(html[data-menu-open]) .site-header {
+		position: fixed;
 	}
 
 	.site-header__home {
@@ -83,6 +96,35 @@ import Logo from "./Logo.astro";
 		background: rgb(245 236 236 / 0.06);
 	}
 
+	/* "Menu" and "Close" share one cell so swapping them never changes the button's width. */
+	.menu-button__label {
+		display: grid;
+		overflow: hidden;
+	}
+
+	.menu-button__word {
+		grid-area: 1 / 1;
+		text-align: right;
+		transition:
+			transform 0.4s var(--ease-out),
+			opacity 0.4s var(--ease-out);
+	}
+
+	.menu-button__word--close {
+		opacity: 0;
+		transform: translateY(100%);
+	}
+
+	.menu-button[aria-expanded="true"] .menu-button__word--open {
+		opacity: 0;
+		transform: translateY(-100%);
+	}
+
+	.menu-button[aria-expanded="true"] .menu-button__word--close {
+		opacity: 1;
+		transform: none;
+	}
+
 	.menu-button__icon {
 		display: grid;
 		place-items: center;
@@ -96,6 +138,21 @@ import Logo from "./Logo.astro";
 
 	.menu-button:hover .menu-button__icon {
 		transform: rotate(90deg);
+	}
+
+	/* The two bars fold into an X around the icon's centre. */
+	.menu-button__icon path {
+		transform-box: view-box;
+		transform-origin: 12px 12px;
+		transition: transform 0.4s var(--ease-out);
+	}
+
+	.menu-button[aria-expanded="true"] .menu-button__icon path:first-child {
+		transform: rotate(45deg) translateY(4px);
+	}
+
+	.menu-button[aria-expanded="true"] .menu-button__icon path:last-child {
+		transform: rotate(-45deg) translateY(-4px);
 	}
 
 	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {

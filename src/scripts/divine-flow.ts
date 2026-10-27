@@ -59,9 +59,23 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 		flow.update(optionsFor(base, compact, event.matches)),
 	);
 
+	pauseWhileMenuOpen(flow);
 	instances.set(el, flow);
 	el.dataset.flowReady = "true";
 	return flow;
+}
+
+/**
+ * The menu covers the whole page, so there is no point drawing behind it; pausing also leaves the
+ * main thread free for the menu's own transitions.
+ */
+export function pauseWhileMenuOpen(
+	flow: Pick<DivineFlowInstance, "start" | "stop">,
+	doc = document,
+) {
+	if (doc.documentElement.hasAttribute("data-menu-open")) flow.stop();
+	doc.addEventListener("menu:open", () => flow.stop());
+	doc.addEventListener("menu:close", () => flow.start());
 }
 
 const LOGO_DRAWN = "logo:drawn";
