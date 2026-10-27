@@ -64,6 +64,40 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 	return flow;
 }
 
+const LOGO_DRAWN = "logo:drawn";
+
+/** Resolve once the header logo has finished writing (or straight away if it already has). */
+function logoDrawn(timeout: number): Promise<void> {
+	if (document.documentElement.hasAttribute("data-logo-drawn")) return Promise.resolve();
+	return new Promise((resolve) => {
+		const done = () => {
+			document.removeEventListener(LOGO_DRAWN, done);
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(done, timeout);
+		document.addEventListener(LOGO_DRAWN, done);
+	});
+}
+
+/** Run `task` when the browser is idle (with a short deadline), so it never lands mid-animation. */
+function whenIdle(task: () => void) {
+	if ("requestIdleCallback" in window) window.requestIdleCallback(task, { timeout: 400 });
+	else setTimeout(task, 50);
+}
+
+/**
+ * Mount every DivineFlow on the page. Elements marked `data-after-logo` wait for the logo to finish
+ * writing (up to `data-start-timeout` ms) and then for an idle moment, so the logo animation gets the
+ * main thread to itself during load.
+ */
 export function mountDivineFlows(root: ParentNode = document) {
-	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => mountDivineFlow(el));
+	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => {
+		if (!el.hasAttribute("data-after-logo")) {
+			mountDivineFlow(el);
+			return;
+		}
+		const timeout = Number(el.dataset.startTimeout) || 2600;
+		logoDrawn(timeout).then(() => whenIdle(() => mountDivineFlow(el)));
+	});
 }

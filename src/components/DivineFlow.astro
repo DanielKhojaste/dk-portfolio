@@ -12,6 +12,12 @@ interface Props {
 	compactOptions?: FlowOptions;
 	compactQuery?: string;
 	class?: string;
+	/**
+	 * Wait for the header logo to finish writing before starting, so the two never compete for the
+	 * main thread during load. Starts anyway after `startTimeout` ms.
+	 */
+	afterLogo?: boolean;
+	startTimeout?: number;
 }
 
 const {
@@ -19,6 +25,8 @@ const {
 	compactOptions,
 	compactQuery = "(max-width: 1023px), (max-aspect-ratio: 115/100)",
 	class: className,
+	afterLogo = false,
+	startTimeout = 2600,
 } = Astro.props;
 ---
 
@@ -29,6 +37,8 @@ const {
 	data-options={JSON.stringify(options)}
 	data-compact-options={compactOptions ? JSON.stringify(compactOptions) : undefined}
 	data-compact-query={compactOptions ? compactQuery : undefined}
+	data-after-logo={afterLogo ? "" : undefined}
+	data-start-timeout={startTimeout}
 >
 </div>
 
@@ -45,5 +55,12 @@ const {
 		z-index: 0;
 		overflow: hidden;
 		pointer-events: none;
+		/* Fades in once started; opacity is compositor-only, so the fade costs nothing per frame. */
+		opacity: 0;
+		transition: opacity 1.6s var(--ease-out);
+	}
+
+	.divine-flow[data-flow-ready] {
+		opacity: 1;
 	}
 </style>
