@@ -62,13 +62,10 @@ export function createDivineFlow(
 	}
 
 	// Layered mode: the low-res bloom gets its own canvas element that the browser scales on the GPU,
-	// and the filament canvas is blended over it additively with CSS. This avoids upscaling the bloom
-	// into the full-resolution canvas on every frame. Only possible when the engine owns the canvas.
-	const layered =
-		ownsCanvas &&
-		typeof CSS !== "undefined" &&
-		typeof CSS.supports === "function" &&
-		CSS.supports("mix-blend-mode", "plus-lighter");
+	// instead of being upscaled into the full-resolution canvas every frame. Both layers composite
+	// normally: an additive CSS blend (plus-lighter) looked marginally brighter but cost ~25% more
+	// per frame on a real page. Only possible when the engine owns the canvas.
+	const layered = ownsCanvas;
 
 	const bloomCanvas = document.createElement("canvas");
 	if (layered) {
@@ -82,7 +79,6 @@ export function createDivineFlow(
 			display: "block",
 			pointerEvents: "none",
 		});
-		canvas.style.mixBlendMode = "plus-lighter";
 		container.insertBefore(bloomCanvas, canvas);
 	}
 
