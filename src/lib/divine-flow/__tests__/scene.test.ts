@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createScene, createThreads, emberPosition } from "../src/scene.js";
-import {
-	makePointBuffer,
-	sampleThread,
-	samplesForWidth,
-	type FlowLayout,
-} from "../src/geometry.js";
+import { createScene, createThreads, emberPosition } from "../scene";
+import { makePointBuffer, sampleThread, samplesForWidth, type FlowLayout } from "../geometry";
 
 const config = {
 	lineCount: 7,
@@ -136,7 +131,7 @@ describe("geometry", () => {
 
 describe("threadShade", () => {
 	it("is zero without variance and stable, bounded and varied with it", async () => {
-		const { threadShade } = await import("../src/renderer.js");
+		const { threadShade } = await import("../renderer");
 		const threads = createThreads(config);
 		expect(threadShade(threads[0]!, 0)).toEqual({ hue: 0, light: 0 });
 

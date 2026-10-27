@@ -1,6 +1,6 @@
-import { clamp } from "./math.js";
-import { resolvePalette } from "./palette.js";
-import type { DivineFlowOptions, ResolvedDivineFlowOptions } from "./types.js";
+import { clamp } from "./math";
+import { resolvePalette } from "./palette";
+import type { DivineFlowOptions, ResolvedDivineFlowOptions } from "./types";
 
 export const DEFAULTS = {
 	lineCount: 7,

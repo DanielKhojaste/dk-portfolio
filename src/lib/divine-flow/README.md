@@ -1,14 +1,13 @@
-# divine-flow
+# DivineFlow
 
 Slow, glowing light filaments, travelling sparkles and drifting embers on a `<canvas>`.
-Framework-agnostic TypeScript with no runtime dependencies.
-
-> Status: pre-release. Developed inside [dk-portfolio](../../) and marked `private` until it is published.
+Plain TypeScript with no dependencies, part of the site (not a separate package). The site mounts it
+through `src/components/DivineFlow.astro` and `src/scripts/divine-flow.ts`.
 
 ## Usage
 
 ```ts
-import { createDivineFlow } from "divine-flow";
+import { createDivineFlow } from "../lib/divine-flow";
 
 const hero = document.querySelector<HTMLElement>(".hero")!;
 const flow = createDivineFlow(hero, {
@@ -77,7 +76,7 @@ Every colour is an `[r, g, b]` tuple:
 `originOuter`, `ember`.
 
 ```ts
-import { createDivineFlow, themes } from "divine-flow";
+import { createDivineFlow, themes } from "../lib/divine-flow";
 
 createDivineFlow(el, { theme: "violet", palette: { core: [255, 255, 255] } });
 createDivineFlow(el, { theme: { ...themes.gold, ember: [255, 120, 40] } });
@@ -96,9 +95,6 @@ createDivineFlow(el, { theme: { ...themes.gold, ember: [255, 120, 40] } });
   setting at runtime is picked up.
 - Point buffers are allocated once per filament and reused every frame.
 
-## Development
+## Tests
 
-```sh
-npm run build -w divine-flow   # tsc → dist/ (ESM + .d.ts)
-npm run test -w divine-flow    # Vitest
-```
+Unit tests live in `__tests__/` and run with the rest of the site's unit tests (`npm run test:unit`).

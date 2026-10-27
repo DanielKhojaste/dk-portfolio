@@ -1,5 +1,5 @@
-import { cubicBezier, cubicBezierDerivative, smoothNoise, type Point } from "./math.js";
-import type { Thread } from "./scene.js";
+import { cubicBezier, cubicBezierDerivative, smoothNoise, type Point } from "./math";
+import type { Thread } from "./scene";
 
 /** Everything about the canvas that affects where a filament sits. */
 export interface FlowLayout {

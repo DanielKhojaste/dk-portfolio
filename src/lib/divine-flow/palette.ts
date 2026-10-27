@@ -1,4 +1,4 @@
-import type { DivineFlowPalette, DivineFlowThemeName, RGB } from "./types.js";
+import type { DivineFlowPalette, DivineFlowThemeName, RGB } from "./types";
 
 /** The original ApotheonAI look: warm gold filaments on black. */
 const gold: DivineFlowPalette = {

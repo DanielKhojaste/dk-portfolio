@@ -2,6 +2,10 @@
 import "@fontsource-variable/archivo/wdth.css";
 import "@fontsource-variable/inter";
 import "../styles/global.css";
+// Preload the Latin subsets so the hero name renders in its final font on first paint instead of
+// swapping (and re-laying out) in the middle of the intro animations.
+import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 
 interface Props {
 	title?: string;
@@ -24,6 +28,8 @@ const {
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+		<link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
 		<title>{title}</title>
 		<script is:inline>
 			document.documentElement.classList.add("js");

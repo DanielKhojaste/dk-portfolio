@@ -1,9 +1,9 @@
-import { TAU, normalAt, pointAt, type Point } from "./math.js";
-import { rgba, shade } from "./palette.js";
-import { mulberry32 } from "./random.js";
-import { emberPosition, type Scene, type Sparkle, type Thread } from "./scene.js";
-import { sampleThread, writePoint, type FlowLayout } from "./geometry.js";
-import type { DivineFlowPalette, RGB } from "./types.js";
+import { TAU, normalAt, pointAt, type Point } from "./math";
+import { rgba, shade } from "./palette";
+import { mulberry32 } from "./random";
+import { emberPosition, type Scene, type Sparkle, type Thread } from "./scene";
+import { sampleThread, writePoint, type FlowLayout } from "./geometry";
+import type { DivineFlowPalette, RGB } from "./types";
 
 type Ctx = CanvasRenderingContext2D;
 type CanvasFactory = (width: number, height: number) => HTMLCanvasElement;

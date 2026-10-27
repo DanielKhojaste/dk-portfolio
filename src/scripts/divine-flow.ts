@@ -1,4 +1,8 @@
-import { createDivineFlow, type DivineFlowInstance, type DivineFlowOptions } from "divine-flow";
+import {
+	createDivineFlow,
+	type DivineFlowInstance,
+	type DivineFlowOptions,
+} from "../lib/divine-flow";
 
 type FlowOptions = Omit<DivineFlowOptions, "canvas">;
 
@@ -55,11 +59,59 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 		flow.update(optionsFor(base, compact, event.matches)),
 	);
 
+	pauseWhileMenuOpen(flow);
 	instances.set(el, flow);
 	el.dataset.flowReady = "true";
 	return flow;
 }
 
+/**
+ * The menu covers the whole page, so there is no point drawing behind it; pausing also leaves the
+ * main thread free for the menu's own transitions.
+ */
+export function pauseWhileMenuOpen(
+	flow: Pick<DivineFlowInstance, "start" | "stop">,
+	doc = document,
+) {
+	if (doc.documentElement.hasAttribute("data-menu-open")) flow.stop();
+	doc.addEventListener("menu:open", () => flow.stop());
+	doc.addEventListener("menu:close", () => flow.start());
+}
+
+const LOGO_DRAWN = "logo:drawn";
+
+/** Resolve once the header logo has finished writing (or straight away if it already has). */
+function logoDrawn(timeout: number): Promise<void> {
+	if (document.documentElement.hasAttribute("data-logo-drawn")) return Promise.resolve();
+	return new Promise((resolve) => {
+		const done = () => {
+			document.removeEventListener(LOGO_DRAWN, done);
+			clearTimeout(timer);
+			resolve();
+		};
+		const timer = setTimeout(done, timeout);
+		document.addEventListener(LOGO_DRAWN, done);
+	});
+}
+
+/** Run `task` when the browser is idle (with a short deadline), so it never lands mid-animation. */
+function whenIdle(task: () => void) {
+	if ("requestIdleCallback" in window) window.requestIdleCallback(task, { timeout: 400 });
+	else setTimeout(task, 50);
+}
+
+/**
+ * Mount every DivineFlow on the page. Elements marked `data-after-logo` wait for the logo to finish
+ * writing (up to `data-start-timeout` ms) and then for an idle moment, so the logo animation gets the
+ * main thread to itself during load.
+ */
 export function mountDivineFlows(root: ParentNode = document) {
-	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => mountDivineFlow(el));
+	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => {
+		if (!el.hasAttribute("data-after-logo")) {
+			mountDivineFlow(el);
+			return;
+		}
+		const timeout = Number(el.dataset.startTimeout) || 2600;
+		logoDrawn(timeout).then(() => whenIdle(() => mountDivineFlow(el)));
+	});
 }

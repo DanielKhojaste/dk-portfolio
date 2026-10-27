@@ -25,6 +25,7 @@ function finish(svg: SVGSVGElement) {
 	// Drop the mask so the finished logo is exactly the original artwork.
 	svg.querySelector(".logo__ink")?.removeAttribute("mask");
 	svg.dataset.drawn = "true";
+	document.documentElement.setAttribute("data-logo-drawn", "");
 	svg.dispatchEvent(new CustomEvent("logo:drawn", { bubbles: true }));
 }
 

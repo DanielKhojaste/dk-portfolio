@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDivineFlow } from "../src/engine.js";
+import { createDivineFlow } from "../engine";
 
 type Listener = (event: { matches: boolean }) => void;
 
@@ -252,23 +252,21 @@ describe("createDivineFlow", () => {
 		expect(flow.options.palette.glow).toEqual([228, 52, 64]);
 	});
 
-	it("uses a separate, CSS-blended bloom canvas when plus-lighter is supported", () => {
-		vi.stubGlobal("CSS", { supports: () => true });
+	it("draws the bloom on its own canvas behind the filaments", () => {
 		const { container, flow } = mount();
 		const bloom = container.querySelector("canvas[data-divine-flow-bloom]");
 		expect(bloom).not.toBeNull();
 		expect(bloom!.nextElementSibling).toBe(flow.canvas);
-		expect(flow.canvas.style.mixBlendMode).toBe("plus-lighter");
+		expect(flow.canvas.style.mixBlendMode).toBe("");
 		// The bloom is never drawn into the main canvas in layered mode.
 		expect(contexts[0]!.images).not.toContain(bloom);
 		flow.destroy();
 		expect(container.querySelectorAll("canvas")).toHaveLength(0);
 	});
 
-	it("composites the bloom into the main canvas without plus-lighter support", () => {
-		vi.stubGlobal("CSS", { supports: () => false });
-		const { container } = mount();
-		expect(container.querySelectorAll("canvas")).toHaveLength(1);
+	it("composites the bloom into a provided canvas", () => {
+		const canvas = document.createElement("canvas");
+		mount({ canvas });
 		expect(contexts[0]!.images).toContain(contexts[1]!.ctx.canvas);
 	});
 

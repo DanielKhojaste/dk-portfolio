@@ -1,0 +1,236 @@
+---
+/**
+ * Full-screen menu, opened by the header's menu button (scripts/menu.ts).
+ * Animations are CSS transitions on opacity/transform only, so the compositor runs them even when
+ * the main thread is busy.
+ */
+import { profile, sections, socials } from "../data/site";
+import InfoValue from "./InfoValue.astro";
+---
+
+<div class="menu" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" data-menu>
+	<div class="menu__glow" aria-hidden="true"></div>
+
+	<div class="menu__inner">
+		<nav class="menu__nav" aria-label="Sections">
+			<ol class="menu__list">
+				{
+					sections.map((section, i) => (
+						<li class="menu__item" style={`--i: ${i}`}>
+							<a class="menu__link" href={section.href} data-menu-link>
+								<span class="menu__index" aria-hidden="true">
+									{String(i + 1).padStart(2, "0")}
+								</span>
+								<span class="menu__label">{section.label}</span>
+							</a>
+						</li>
+					))
+				}
+			</ol>
+		</nav>
+
+		<dl class="menu__aside">
+			<div class="menu__fact">
+				<dt>Currently</dt>
+				<dd>
+					<InfoValue value={profile.currently.label} href={profile.currently.href} />
+					<span class="menu__note">{profile.currently.description}</span>
+				</dd>
+			</div>
+			<div class="menu__fact">
+				<dt>Based in</dt>
+				<dd>{profile.location}</dd>
+			</div>
+			<div class="menu__fact">
+				<dt>Off the keyboard</dt>
+				<dd>{profile.coaching}</dd>
+			</div>
+			<div class="menu__fact">
+				<dt>Elsewhere</dt>
+				<dd class="menu__socials">
+					{socials.map((social) => <InfoValue value={social.label} href={social.href} />)}
+				</dd>
+			</div>
+		</dl>
+	</div>
+</div>
+
+<style>
+	.menu {
+		--menu-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+		position: fixed;
+		inset: 0;
+		z-index: 9;
+		display: flex;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		background: rgb(8 4 5 / 0.97);
+		visibility: hidden;
+		opacity: 0;
+		transition:
+			opacity 0.45s var(--menu-ease),
+			visibility 0s linear 0.45s;
+	}
+
+	.menu[data-open] {
+		visibility: visible;
+		opacity: 1;
+		transition: opacity 0.45s var(--menu-ease);
+	}
+
+	.menu__glow {
+		position: fixed;
+		inset: auto -20% -40% auto;
+		width: min(90vw, 900px);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(closest-side, rgb(190 28 40 / 0.28), rgb(8 4 5 / 0));
+		pointer-events: none;
+	}
+
+	.menu__inner {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+		align-items: end;
+		gap: clamp(32px, 6vw, 96px);
+		width: 100%;
+		max-width: 1440px;
+		margin: auto;
+		padding: clamp(110px, 16vh, 160px) var(--gutter) clamp(40px, 8vh, 80px);
+	}
+
+	.menu__list {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(4px, 1vh, 12px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.menu__item {
+		overflow: hidden;
+	}
+
+	.menu__link {
+		display: inline-flex;
+		align-items: baseline;
+		gap: clamp(12px, 1.6vw, 24px);
+		padding-block: 4px;
+		color: var(--color-text);
+		text-decoration: none;
+		transform: translateY(105%);
+		transition: transform 0.4s var(--menu-ease);
+	}
+
+	.menu[data-open] .menu__link {
+		transform: none;
+		transition: transform 0.75s var(--menu-ease) calc(0.12s + var(--i) * 0.06s);
+	}
+
+	.menu__index {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		color: var(--color-accent-soft);
+	}
+
+	.menu__label {
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(40px, min(7.2vw, 11vh), 112px);
+		line-height: 1;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.12vw, 2px) var(--color-text);
+		transition: color 0.25s var(--ease-out);
+	}
+
+	.menu__link:hover .menu__label,
+	.menu__link:focus-visible .menu__label {
+		color: var(--color-text);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.menu__label {
+			color: var(--color-text);
+		}
+	}
+
+	.menu__aside {
+		display: grid;
+		gap: 24px;
+		margin: 0;
+		padding-bottom: 12px;
+		opacity: 0;
+		transform: translateY(16px);
+		transition:
+			opacity 0.3s var(--menu-ease),
+			transform 0.3s var(--menu-ease);
+	}
+
+	.menu[data-open] .menu__aside {
+		opacity: 1;
+		transform: none;
+		transition:
+			opacity 0.6s var(--menu-ease) 0.35s,
+			transform 0.6s var(--menu-ease) 0.35s;
+	}
+
+	.menu__fact {
+		display: grid;
+		gap: 6px;
+	}
+
+	.menu__fact dt {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.menu__fact dd {
+		display: grid;
+		gap: 4px;
+		margin: 0;
+		font-size: 17px;
+		color: var(--color-text);
+	}
+
+	.menu__note {
+		font-size: 14px;
+		color: var(--color-text-soft);
+	}
+
+	.menu__socials {
+		display: flex !important;
+		flex-wrap: wrap;
+		gap: 16px;
+	}
+
+	@media (max-width: 767px) {
+		.menu__inner {
+			grid-template-columns: minmax(0, 1fr);
+			align-items: start;
+			gap: 40px;
+			padding-top: 96px;
+		}
+
+		.menu__label {
+			font-size: clamp(36px, 12vw, 64px);
+		}
+
+		.menu__aside {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 20px 16px;
+		}
+
+		.menu__fact dd {
+			font-size: 15px;
+		}
+	}
+</style>
