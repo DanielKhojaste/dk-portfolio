@@ -1,0 +1,49 @@
+---
+/**
+ * Decorative DivineFlow background. Fills its nearest positioned ancestor.
+ * `compactOptions` are merged over `options` while `compactQuery` matches (small or portrait screens).
+ */
+import type { DivineFlowOptions } from "divine-flow";
+
+type FlowOptions = Omit<DivineFlowOptions, "canvas">;
+
+interface Props {
+	options?: FlowOptions;
+	compactOptions?: FlowOptions;
+	compactQuery?: string;
+	class?: string;
+}
+
+const {
+	options = {},
+	compactOptions,
+	compactQuery = "(max-width: 1023px), (max-aspect-ratio: 115/100)",
+	class: className,
+} = Astro.props;
+---
+
+<div
+	class:list={["divine-flow", className]}
+	aria-hidden="true"
+	data-divine-flow
+	data-options={JSON.stringify(options)}
+	data-compact-options={compactOptions ? JSON.stringify(compactOptions) : undefined}
+	data-compact-query={compactOptions ? compactQuery : undefined}
+>
+</div>
+
+<script>
+	import { mountDivineFlows } from "../scripts/divine-flow";
+
+	mountDivineFlows();
+</script>
+
+<style>
+	.divine-flow {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+</style>
