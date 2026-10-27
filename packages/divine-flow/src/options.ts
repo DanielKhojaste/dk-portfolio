@@ -13,6 +13,8 @@ export const DEFAULTS = {
 	speckCount: 28,
 	emberCount: 0,
 	emberSpeed: 1,
+	variance: 0,
+	maxFps: 60,
 	maxDpr: 2,
 	bloomScale: 0.28,
 } as const;
@@ -40,6 +42,8 @@ export function resolveOptions(options: DivineFlowOptions = {}): ResolvedDivineF
 		speckCount: count(options.speckCount, DEFAULTS.speckCount, 1000),
 		emberCount: count(options.emberCount, DEFAULTS.emberCount, 2000),
 		emberSpeed: clamp(finite(options.emberSpeed, DEFAULTS.emberSpeed), 0, 20),
+		variance: clamp(finite(options.variance, DEFAULTS.variance), 0, 1),
+		maxFps: clamp(finite(options.maxFps, DEFAULTS.maxFps), 1, 240),
 		maxDpr: clamp(finite(options.maxDpr, DEFAULTS.maxDpr), 0.5, 4),
 		bloomScale: clamp(finite(options.bloomScale, DEFAULTS.bloomScale), 0.1, 1),
 		reducedMotion: options.reducedMotion ?? "auto",

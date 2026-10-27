@@ -56,6 +56,13 @@ export interface DivineFlowOptions {
 	emberCount?: number;
 	/** Ember drift speed multiplier. Default `1`. */
 	emberSpeed?: number;
+	/**
+	 * Per-filament colour variation, 0–1. Each filament gets its own stable shade of the theme
+	 * (up to ±14° hue and ±14% lightness at `1`). Default `0`.
+	 */
+	variance?: number;
+	/** Frame-rate cap. Keeps high-refresh displays from doing 2–3x the work. Default `60`. */
+	maxFps?: number;
 	/** Device-pixel-ratio cap for the main canvas. Default `2`. */
 	maxDpr?: number;
 	/** Resolution of the bloom pass relative to the canvas, 0.1–1. Default `0.28`. */
@@ -87,6 +94,8 @@ export interface ResolvedDivineFlowOptions {
 	speckCount: number;
 	emberCount: number;
 	emberSpeed: number;
+	variance: number;
+	maxFps: number;
 	maxDpr: number;
 	bloomScale: number;
 	reducedMotion: "auto" | boolean;

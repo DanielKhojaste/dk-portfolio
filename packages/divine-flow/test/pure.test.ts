@@ -9,7 +9,16 @@ import {
 	wrap01,
 } from "../src/math.js";
 import { mulberry32 } from "../src/random.js";
-import { PALETTE_KEYS, isRGB, resolvePalette, rgba, themes } from "../src/palette.js";
+import {
+	PALETTE_KEYS,
+	hslToRgb,
+	isRGB,
+	resolvePalette,
+	rgbToHsl,
+	rgba,
+	shade,
+	themes,
+} from "../src/palette.js";
 import { DEFAULTS, resolveOptions } from "../src/options.js";
 
 describe("mulberry32", () => {
@@ -119,6 +128,31 @@ describe("palette", () => {
 	});
 });
 
+describe("colour shading", () => {
+	it("round-trips RGB through HSL", () => {
+		for (const color of [
+			themes.crimson.glow,
+			themes.gold.core,
+			themes.violet.bloom,
+			[0, 0, 0],
+			[255, 255, 255],
+		] as const) {
+			const [h, s, l] = rgbToHsl(color);
+			const back = hslToRgb(h, s, l);
+			back.forEach((channel, i) => expect(Math.abs(channel - color[i]!)).toBeLessThanOrEqual(1));
+		}
+	});
+
+	it("shifts hue and lightness but keeps colours valid", () => {
+		const base = themes.crimson.glow;
+		expect(shade(base, 0, 0)).toEqual(base);
+		const lighter = shade(base, 0, 0.1);
+		expect(rgbToHsl(lighter)[2]).toBeGreaterThan(rgbToHsl(base)[2]);
+		expect(isRGB(shade(base, 400, 2))).toBe(true);
+		expect(shade(base, 0, -2)).toEqual([0, 0, 0]);
+	});
+});
+
 describe("resolveOptions", () => {
 	it("applies defaults", () => {
 		const options = resolveOptions();
@@ -128,6 +162,8 @@ describe("resolveOptions", () => {
 		expect(options.reducedMotion).toBe("auto");
 		expect(options.pauseWhenHidden).toBe(true);
 		expect(options.sparkleCount).toBeNull();
+		expect(options.variance).toBe(0);
+		expect(options.maxFps).toBe(60);
 	});
 
 	it("clamps out-of-range and non-finite values", () => {
@@ -139,7 +175,11 @@ describe("resolveOptions", () => {
 			motion: -1,
 			bloomScale: 0,
 			maxDpr: 99,
+			variance: 3,
+			maxFps: 0,
 		});
+		expect(options.variance).toBe(1);
+		expect(options.maxFps).toBe(1);
 		expect(options.lineCount).toBe(0);
 		expect(options.scatterCount).toBe(3);
 		expect(options.originX).toBe(1);

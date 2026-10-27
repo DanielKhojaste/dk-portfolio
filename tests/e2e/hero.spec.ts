@@ -37,7 +37,8 @@ test.describe("hero", () => {
 		const styles = await page.evaluate(() => {
 			const last = getComputedStyle(document.querySelector(".hero__last")!);
 			const first = getComputedStyle(document.querySelector(".hero__first")!);
-			const name = getComputedStyle(document.querySelector(".hero__name")!);
+			const base = getComputedStyle(document.querySelector(".hero__name-layer--base")!);
+			const ghost = getComputedStyle(document.querySelector(".hero__name-layer--ghost")!);
 			const figure = getComputedStyle(document.querySelector(".hero__figure")!);
 			return {
 				lastColor: last.color,
@@ -45,7 +46,8 @@ test.describe("hero", () => {
 				lastStrokeWidth: parseFloat(last.getPropertyValue("-webkit-text-stroke-width")),
 				lastSize: parseFloat(last.fontSize),
 				firstSize: parseFloat(first.fontSize),
-				nameZ: Number(name.zIndex),
+				nameZ: Number(base.zIndex),
+				ghostZ: Number(ghost.zIndex),
 				figureZ: Number(figure.zIndex),
 			};
 		});
@@ -54,6 +56,7 @@ test.describe("hero", () => {
 		expect(styles.lastStroke).toBe("rgb(255, 255, 255)");
 		expect(styles.lastStrokeWidth).toBeGreaterThan(0);
 		expect(styles.nameZ).toBeLessThan(styles.figureZ);
+		expect(styles.ghostZ).toBeGreaterThan(styles.figureZ);
 		expect(styles.lastSize).toBeGreaterThan(styles.firstSize * 2);
 	});
 
@@ -71,6 +74,43 @@ test.describe("hero", () => {
 		expect(figure.y + figure.height).toBeLessThanOrEqual(
 			(await box(page, "section.hero")).height + 1,
 		);
+	});
+
+	test("shows a faint ghost of the name where it crosses the throne", async ({ page }) => {
+		await page.goto("/");
+		const ghost = page.locator("[data-name-ghost]");
+		await expect(ghost).toHaveAttribute("aria-hidden", "true");
+		await expect(ghost).toHaveAttribute("data-ready", "true");
+
+		const style = await ghost.evaluate((el) => {
+			const cs = getComputedStyle(el);
+			return {
+				opacity: Number(cs.opacity),
+				visibility: cs.visibility,
+				mask: cs.maskImage || cs.getPropertyValue("-webkit-mask-image"),
+				maskWidth: parseFloat(el.style.getPropertyValue("--mask-w")),
+			};
+		});
+		expect(style.visibility).toBe("visible");
+		expect(style.opacity).toBeGreaterThan(0);
+		expect(style.opacity).toBeLessThan(1);
+		expect(style.mask).toContain("url(");
+		expect(style.maskWidth).toBeGreaterThan(0);
+
+		// The mask matches the rendered throne photo.
+		const img = await box(page, ".hero__figure img");
+		const maskHeight = await ghost.evaluate((el) =>
+			parseFloat(el.style.getPropertyValue("--mask-h")),
+		);
+		expect(Math.abs(maskHeight - Math.min(img.height, (img.width * 1210) / 723))).toBeLessThan(2);
+	});
+
+	test("desktop throne is 90% of the hero height", async ({ page }, info) => {
+		test.skip(info.project.name !== "desktop", "desktop layout only");
+		await page.goto("/");
+		const heroBox = await box(page, "section.hero");
+		const figure = await box(page, ".hero__figure");
+		expect(figure.height / heroBox.height).toBeCloseTo(0.9, 2);
 	});
 
 	test("uses the temporary slogan and no ApotheonAI credit", async ({ page }) => {
@@ -109,7 +149,9 @@ test.describe("hero", () => {
 		const flow = page.locator("[data-divine-flow]");
 		await expect(flow).toHaveAttribute("data-flow-ready", "true");
 
-		const canvas = flow.locator("canvas");
+		// Filaments canvas on top of a separate, GPU-scaled bloom canvas.
+		await expect(flow.locator("canvas[data-divine-flow-bloom]")).toHaveCount(1);
+		const canvas = flow.locator("canvas[data-divine-flow-canvas]");
 		await expect(canvas).toHaveAttribute("aria-hidden", "true");
 		const size = await canvas.evaluate((el: HTMLCanvasElement) => [el.width, el.height]);
 		expect(size[0]).toBeGreaterThan(0);
@@ -140,26 +182,42 @@ test.describe("header", () => {
 		expect(rect!.height).toBeGreaterThanOrEqual(44);
 	});
 
-	test("draws the logo on load and ends with the solid fill", async ({ page }) => {
+	test("writes the logo stroke by stroke and ends with the original artwork", async ({ page }) => {
 		await page.goto("/");
 		const logo = page.locator("svg[data-logo-draw]");
 
-		// While drawing, stroke outlines exist and the fill is hidden.
-		await expect(logo.locator(".logo__stroke").first()).toBeAttached();
+		// Four hand-traced pen strokes (D stem, D bowl, K stem, K arm + leg) inside the mask.
+		await expect(logo.locator("mask .logo__pen")).toHaveCount(4);
 
 		await expect(logo).toHaveAttribute("data-drawn", "true", { timeout: 6_000 });
-		await expect(logo.locator(".logo__stroke")).toHaveCount(0);
-		const opacities = await logo
-			.locator(".logo__fill")
-			.evaluateAll((paths) => paths.map((p) => getComputedStyle(p).opacity));
-		expect(opacities.every((o) => o === "1")).toBe(true);
+		// Once written, the mask is removed so the logo is exactly the artwork.
+		await expect(logo.locator(".logo__ink")).not.toHaveAttribute("mask", /.*/);
 	});
 
-	test("skips the draw animation when reduced motion is preferred", async ({ page }) => {
+	test("skips the writing animation when reduced motion is preferred", async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await page.goto("/");
 		const logo = page.locator("svg[data-logo-draw]");
 		await expect(logo).toHaveAttribute("data-drawn", "true", { timeout: 1_000 });
-		await expect(logo.locator(".logo__stroke")).toHaveCount(0);
+		await expect(logo.locator(".logo__ink")).not.toHaveAttribute("mask", /.*/);
+	});
+});
+
+test.describe("placeholder sections", () => {
+	test("give the page room to scroll and the hero links somewhere to go", async ({ page }) => {
+		await page.goto("/");
+		for (const id of ["work", "skills", "about", "contact"]) {
+			await expect(page.locator(`main section#${id} h2`)).toBeVisible();
+		}
+		const height = await page.evaluate(() => document.documentElement.scrollHeight);
+		expect(height).toBeGreaterThan(page.viewportSize()!.height * 2);
+		await expect(page.locator("body > footer")).toContainText("Daniel Khojaste");
+	});
+
+	test("View my work scrolls to the Work section", async ({ page }) => {
+		await page.goto("/");
+		await page.locator(".hero").getByRole("link", { name: "View my work" }).click();
+		await expect(page).toHaveURL(/#work$/);
+		await expect(page.locator("#work-title")).toBeInViewport();
 	});
 });

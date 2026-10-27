@@ -28,7 +28,9 @@ export default defineConfig({
 	],
 
 	webServer: {
-		command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${PORT}`,
+		// `--ignore-lock` keeps `astro preview` in the foreground. Astro 7 otherwise backgrounds it when it
+		// detects an AI coding agent, and Playwright then sees the process exit and gives up.
+		command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${PORT} --ignore-lock`,
 		url: baseURL,
 		reuseExistingServer: !process.env.CI,
 		timeout: 180_000,
