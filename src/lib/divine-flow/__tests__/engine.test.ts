@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDivineFlow } from "../src/engine.js";
+import { createDivineFlow } from "../engine";
 
 type Listener = (event: { matches: boolean }) => void;
 

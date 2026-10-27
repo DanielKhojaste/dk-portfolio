@@ -1,4 +1,8 @@
-import { createDivineFlow, type DivineFlowInstance, type DivineFlowOptions } from "divine-flow";
+import {
+	createDivineFlow,
+	type DivineFlowInstance,
+	type DivineFlowOptions,
+} from "../lib/divine-flow";
 
 type FlowOptions = Omit<DivineFlowOptions, "canvas">;
 

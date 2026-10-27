@@ -1,5 +1,5 @@
-import { TAU, wrap01 } from "./math.js";
-import { mulberry32 } from "./random.js";
+import { TAU, wrap01 } from "./math";
+import { mulberry32 } from "./random";
 
 /** One light filament: a noisy cubic Bézier from near the origin out past one edge. */
 export interface Thread {

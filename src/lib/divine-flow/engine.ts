@@ -1,8 +1,8 @@
-import { makePointBuffer, samplesForWidth, type FlowLayout } from "./geometry.js";
-import { resolveOptions } from "./options.js";
-import { buildRenderCache, drawFrame, type FrameState, type RenderCache } from "./renderer.js";
-import { createScene, type Scene } from "./scene.js";
-import type { DivineFlowInstance, DivineFlowOptions, ResolvedDivineFlowOptions } from "./types.js";
+import { makePointBuffer, samplesForWidth, type FlowLayout } from "./geometry";
+import { resolveOptions } from "./options";
+import { buildRenderCache, drawFrame, type FrameState, type RenderCache } from "./renderer";
+import { createScene, type Scene } from "./scene";
+import type { DivineFlowInstance, DivineFlowOptions, ResolvedDivineFlowOptions } from "./types";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 

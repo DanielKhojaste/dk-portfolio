@@ -7,8 +7,8 @@ import {
 	pointAt,
 	smoothNoise,
 	wrap01,
-} from "../src/math.js";
-import { mulberry32 } from "../src/random.js";
+} from "../math";
+import { mulberry32 } from "../random";
 import {
 	PALETTE_KEYS,
 	hslToRgb,
@@ -18,8 +18,8 @@ import {
 	rgba,
 	shade,
 	themes,
-} from "../src/palette.js";
-import { DEFAULTS, resolveOptions } from "../src/options.js";
+} from "../palette";
+import { DEFAULTS, resolveOptions } from "../options";
 
 describe("mulberry32", () => {
 	it("is deterministic for a seed", () => {
