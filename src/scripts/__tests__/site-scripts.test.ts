@@ -86,4 +86,15 @@ describe("dkLogoPens", () => {
 		expect(starts[1]![0]).toBeLessThan(starts[2]![0]);
 		for (const pen of dkLogoPens) expect(pen.width).toBeGreaterThan(0);
 	});
+
+	it("clips the K stem so it never reaches the arm or leg", () => {
+		const stem = dkLogoPens[2]!;
+		expect(stem.clip).toBeDefined();
+		const xs = [...stem.clip!.matchAll(/[ML]([\d.]+) [\d.]+/g)].map((m) => Number(m[1]));
+		// The arm starts at x≈60 and the leg ends at x≈58; the stem's right edge stays well left of both,
+		// and of the junction (x≈42 at y≈29), which the arm pen reveals.
+		expect(Math.max(...xs)).toBeLessThan(49);
+		const arm = dkLogoPens[3]!.d.match(/^M([\d.]+)/)!;
+		expect(Number(arm[1])).toBeGreaterThan(Math.max(...xs));
+	});
 });
