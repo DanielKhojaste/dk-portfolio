@@ -188,6 +188,10 @@ test.describe("header", () => {
 
 		// Four hand-traced pen strokes (D stem, D bowl, K stem, K arm + leg) inside the mask.
 		await expect(logo.locator("mask .logo__pen")).toHaveCount(4);
+		// The K stem is clipped so it writes as a clean italic I before the arm and leg.
+		const clip = await logo.locator("mask .logo__pen").nth(2).getAttribute("clip-path");
+		expect(clip).toMatch(/^url\(#logo-pen-\d+-clip-2\)$/);
+		await expect(logo.locator(`clipPath${clip!.slice(4, -1)}`)).toHaveCount(1);
 
 		await expect(logo).toHaveAttribute("data-drawn", "true", { timeout: 6_000 });
 		// Once written, the mask is removed so the logo is exactly the artwork.

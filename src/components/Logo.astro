@@ -33,10 +33,23 @@ const maskId = `logo-pen-${++instance}`;
 		draw && (
 			<defs>
 				<mask id={maskId} maskUnits="userSpaceOnUse" x="-4" y="-4" width="70" height="61">
-					{dkLogoPens.map((pen) => (
-						<path class="logo__pen" d={pen.d} stroke-width={pen.width} />
+					{dkLogoPens.map((pen, i) => (
+						<path
+							class="logo__pen"
+							d={pen.d}
+							stroke-width={pen.width}
+							clip-path={pen.clip ? `url(#${maskId}-clip-${i})` : undefined}
+						/>
 					))}
 				</mask>
+				{dkLogoPens.map(
+					(pen, i) =>
+						pen.clip && (
+							<clipPath id={`${maskId}-clip-${i}`} clipPathUnits="userSpaceOnUse">
+								<path d={pen.clip} />
+							</clipPath>
+						),
+				)}
 			</defs>
 		)
 	}

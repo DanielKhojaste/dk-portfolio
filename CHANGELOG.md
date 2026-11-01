@@ -14,18 +14,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reduced-motion defaults.
 - Playwright end-to-end setup (desktop and mobile projects) with a smoke test.
 - GitHub Actions CI: format check, type check, unit tests, build and end-to-end tests.
-- `divine-flow` workspace package: framework-agnostic canvas renderer for the light-filament background,
+- DivineFlow (`src/lib/divine-flow`): framework-agnostic canvas renderer for the light-filament background,
   with themes, per-filament colour variance, ambient embers, a frame-rate cap, reduced-motion support and
   unit tests. Gradients and sprites are cached and the bloom is a separate GPU-scaled layer, so frames
   are cheap.
-- Full-viewport hero (`100svh`, 600px floor on desktop, 640px on compact screens) with the masthead name
+- Full-viewport hero (`100svh`, 600px floor on desktop, 480px on compact screens) with the masthead name
   ("DANIEL" solid, "KHOJASTE" as a white outline behind the throne), cropped throne photo at 90% of the
-  hero height, aligned side info groups and centred calls to action. Where the name crosses the throne it
-  shows through faintly, so the whole name stays readable.
+  hero height, aligned side info groups and centred calls to action. Where the name crosses the throne the
+  letters show the throne itself, brightened to silver, so the whole name stays readable.
+- Tablet and mobile share the desktop composition (large throne, info and buttons over a bottom scrim),
+  and the whole hero fits on portrait phones without scrolling.
+- Real copy from `src/data/site.ts`: Ottawa, coaching soccer, and Lineup (linked) as the current project.
+- Full-screen menu with numbered section links and quick facts; Esc and link clicks close it, the rest of
+  the page is inert while it is open, and DivineFlow pauses behind it.
 - Crimson DivineFlow background in varying shades of red with drifting embers behind the hero, with
   separate settings for compact screens.
 - Header with the DK logo, written stroke by stroke on page load like handwriting (GSAP DrawSVG; skipped
-  for reduced motion), and a hamburger menu button on every screen size.
+  for reduced motion), and a hamburger menu button on every screen size. The K's stem writes as a clean
+  italic I before its arm and leg.
+- DivineFlow starts once the logo is written and fades in, its bloom layer composites without a blend mode
+  and the hero caps its pixel density at 1.5, so the intro animations and hovers stay smooth. The fonts are
+  preloaded.
 - Placeholder Work, Skills, About and Contact sections (lorem ipsum) and a footer, so the page scrolls
   and the hero links have targets.
 - SVG favicon from the DK logo.
