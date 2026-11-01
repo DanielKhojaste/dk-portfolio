@@ -109,6 +109,12 @@ export interface DivineFlowOptions {
 	reducedMotion?: "auto" | boolean;
 	/** Pause the loop while the canvas is off-screen or the tab is hidden. Default `true`. */
 	pauseWhenHidden?: boolean;
+	/**
+	 * Draw in a web worker on an `OffscreenCanvas`, keeping the main thread free for the rest of the
+	 * page. Falls back to the main thread where that isn't supported, or when `canvas` is given.
+	 * Default `true`.
+	 */
+	offscreen?: boolean;
 	/** Draw into this canvas instead of creating one inside the container. */
 	canvas?: HTMLCanvasElement;
 	/** Class name added to the canvas the engine creates. */
@@ -142,6 +148,7 @@ export interface ResolvedDivineFlowOptions {
 	bloomScale: number;
 	reducedMotion: "auto" | boolean;
 	pauseWhenHidden: boolean;
+	offscreen: boolean;
 }
 
 export interface DivineFlowInstance {
@@ -151,6 +158,8 @@ export interface DivineFlowInstance {
 	readonly options: Readonly<ResolvedDivineFlowOptions>;
 	/** `true` while the animation loop is allowed to run. */
 	readonly isRunning: boolean;
+	/** `true` when this flow is drawn in a worker (see the `offscreen` option). */
+	readonly offscreen: boolean;
 	/** Resume the animation loop. */
 	start(): void;
 	/** Pause the animation loop (the last frame stays on screen). */

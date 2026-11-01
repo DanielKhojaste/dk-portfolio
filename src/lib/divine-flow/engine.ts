@@ -1,7 +1,6 @@
-import { makePointBuffer, samplesForWidth, type FlowLayout } from "./geometry";
+import { createFlowCore, type FlowCore } from "./core";
 import { resolveOptions } from "./options";
-import { buildRenderCache, drawFrame, type FrameState, type RenderCache } from "./renderer";
-import { createScene, type Scene } from "./scene";
+import type { FromWorker, ToWorker } from "./protocol";
 import type { DivineFlowInstance, DivineFlowOptions, ResolvedDivineFlowOptions } from "./types";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -17,15 +16,176 @@ function measure(el: HTMLElement): { width: number; height: number } {
 	return { width: window.innerWidth, height: window.innerHeight };
 }
 
-function get2d(canvas: HTMLCanvasElement, settings?: CanvasRenderingContext2DSettings) {
-	const ctx = canvas.getContext("2d", settings);
-	if (!ctx) throw new Error("divine-flow: 2D canvas context is not available.");
-	return ctx;
+/**
+ * Where the drawing happens: on the main thread with its own animation loop, or in the shared
+ * worker. The engine tells it when to animate; everything else is the same either way.
+ */
+interface Backend {
+	readonly offscreen: boolean;
+	resize(width: number, height: number, dpr: number): void;
+	setOptions(input: DivineFlowOptions): void;
+	setReveal(progress: number): void;
+	/** Whether the loop should run, and whether frames are still (reduced motion). */
+	setState(animate: boolean, still: boolean): void;
+	render(timeMs?: number): void;
+	destroy(): void;
 }
+
+function mainThreadBackend(
+	canvas: HTMLCanvasElement,
+	bloomCanvas: HTMLCanvasElement,
+	input: DivineFlowOptions,
+	layered: boolean,
+): Backend {
+	const core: FlowCore = createFlowCore(canvas, bloomCanvas, input, {
+		layered,
+		contextSettings: layered ? {} : { desynchronized: true },
+		createCanvas: (w, h) => {
+			const sprite = document.createElement("canvas");
+			sprite.width = w;
+			sprite.height = h;
+			return sprite;
+		},
+	});
+	let raf = 0;
+	let lastFrame = -Infinity;
+	let animate = false;
+	let isStill = false;
+
+	const tick = (now: number) => {
+		raf = 0;
+		if (!animate) return;
+		// Frame-rate cap with a 1ms tolerance so a 60Hz display never skips frames at maxFps 60.
+		if (now - lastFrame >= 1000 / core.options.maxFps - 1) {
+			lastFrame = now;
+			core.render(now);
+		}
+		raf = requestAnimationFrame(tick);
+	};
+	const cancel = () => {
+		if (raf) cancelAnimationFrame(raf);
+		raf = 0;
+	};
+	// The running loop picks changes up on its next frame; a still canvas needs a redraw.
+	const redrawIfIdle = () => {
+		if (!animate) core.render(performance.now());
+	};
+
+	return {
+		offscreen: false,
+		resize(width, height, dpr) {
+			core.resize(width, height, dpr);
+			redrawIfIdle();
+		},
+		setOptions(next) {
+			core.setOptions(next);
+		},
+		setReveal(progress) {
+			core.setReveal(progress);
+			redrawIfIdle();
+		},
+		setState(next, still) {
+			const stillChanged = still !== isStill;
+			isStill = still;
+			animate = next;
+			core.setStill(still);
+			if (animate) {
+				if (!raf) raf = requestAnimationFrame(tick);
+				return;
+			}
+			cancel();
+			// Switching to reduced motion settles the flow into its still shape.
+			if (stillChanged) core.render(performance.now());
+		},
+		render(timeMs = performance.now()) {
+			core.render(timeMs);
+		},
+		destroy: cancel,
+	};
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+
+let sharedWorker: Worker | null | undefined;
+let nextId = 1;
+const errorHandlers = new Map<number, (message: string) => void>();
+
+/** The one worker that draws every offscreen flow on the page, created on first use. */
+function getWorker(): Worker | null {
+	if (sharedWorker !== undefined) return sharedWorker;
+	try {
+		sharedWorker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+		sharedWorker.addEventListener("message", (event: MessageEvent<FromWorker>) => {
+			if (event.data.type === "error") errorHandlers.get(event.data.id)?.(event.data.message);
+		});
+	} catch {
+		sharedWorker = null;
+	}
+	return sharedWorker;
+}
+
+/** For tests: forget the shared worker so the next flow creates (or fails to create) a new one. */
+export function resetSharedWorker() {
+	sharedWorker = undefined;
+	errorHandlers.clear();
+}
+
+function canDrawOffscreen(canvas: HTMLCanvasElement): boolean {
+	return (
+		typeof Worker === "function" &&
+		typeof OffscreenCanvas === "function" &&
+		typeof canvas.transferControlToOffscreen === "function"
+	);
+}
+
+function workerBackend(
+	worker: Worker,
+	canvas: HTMLCanvasElement,
+	bloomCanvas: HTMLCanvasElement,
+	input: DivineFlowOptions,
+	size: { width: number; height: number; dpr: number },
+	state: { reveal: number; animate: boolean; still: boolean },
+): Backend {
+	const id = nextId++;
+	const send = (message: ToWorker, transfer: Transferable[] = []) =>
+		worker.postMessage(message, transfer);
+
+	const offCanvas = canvas.transferControlToOffscreen();
+	const offBloom = bloomCanvas.transferControlToOffscreen();
+	send(
+		{
+			type: "init",
+			id,
+			canvas: offCanvas,
+			bloom: offBloom,
+			options: input,
+			...size,
+			...state,
+		},
+		[offCanvas, offBloom],
+	);
+	errorHandlers.set(id, (message) => console.warn("divine-flow: worker could not draw", message));
+
+	return {
+		offscreen: true,
+		resize: (width, height, dpr) => send({ type: "resize", id, width, height, dpr }),
+		setOptions: (options) => send({ type: "options", id, options }),
+		setReveal: (value) => send({ type: "reveal", id, value }),
+		setState: (animate, still) => send({ type: "state", id, animate, still }),
+		render: () => send({ type: "render", id }),
+		destroy: () => {
+			errorHandlers.delete(id);
+			send({ type: "destroy", id });
+		},
+	};
+}
+
+/* ---------------------------------------------------------------------------------------------- */
 
 /**
  * Mount DivineFlow into `container`. The engine creates a canvas that fills the container (or uses
- * `options.canvas`), keeps it sized to the container, and runs the animation loop until `destroy()`.
+ * `options.canvas`), keeps it sized to the container, and animates it until `destroy()`. Where the
+ * browser supports it, the drawing itself happens in a worker, off the main thread.
  *
  * ```ts
  * const flow = createDivineFlow(document.querySelector(".hero")!, { theme: "crimson", emberCount: 60 });
@@ -41,23 +201,25 @@ export function createDivineFlow(
 		throw new Error("divine-flow: createDivineFlow() must run in a browser.");
 	}
 
-	let input: DivineFlowOptions = { ...options };
+	const { canvas: providedCanvas, className, ...rest } = options;
+	let input: DivineFlowOptions = { ...rest };
 	let resolved: ResolvedDivineFlowOptions = resolveOptions(input);
 
-	const ownsCanvas = !options.canvas;
-	const canvas = options.canvas ?? document.createElement("canvas");
+	const ownsCanvas = !providedCanvas;
+	const canvas = providedCanvas ?? document.createElement("canvas");
+	const fill = {
+		position: "absolute",
+		inset: "0",
+		width: "100%",
+		height: "100%",
+		display: "block",
+		pointerEvents: "none",
+	};
 	if (ownsCanvas) {
 		canvas.setAttribute("aria-hidden", "true");
 		canvas.dataset.divineFlowCanvas = "";
-		if (options.className) canvas.className = options.className;
-		Object.assign(canvas.style, {
-			position: "absolute",
-			inset: "0",
-			width: "100%",
-			height: "100%",
-			display: "block",
-			pointerEvents: "none",
-		});
+		if (className) canvas.className = className;
+		Object.assign(canvas.style, fill);
 		container.appendChild(canvas);
 	}
 
@@ -66,37 +228,17 @@ export function createDivineFlow(
 	// normally: an additive CSS blend (plus-lighter) looked marginally brighter but cost ~25% more
 	// per frame on a real page. Only possible when the engine owns the canvas.
 	const layered = ownsCanvas;
-
 	const bloomCanvas = document.createElement("canvas");
 	if (layered) {
 		bloomCanvas.setAttribute("aria-hidden", "true");
 		bloomCanvas.dataset.divineFlowBloom = "";
-		Object.assign(bloomCanvas.style, {
-			position: "absolute",
-			inset: "0",
-			width: "100%",
-			height: "100%",
-			display: "block",
-			pointerEvents: "none",
-		});
+		Object.assign(bloomCanvas.style, fill);
 		container.insertBefore(bloomCanvas, canvas);
 	}
-
-	const ctx = get2d(canvas, layered ? { alpha: true } : { alpha: true, desynchronized: true });
-	const bloomCtx = get2d(bloomCanvas, { alpha: true });
 
 	const motionQuery =
 		typeof window.matchMedia === "function" ? window.matchMedia(REDUCED_MOTION_QUERY) : null;
 
-	let scene: Scene = createScene(resolved);
-	let buffers = scene.threads.map(makePointBuffer);
-	let width = 1;
-	let height = 1;
-	let samples = samplesForWidth(width);
-	let dpr = 1;
-	let cache: RenderCache | null = null;
-	let raf = 0;
-	let lastFrame = -Infinity;
 	let running = true;
 	let destroyed = false;
 	let onScreen = true;
@@ -107,19 +249,6 @@ export function createDivineFlow(
 			? Boolean(motionQuery?.matches)
 			: resolved.reducedMotion === true;
 
-	const layout = (): FlowLayout => ({
-		width,
-		height,
-		originX: resolved.originX,
-		originY: resolved.originY,
-		innerGap: resolved.innerGap,
-		spread: resolved.spread,
-		amplitude: resolved.amplitude,
-		tilt: resolved.tilt,
-		motion: resolved.motion,
-		still: isStill(),
-	});
-
 	const shouldAnimate = () =>
 		running &&
 		!destroyed &&
@@ -127,89 +256,29 @@ export function createDivineFlow(
 		resolved.motion > 0 &&
 		(!resolved.pauseWhenHidden || (!document.hidden && onScreen));
 
-	const createCanvas = (w: number, h: number) => {
-		const sprite = document.createElement("canvas");
-		sprite.width = w;
-		sprite.height = h;
-		return sprite;
+	const size = () => {
+		const rect = measure(container);
+		return { width: rect.width, height: rect.height, dpr: window.devicePixelRatio || 1 };
 	};
 
-	function frameState() {
-		return {
-			ctx,
-			bloomCtx,
-			scene,
-			buffers,
-			samples,
-			layout: layout(),
-			palette: resolved.palette,
-			emberSpeed: resolved.emberSpeed,
-			composeBloom: !layered,
-			reveal,
-		};
-	}
+	const worker = ownsCanvas && resolved.offscreen && canDrawOffscreen(canvas) ? getWorker() : null;
+	const backend: Backend = worker
+		? workerBackend(worker, canvas, bloomCanvas, input, size(), {
+				reveal,
+				animate: shouldAnimate(),
+				still: isStill(),
+			})
+		: mainThreadBackend(canvas, bloomCanvas, input, layered);
 
-	/** Gradients and sprites depend on size, DPR, palette and scene, so rebuild them only then. */
-	function rebuildCache() {
-		cache = buildRenderCache(frameState(), {
-			variance: resolved.variance,
-			shadeRanges: { hue: resolved.hueRange, light: resolved.lightRange },
-			dpr,
-			createCanvas,
-		});
-	}
-
-	function renderFrame(timeMs: number = performance.now()) {
-		if (destroyed) return;
-		if (!cache) rebuildCache();
-		const state: FrameState = { ...frameState(), cache: cache! };
-		drawFrame(state, timeMs / 1000);
-	}
-
-	function tick(now: number) {
-		raf = 0;
-		if (!shouldAnimate()) return;
-		// Frame-rate cap with a 1ms tolerance so a 60Hz display never skips frames at maxFps 60.
-		if (now - lastFrame >= 1000 / resolved.maxFps - 1) {
-			lastFrame = now;
-			renderFrame(now);
-		}
-		raf = requestAnimationFrame(tick);
-	}
-
-	function schedule() {
-		if (raf || !shouldAnimate()) return;
-		raf = requestAnimationFrame(tick);
-	}
-
-	function cancel() {
-		if (raf) cancelAnimationFrame(raf);
-		raf = 0;
-	}
+	/** Tell the backend whether to animate, after anything that might change it. */
+	const sync = () => {
+		if (!destroyed) backend.setState(shouldAnimate(), isStill());
+	};
 
 	function resize() {
 		if (destroyed) return;
-		const rect = measure(container);
-		width = Math.max(1, Math.round(rect.width));
-		height = Math.max(1, Math.round(rect.height));
-		dpr = Math.min(window.devicePixelRatio || 1, resolved.maxDpr);
-		samples = samplesForWidth(width);
-
-		canvas.width = Math.round(width * dpr);
-		canvas.height = Math.round(height * dpr);
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
-
-		bloomCanvas.width = Math.max(1, Math.round(width * resolved.bloomScale));
-		bloomCanvas.height = Math.max(1, Math.round(height * resolved.bloomScale));
-		bloomCtx.setTransform(bloomCanvas.width / width, 0, 0, bloomCanvas.height / height, 0, 0);
-		bloomCtx.lineCap = "round";
-		bloomCtx.lineJoin = "round";
-		rebuildCache();
-
-		// Animated frames redraw on the next tick; still frames need an explicit redraw.
-		if (!shouldAnimate()) renderFrame();
+		const { width, height, dpr } = size();
+		backend.resize(width, height, dpr);
 	}
 
 	const resizeObserver =
@@ -220,36 +289,25 @@ export function createDivineFlow(
 					(entries) => {
 						const entry = entries[entries.length - 1];
 						onScreen = Boolean(entry?.isIntersecting);
-						if (onScreen) schedule();
-						else if (resolved.pauseWhenHidden) cancel();
+						sync();
 					},
 					{ threshold: 0.01 },
 				)
 			: null;
 
-	const onVisibility = () => {
-		if (document.hidden && resolved.pauseWhenHidden) cancel();
-		else schedule();
-	};
 	const onWindowResize = () => resize();
-	const onMotionChange = () => {
-		if (isStill()) {
-			cancel();
-			renderFrame();
-		} else {
-			schedule();
-		}
-	};
 
 	resizeObserver?.observe(container);
 	intersectionObserver?.observe(container);
 	if (!resizeObserver) window.addEventListener("resize", onWindowResize);
-	document.addEventListener("visibilitychange", onVisibility);
-	motionQuery?.addEventListener?.("change", onMotionChange);
+	document.addEventListener("visibilitychange", sync);
+	motionQuery?.addEventListener?.("change", sync);
 
-	resize();
-	renderFrame();
-	schedule();
+	if (!backend.offscreen) {
+		resize();
+		backend.render();
+	}
+	sync();
 
 	return {
 		canvas,
@@ -259,48 +317,52 @@ export function createDivineFlow(
 		get isRunning() {
 			return running && !destroyed;
 		},
+		get offscreen() {
+			return backend.offscreen;
+		},
 		get reveal() {
 			return reveal;
 		},
 		setReveal(progress: number) {
 			if (destroyed) return;
 			reveal = Math.min(1, Math.max(0, Number.isFinite(progress) ? progress : 1));
-			// The running loop picks the new value up on its next frame; a still canvas needs a redraw.
-			if (!shouldAnimate()) renderFrame();
+			backend.setReveal(reveal);
 		},
 		start() {
 			if (destroyed) return;
 			running = true;
-			schedule();
+			sync();
 		},
 		stop() {
 			running = false;
-			cancel();
+			sync();
 		},
 		update(next: DivineFlowOptions) {
 			if (destroyed) return;
-			input = { ...input, ...next };
+			const { canvas: _canvas, className: _className, ...changes } = next;
+			input = { ...input, ...changes };
 			resolved = resolveOptions(input);
 			if (next.reveal !== undefined) reveal = resolved.reveal;
-			scene = createScene(resolved);
-			buffers = scene.threads.map(makePointBuffer);
-			cache = null;
+			backend.setOptions({ ...input, reveal });
 			resize();
-			renderFrame();
-			schedule();
+			backend.render();
+			sync();
 		},
 		resize,
-		renderFrame,
+		renderFrame(timeMs?: number) {
+			if (!destroyed) backend.render(timeMs);
+		},
 		destroy() {
 			if (destroyed) return;
 			destroyed = true;
 			running = false;
-			cancel();
+			backend.setState(false, isStill());
+			backend.destroy();
 			resizeObserver?.disconnect();
 			intersectionObserver?.disconnect();
 			window.removeEventListener("resize", onWindowResize);
-			document.removeEventListener("visibilitychange", onVisibility);
-			motionQuery?.removeEventListener?.("change", onMotionChange);
+			document.removeEventListener("visibilitychange", sync);
+			motionQuery?.removeEventListener?.("change", sync);
 			if (ownsCanvas) canvas.remove();
 			if (layered) bloomCanvas.remove();
 		},

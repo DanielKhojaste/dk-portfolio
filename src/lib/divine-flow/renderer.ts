@@ -5,8 +5,9 @@ import { emberPosition, type Scene, type Sparkle, type Thread } from "./scene";
 import { sampleThread, writePoint, type FlowLayout } from "./geometry";
 import type { DivineFlowPalette, RGB } from "./types";
 
-type Ctx = CanvasRenderingContext2D;
-type CanvasFactory = (width: number, height: number) => HTMLCanvasElement;
+type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type AnyCanvas = HTMLCanvasElement | OffscreenCanvas;
+type CanvasFactory = (width: number, height: number) => AnyCanvas;
 
 /** Per-filament resources that only change when the canvas size, palette or scene changes. */
 interface ThreadCache {
@@ -17,7 +18,7 @@ interface ThreadCache {
 }
 
 interface Sprite {
-	canvas: HTMLCanvasElement;
+	canvas: AnyCanvas;
 	/** Half the sprite's size in CSS px; the sprite is drawn centred on its point. */
 	extent: number;
 }

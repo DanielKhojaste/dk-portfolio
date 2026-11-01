@@ -323,3 +323,181 @@ describe("createDivineFlow", () => {
 		expect(rafQueue.size).toBe(0);
 	});
 });
+
+describe("offscreen (worker) mode", () => {
+	let workers: { messages: { data: unknown; transfer: unknown[] }[] }[];
+	let workerFails: boolean;
+
+	beforeEach(async () => {
+		const { resetSharedWorker } = await import("../engine");
+		resetSharedWorker();
+		workers = [];
+		workerFails = false;
+		vi.stubGlobal(
+			"Worker",
+			class {
+				messages: { data: unknown; transfer: unknown[] }[] = [];
+				constructor() {
+					if (workerFails) throw new Error("no workers here");
+					workers.push(this);
+				}
+				postMessage(data: unknown, transfer: unknown[] = []) {
+					this.messages.push({ data, transfer });
+				}
+				addEventListener() {}
+			},
+		);
+		vi.stubGlobal("OffscreenCanvas", class {});
+		HTMLCanvasElement.prototype.transferControlToOffscreen = function () {
+			return { offscreen: true } as unknown as OffscreenCanvas;
+		};
+	});
+
+	afterEach(() => {
+		delete (HTMLCanvasElement.prototype as Partial<HTMLCanvasElement>).transferControlToOffscreen;
+	});
+
+	const sent = (type: string) =>
+		workers[0]!.messages.map((m) => m.data as { type: string }).filter((m) => m.type === type);
+
+	it("hands both canvases to one shared worker and never draws on the main thread", () => {
+		const a = mount({ theme: "crimson" });
+		const b = mount({ theme: "violet" });
+		expect(workers).toHaveLength(1);
+		expect(a.flow.offscreen).toBe(true);
+
+		const inits = workers[0]!.messages.filter((m) => (m.data as { type: string }).type === "init");
+		expect(inits).toHaveLength(2);
+		expect(inits[0]!.transfer).toHaveLength(2);
+		const [first, second] = inits.map((m) => m.data as { id: number; options: object });
+		expect(first!.id).not.toBe(second!.id);
+		expect(first!.options).toMatchObject({ theme: "crimson" });
+		// The page canvases are still in the DOM, but nothing draws on them here.
+		expect(a.container.querySelector("canvas[data-divine-flow-canvas]")).toBe(a.flow.canvas);
+		expect(contexts).toHaveLength(0);
+		expect(rafQueue.size).toBe(0);
+		b.flow.destroy();
+	});
+
+	it("forwards reveal, start/stop, updates and destroy as messages", () => {
+		const { flow } = mount();
+		flow.setReveal(0.4);
+		expect(sent("reveal").at(-1)).toMatchObject({ value: 0.4 });
+
+		flow.stop();
+		expect(sent("state").at(-1)).toMatchObject({ animate: false });
+		flow.start();
+		expect(sent("state").at(-1)).toMatchObject({ animate: true });
+
+		flow.update({ lineCount: 2 });
+		expect(sent("options").at(-1)).toMatchObject({ options: { lineCount: 2 } });
+
+		intersectionCallbacks[0]!(
+			[{ isIntersecting: false } as IntersectionObserverEntry],
+			{} as IntersectionObserver,
+		);
+		expect(sent("state").at(-1)).toMatchObject({ animate: false });
+
+		flow.destroy();
+		expect(sent("destroy")).toHaveLength(1);
+	});
+
+	it("draws on the main thread when offscreen is off, a canvas is given, or workers fail", () => {
+		expect(mount({ offscreen: false }).flow.offscreen).toBe(false);
+
+		const canvas = document.createElement("canvas");
+		expect(mount({ canvas }).flow.offscreen).toBe(false);
+
+		workerFails = true;
+		expect(mount().flow.offscreen).toBe(false);
+		expect(contexts.length).toBeGreaterThan(0);
+	});
+});
+
+describe("worker host", () => {
+	function host(options: { failDraw?: boolean } = {}) {
+		const frames: FrameRequestCallback[] = [];
+		const posted: unknown[] = [];
+		const fakeCanvas = () => {
+			const canvas = { width: 0, height: 0, getContext: () => fake.ctx };
+			const fake = fakeContext(canvas as unknown as HTMLCanvasElement);
+			if (options.failDraw) {
+				(fake.ctx as unknown as Record<string, unknown>).stroke = () => {
+					throw new Error("boom");
+				};
+			}
+			contexts.push(fake);
+			return canvas;
+		};
+		vi.stubGlobal(
+			"OffscreenCanvas",
+			class {
+				constructor() {
+					return fakeCanvas();
+				}
+			},
+		);
+		return import("../worker").then(({ createFlowHost }) => {
+			const flowHost = createFlowHost({
+				postMessage: (m) => posted.push(m),
+				requestAnimationFrame: (cb) => frames.push(cb),
+				setTimeout: () => 0,
+				performance: { now: () => 1000 },
+			});
+			const init = (animate: boolean) =>
+				flowHost.handle({
+					type: "init",
+					id: 7,
+					canvas: fakeCanvas() as unknown as OffscreenCanvas,
+					bloom: fakeCanvas() as unknown as OffscreenCanvas,
+					options: { lineCount: 2 },
+					width: 400,
+					height: 200,
+					dpr: 1,
+					reveal: 1,
+					still: false,
+					animate,
+				});
+			return { flowHost, frames, posted, init };
+		});
+	}
+
+	const strokes = () =>
+		contexts.reduce((n, c) => n + c.calls.filter((x) => x === "stroke").length, 0);
+
+	it("draws a first frame and only loops while a flow animates", async () => {
+		const { flowHost, frames, init } = await host();
+		init(false);
+		expect(strokes()).toBeGreaterThan(0);
+		expect(frames).toHaveLength(0);
+
+		flowHost.handle({ type: "state", id: 7, animate: true, still: false });
+		expect(frames).toHaveLength(1);
+		const before = strokes();
+		frames.shift()!(2000);
+		expect(strokes()).toBeGreaterThan(before);
+		expect(frames).toHaveLength(1);
+
+		flowHost.handle({ type: "state", id: 7, animate: false, still: false });
+		frames.shift()!(3000);
+		expect(frames).toHaveLength(0);
+	});
+
+	it("redraws idle flows on change and forgets destroyed ones", async () => {
+		const { flowHost, init } = await host();
+		init(false);
+		const before = strokes();
+		flowHost.handle({ type: "reveal", id: 7, value: 0.5 });
+		expect(strokes()).toBeGreaterThan(before);
+		flowHost.handle({ type: "destroy", id: 7 });
+		expect(flowHost.flows.size).toBe(0);
+		flowHost.handle({ type: "reveal", id: 7, value: 1 });
+	});
+
+	it("reports a flow that fails to draw and drops it", async () => {
+		const { flowHost, posted, init } = await host({ failDraw: true });
+		init(true);
+		expect(posted).toEqual([{ type: "error", id: 7, message: "Error: boom" }]);
+		expect(flowHost.flows.size).toBe(0);
+	});
+});

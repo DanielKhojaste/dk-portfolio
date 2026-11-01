@@ -76,5 +76,6 @@ export function resolveOptions(options: DivineFlowOptions = {}): ResolvedDivineF
 		bloomScale: clamp(finite(options.bloomScale, DEFAULTS.bloomScale), 0.1, 1),
 		reducedMotion: options.reducedMotion ?? "auto",
 		pauseWhenHidden: options.pauseWhenHidden ?? true,
+		offscreen: options.offscreen ?? true,
 	};
 }
