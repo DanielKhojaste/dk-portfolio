@@ -16,21 +16,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI: format check, type check, unit tests, build and end-to-end tests.
 - DivineFlow (`src/lib/divine-flow`): framework-agnostic canvas renderer for the light-filament background,
   with themes (gold, crimson, violet, white), per-filament colour variance within configurable hue and
-  lightness ranges, one-sided strands (`sides`), fan `spread`, wave `amplitude`, a hill-shaped `arc`, a
+  lightness ranges, one-sided strands (`sides`), fan `spread`, wave `amplitude`, a `tilt` angle, a
   draw-in `reveal`, ambient embers, a frame-rate cap, reduced-motion support and unit tests. Gradients
   and sprites are cached and the bloom is a separate GPU-scaled layer, so frames are cheap.
 - Full-viewport hero (`100svh`, 600px floor on desktop, 480px on compact screens) with the masthead name
   ("DANIEL" in white, "KHOJASTE" as a deep red shape behind the throne so the photo leads), the throne
   photo at 90% of the hero height and centred calls to action.
 - Two hero claims on either side of the throne: "Software Developer" (based in Canada) and the
-  current project (Lineup, linked), in white expanded caps with a red glow. Each is underlined by a few
-  strands of white DivineFlow arching in a low hill, at the same pace as the background.
+  current project (Lineup, linked), in white expanded caps with a red glow, with their labels always on
+  one line. Each is underlined by a few strands of white DivineFlow slanting gently from bottom left to
+  top right (5° by default), at the same pace as the background.
 - DivineFlow draws in on load, at the same time as the logo: filaments grow out from the origin towards
   the sides (GSAP-driven, skipped for reduced motion), with a bright tip leading each one.
 - Tablet and mobile share the desktop composition (large throne, info and buttons over a bottom scrim),
   and the whole hero fits on portrait phones without scrolling.
-- Real copy from `src/data/site.ts`: based in Canada, coaching soccer, and Lineup (linked) as the
-  current project.
+- `src/site.config.ts`: one file for everything tweakable: the copy, every animation timing (logo,
+  DivineFlow draw-ins, menu, hovers), the DivineFlow colours and options, and the underline angle.
+- Real copy: based in Canada, coaching soccer, and Lineup (linked) as the current project.
 - Full-screen menu with numbered section links and quick facts; Esc and link clicks close it, the rest of
   the page is inert while it is open, and DivineFlow pauses behind it.
 - Crimson DivineFlow background in varying shades of deep red (never drifting towards orange) with

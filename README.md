@@ -28,9 +28,9 @@ First end-to-end run on a new machine: `npx playwright install chromium`.
 
 ```
 src/
+  site.config.ts  the one file to edit: copy, animation timings, DivineFlow colours and options
   assets/       throne photo and DK logo (optimised by Astro at build time)
   components/   Header, Menu, Logo, Hero, DivineFlow wrapper
-  data/         site copy (profile, sections, socials) in one place
   layouts/      BaseLayout (fonts, meta, global styles)
   pages/        routes
   lib/
