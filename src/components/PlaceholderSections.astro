@@ -1,0 +1,121 @@
+---
+/**
+ * Temporary lorem ipsum sections so the page scrolls and the hero links have targets.
+ * Each one gets replaced with real content in v0.2.0 (see notes/ROADMAP.md).
+ */
+import Section from "./Section.astro";
+
+const lorem = [
+	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus, posuere velit aliquet. Donec ullamcorper nulla non metus auctor fringilla.",
+	"Vestibulum id ligula porta felis euismod semper. Cras mattis consectetur purus sit amet fermentum. Maecenas faucibus mollis interdum, nullam quis risus eget urna mollis ornare vel eu leo.",
+	"Aenean lacinia bibendum nulla sed consectetur. Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue. Etiam porta sem malesuada magna mollis euismod.",
+];
+
+const projects = ["Lorem project", "Ipsum project", "Dolor project"];
+const skills = [
+	"Lorem",
+	"Ipsum",
+	"Dolor",
+	"Sit amet",
+	"Consectetur",
+	"Adipiscing",
+	"Elit",
+	"Sed do",
+];
+---
+
+<Section id="work" index="01" title="Work">
+	<p>{lorem[0]}</p>
+	<ul class="cards">
+		{
+			projects.map((name) => (
+				<li class="card">
+					<div class="card__media" aria-hidden="true" />
+					<h3 class="card__title">{name}</h3>
+					<p class="card__text">{lorem[1]}</p>
+				</li>
+			))
+		}
+	</ul>
+</Section>
+
+<Section id="skills" index="02" title="Skills">
+	<p>{lorem[1]}</p>
+	<ul class="chips">
+		{skills.map((skill) => <li class="chip">{skill}</li>)}
+	</ul>
+</Section>
+
+<Section id="about" index="03" title="About">
+	{lorem.map((text) => <p>{text}</p>)}
+</Section>
+
+<Section id="contact" index="04" title="Contact">
+	<p>{lorem[2]}</p>
+	<p><a class="contact-link" href="#">lorem@ipsum.dev</a></p>
+</Section>
+
+<style>
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 20px;
+		margin: 12px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 16px;
+		border: 1px solid rgb(245 236 236 / 0.1);
+		border-radius: 16px;
+		background: rgb(245 236 236 / 0.02);
+	}
+
+	.card__media {
+		aspect-ratio: 16 / 10;
+		border-radius: 10px;
+		background: linear-gradient(135deg, rgb(200 32 43 / 0.35), rgb(8 4 5 / 0.2));
+	}
+
+	.card__title {
+		margin: 4px 0 0;
+		font-size: 18px;
+		color: var(--color-text);
+	}
+
+	.card__text {
+		font-size: 15px;
+		line-height: 1.6;
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.chip {
+		padding: 8px 16px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-pill);
+		font-size: 14px;
+		color: var(--color-text);
+	}
+
+	.contact-link {
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(20px, 3vw, 36px);
+		color: var(--color-text);
+		text-decoration-color: var(--color-accent);
+		text-underline-offset: 6px;
+	}
+</style>

@@ -1,0 +1,495 @@
+import { TAU, normalAt, pointAt, type Point } from "./math";
+import { rgba, shade } from "./palette";
+import { mulberry32 } from "./random";
+import { emberPosition, type Scene, type Sparkle, type Thread } from "./scene";
+import { sampleThread, writePoint, type FlowLayout } from "./geometry";
+import type { DivineFlowPalette, RGB } from "./types";
+
+type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type AnyCanvas = HTMLCanvasElement | OffscreenCanvas;
+type CanvasFactory = (width: number, height: number) => AnyCanvas;
+
+/** Per-filament resources that only change when the canvas size, palette or scene changes. */
+interface ThreadCache {
+	bloom: CanvasGradient;
+	glow: CanvasGradient;
+	core: CanvasGradient;
+	shimmer: RGB;
+}
+
+interface Sprite {
+	canvas: AnyCanvas;
+	/** Half the sprite's size in CSS px; the sprite is drawn centred on its point. */
+	extent: number;
+}
+
+export interface RenderCache {
+	threads: ThreadCache[];
+	origin: CanvasGradient;
+	sparkles: Sprite[];
+	speck: Sprite;
+	ember: Sprite;
+	/** Soft bright dot at the tip of a filament while it is being drawn in. */
+	head: Sprite;
+	emberHalo: Sprite;
+}
+
+export interface FrameState {
+	ctx: Ctx;
+	bloomCtx: Ctx;
+	scene: Scene;
+	/** One reusable point buffer per thread. */
+	buffers: Point[][];
+	samples: number;
+	layout: FlowLayout;
+	palette: DivineFlowPalette;
+	emberSpeed: number;
+	/** Draw the bloom into the main canvas (false when the bloom is its own, CSS-scaled canvas). */
+	composeBloom: boolean;
+	/** Draw-in progress, 0–1. Default `1`. */
+	reveal?: number;
+	/** See `DivineFlowOptions.revealStagger`. Default `0.25`. */
+	revealStagger?: number;
+	/** See `DivineFlowOptions.travelSpeed`. Default `1`. */
+	travelSpeed?: number;
+	cache: RenderCache;
+}
+
+/** Fades in near the origin, peaks around 40%, and dissolves before the edge. */
+export function makeTrailGradient(
+	ctx: Ctx,
+	from: Point,
+	to: Point,
+	color: RGB,
+	alpha: number,
+	fadeFromOrigin = true,
+): CanvasGradient {
+	const grad = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+	grad.addColorStop(0, rgba(color, fadeFromOrigin ? 0 : alpha * 0.8));
+	grad.addColorStop(0.1, rgba(color, alpha * 0.8));
+	grad.addColorStop(0.42, rgba(color, alpha));
+	grad.addColorStop(0.66, rgba(color, alpha * 0.42));
+	grad.addColorStop(0.83, rgba(color, alpha * 0.1));
+	grad.addColorStop(1, rgba(color, 0));
+	return grad;
+}
+
+/** Hue (degrees) and lightness ranges a filament's shade is picked from at `variance: 1`. */
+export interface ShadeRanges {
+	hue: readonly [number, number];
+	light: readonly [number, number];
+}
+
+const DEFAULT_SHADE_RANGES: ShadeRanges = { hue: [-14, 14], light: [-0.14, 0.14] };
+
+/**
+ * Deterministic hue/lightness offset for a filament: a stable pick within `ranges`, scaled by
+ * `variance` (0–1).
+ */
+export function threadShade(
+	thread: Thread,
+	variance: number,
+	ranges: ShadeRanges = DEFAULT_SHADE_RANGES,
+): { hue: number; light: number } {
+	if (variance <= 0) return { hue: 0, light: 0 };
+	const random = mulberry32(Math.floor(thread.seed * 1000) ^ (thread.side === 1 ? 0x9e37 : 0));
+	const pick = ([min, max]: readonly [number, number]) => (min + random() * (max - min)) * variance;
+	return { hue: pick(ranges.hue), light: pick(ranges.light) };
+}
+
+function makeSprite(
+	create: CanvasFactory,
+	extent: number,
+	dpr: number,
+	paint: (ctx: Ctx) => void,
+): Sprite {
+	const px = Math.max(2, Math.ceil(extent * 2 * dpr));
+	const canvas = create(px, px);
+	const ctx = canvas.getContext("2d");
+	if (ctx) {
+		ctx.setTransform(px / (extent * 2), 0, 0, px / (extent * 2), px / 2, px / 2);
+		paint(ctx);
+	}
+	return { canvas, extent };
+}
+
+function paintSparkle(ctx: Ctx, sparkle: Sparkle, palette: DivineFlowPalette) {
+	const { size, flare } = sparkle;
+	const radius = size * (flare ? 6.2 : 3.1);
+	const disc = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+	disc.addColorStop(0, rgba(palette.sparkle, 0.9));
+	disc.addColorStop(0.22, rgba(palette.sparkleHalo, 0.28));
+	disc.addColorStop(1, "rgba(0, 0, 0, 0)");
+	ctx.fillStyle = disc;
+	ctx.beginPath();
+	ctx.arc(0, 0, radius, 0, TAU);
+	ctx.fill();
+
+	if (flare) {
+		const hx = size * 13;
+		const hy = size * 0.14;
+		const hg = ctx.createLinearGradient(-hx, 0, hx, 0);
+		hg.addColorStop(0, rgba(palette.flare, 0));
+		hg.addColorStop(0.5, rgba(palette.sparkle, 0.82));
+		hg.addColorStop(1, rgba(palette.flare, 0));
+		ctx.fillStyle = hg;
+		ctx.beginPath();
+		ctx.moveTo(-hx, 0);
+		ctx.lineTo(0, -hy);
+		ctx.lineTo(hx, 0);
+		ctx.lineTo(0, hy);
+		ctx.closePath();
+		ctx.fill();
+	} else {
+		ctx.fillStyle = rgba(palette.sparkle, 0.65);
+		const arm = size * 2.1;
+		ctx.fillRect(-arm, -0.3, arm * 2, 0.6);
+		ctx.fillRect(-0.3, -arm * 0.65, 0.6, arm * 1.3);
+	}
+
+	ctx.fillStyle = rgba(palette.sparkle, 1);
+	ctx.beginPath();
+	ctx.arc(0, 0, Math.max(0.4, size * 0.24), 0, TAU);
+	ctx.fill();
+}
+
+function sparkleExtent(sparkle: Sparkle): number {
+	return sparkle.flare ? sparkle.size * 13 : Math.max(sparkle.size * 3.1, sparkle.size * 2.1);
+}
+
+/**
+ * Build everything that does not change from frame to frame. Filament endpoints never move (the noise
+ * envelope is zero at both ends), so their gradients can be created once per size/palette.
+ */
+export function buildRenderCache(
+	state: Omit<FrameState, "cache">,
+	options: {
+		variance: number;
+		shadeRanges?: ShadeRanges;
+		dpr: number;
+		createCanvas: CanvasFactory;
+	},
+): RenderCache {
+	const { ctx, bloomCtx, scene, layout, palette } = state;
+	const start: Point = { x: 0, y: 0 };
+	const end: Point = { x: 0, y: 0 };
+	const rest: FlowLayout = { ...layout, still: true };
+
+	const fade = layout.fadeFromOrigin ?? true;
+	const threads = scene.threads.map((thread) => {
+		writePoint(thread, 0, 0, rest, start);
+		writePoint(thread, 1, 0, rest, end);
+		const { hue, light } = threadShade(thread, options.variance, options.shadeRanges);
+		const tint = (color: RGB) => (hue || light ? shade(color, hue, light) : color);
+		return {
+			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5, fade),
+			glow: makeTrailGradient(ctx, start, end, tint(palette.glow), thread.alpha * 0.22, fade),
+			core: makeTrailGradient(ctx, start, end, tint(palette.core), thread.alpha * 0.78, fade),
+			shimmer: tint(palette.shimmer),
+		};
+	});
+
+	const { dpr, createCanvas } = options;
+	const dot = (color: RGB) => (c: Ctx) => {
+		c.fillStyle = rgba(color, 1);
+		c.beginPath();
+		c.arc(0, 0, 1, 0, TAU);
+		c.fill();
+	};
+
+	const r = Math.min(layout.width, layout.height) * 0.2;
+	const origin = bloomCtx.createRadialGradient(0, 0, r * 0.12, 0, 0, r);
+	origin.addColorStop(0, rgba(palette.originInner, 0.12));
+	origin.addColorStop(0.34, rgba(palette.originOuter, 0.05));
+	origin.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+	return {
+		threads,
+		origin,
+		sparkles: scene.sparkles.map((sparkle) =>
+			makeSprite(createCanvas, sparkleExtent(sparkle), dpr, (c) =>
+				paintSparkle(c, sparkle, palette),
+			),
+		),
+		// Unit-radius dots, scaled per particle when drawn. Rendered at 8x so scaling up stays crisp.
+		speck: makeSprite(createCanvas, 1, dpr * 8, dot(palette.speck)),
+		ember: makeSprite(createCanvas, 1, dpr * 8, dot(palette.ember)),
+		head: makeSprite(createCanvas, 5, dpr * 2, (c) => {
+			const g = c.createRadialGradient(0, 0, 0, 0, 0, 5);
+			g.addColorStop(0, rgba(palette.sparkle, 1));
+			g.addColorStop(0.25, rgba(palette.sparkleHalo, 0.45));
+			g.addColorStop(1, "rgba(0, 0, 0, 0)");
+			c.fillStyle = g;
+			c.beginPath();
+			c.arc(0, 0, 5, 0, TAU);
+			c.fill();
+		}),
+		emberHalo: makeSprite(createCanvas, 4, dpr * 4, (c) => {
+			c.fillStyle = rgba(palette.ember, 0.15);
+			c.beginPath();
+			c.arc(0, 0, 4, 0, TAU);
+			c.fill();
+		}),
+	};
+}
+
+/**
+ * How far along its length (0–1) a filament is drawn at overall progress `reveal`. `offset` (0–1)
+ * staggers filaments by up to `stagger` of the reveal, so they don't all grow in lockstep.
+ */
+export function threadProgress(reveal: number, offset: number, stagger = 0.25): number {
+	if (reveal >= 1) return 1;
+	const start = offset * stagger;
+	return Math.min(1, Math.max(0, (reveal - start) / (1 - stagger)));
+}
+
+/** The polyline from the start to `progress` (0–1) of the way along, ending exactly at that point. */
+function partialPolyline(points: readonly Point[], samples: number, progress: number): Path2D {
+	const end = progress * samples;
+	const last = Math.min(samples - 1, Math.floor(end));
+	const path = polyline(points, 0, last);
+	const a = points[last]!;
+	const b = points[last + 1]!;
+	const f = end - last;
+	path.lineTo(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+	return path;
+}
+
+function polyline(points: readonly Point[], from: number, to: number): Path2D {
+	const path = new Path2D();
+	path.moveTo(points[from]!.x, points[from]!.y);
+	for (let i = from + 1; i <= to; i += 1) path.lineTo(points[i]!.x, points[i]!.y);
+	return path;
+}
+
+/** A path along `points` from `u0` to `u1` (0–1), starting and ending exactly there, not on samples. */
+function segment(points: readonly Point[], samples: number, u0: number, u1: number): Path2D {
+	const start = pointAt(points, samples, u0);
+	const end = pointAt(points, samples, u1);
+	const path = new Path2D();
+	path.moveTo(start.x, start.y);
+	const first = Math.floor(u0 * samples) + 1;
+	const last = Math.ceil(u1 * samples) - 1;
+	for (let i = first; i <= last; i += 1) path.lineTo(points[i]!.x, points[i]!.y);
+	path.lineTo(end.x, end.y);
+	return path;
+}
+
+/**
+ * A pulse of light travelling along a filament: one stroke with a gradient that fades in from the
+ * tail, peaks in the middle and fades out at the head. Its ends sit exactly at `headU - length` and
+ * `headU` (not snapped to samples), so it glides rather than stepping along short filaments.
+ */
+function strokeShimmer(
+	ctx: Ctx,
+	points: readonly Point[],
+	samples: number,
+	headU: number,
+	length: number,
+	width: number,
+	alpha: number,
+	color: RGB,
+): void {
+	const uStart = Math.max(0.1, headU - length);
+	const uEnd = Math.min(0.76, headU);
+	if (uEnd - uStart < 0.01 || alpha < 0.01) return;
+
+	const tail = pointAt(points, samples, uStart);
+	const head = pointAt(points, samples, uEnd);
+	const grad = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+	grad.addColorStop(0, rgba(color, 0));
+	grad.addColorStop(0.5, rgba(color, alpha));
+	grad.addColorStop(1, rgba(color, 0));
+	ctx.globalAlpha = 1;
+	ctx.strokeStyle = grad;
+	ctx.lineWidth = width;
+	ctx.stroke(segment(points, samples, uStart, uEnd));
+}
+
+/** 0 at both ends of a travel range and 1 in the middle, so things fade in and out instead of popping. */
+export function travelFade(u: number, from: number, span: number): number {
+	const t = (u - from) / span;
+	if (t <= 0 || t >= 1) return 0;
+	return Math.sin(Math.PI * t);
+}
+
+function stamp(ctx: Ctx, sprite: Sprite, x: number, y: number, scale: number, alpha: number) {
+	if (alpha <= 0.003) return;
+	const e = sprite.extent * scale;
+	ctx.globalAlpha = Math.min(1, alpha);
+	ctx.drawImage(sprite.canvas, x - e, y - e, e * 2, e * 2);
+}
+
+/** Draw one complete frame at `time` seconds. */
+export function drawFrame(state: FrameState, time: number): void {
+	const { ctx, bloomCtx, scene, buffers, samples, layout, cache } = state;
+	const { width, height, motion, still } = layout;
+	const animate = !still && motion > 0;
+	const reveal = state.reveal ?? 1;
+	const travel = state.travelSpeed ?? 1;
+	const paths: (Path2D | null)[] = new Array(scene.threads.length);
+	const heads: number[] = new Array(scene.threads.length);
+
+	for (let i = 0; i < scene.threads.length; i += 1) {
+		const thread = scene.threads[i]!;
+		const points = buffers[i]!;
+		const progress = threadProgress(reveal, thread.pulsePhase, state.revealStagger);
+		heads[i] = progress;
+		if (progress <= 0) {
+			paths[i] = null;
+			continue;
+		}
+		sampleThread(thread, time, layout, samples, points);
+		paths[i] =
+			progress >= 1 ? polyline(points, 0, samples) : partialPolyline(points, samples, progress);
+	}
+
+	// Low-resolution bloom pass, upscaled onto the main canvas for a cheap soft glow.
+	bloomCtx.globalCompositeOperation = "source-over";
+	bloomCtx.globalAlpha = 1;
+	bloomCtx.clearRect(0, 0, width, height);
+	bloomCtx.globalCompositeOperation = "lighter";
+	bloomCtx.globalAlpha = Math.min(1, reveal * 2.5);
+	drawOriginBloom(bloomCtx, layout, cache.origin);
+
+	for (let i = 0; i < scene.threads.length; i += 1) {
+		const thread = scene.threads[i]!;
+		if (!paths[i]) continue;
+		bloomCtx.globalAlpha = 0.8 + 0.2 * Math.sin(time * thread.shimmerSpeed + thread.phase);
+		bloomCtx.strokeStyle = cache.threads[i]!.bloom;
+		bloomCtx.lineWidth = thread.glowWidth * 1.7;
+		bloomCtx.stroke(paths[i]!);
+	}
+	bloomCtx.globalAlpha = 1;
+
+	ctx.globalCompositeOperation = "source-over";
+	ctx.globalAlpha = 1;
+	ctx.clearRect(0, 0, width, height);
+	ctx.globalCompositeOperation = "lighter";
+	if (state.composeBloom) {
+		// The bloom is already blurry, so bilinear ("low") upscaling looks the same and costs less.
+		ctx.imageSmoothingEnabled = true;
+		ctx.imageSmoothingQuality = "low";
+		ctx.drawImage(bloomCtx.canvas, 0, 0, width, height);
+	}
+
+	for (let i = 0; i < scene.threads.length; i += 1) {
+		const thread = scene.threads[i]!;
+		const threadCache = cache.threads[i]!;
+		const path = paths[i];
+		if (!path) continue;
+		const shimmer = 0.82 + 0.18 * Math.sin(time * thread.shimmerSpeed + thread.phase);
+
+		ctx.globalAlpha = shimmer;
+		ctx.strokeStyle = threadCache.glow;
+		ctx.lineWidth = thread.glowWidth * 0.32;
+		ctx.stroke(path);
+		ctx.strokeStyle = threadCache.core;
+		ctx.lineWidth = thread.coreWidth;
+		ctx.stroke(path);
+
+		// While drawing in, a bright tip leads the filament out (faded in as it leaves the origin).
+		const head = heads[i]!;
+		if (head < 1) {
+			const tip = pointAt(buffers[i]!, samples, head);
+			const fade = Math.min(1, head / 0.12) * Math.min(1, (1 - head) / 0.15);
+			stamp(ctx, cache.head, tip.x, tip.y, 0.5 + thread.coreWidth, thread.alpha * fade);
+		}
+
+		if (thread.hasPulse && animate && head >= 1) {
+			const pulseU =
+				((thread.pulsePhase + time * thread.pulseSpeed * motion * travel) % 0.58) + 0.12;
+			strokeShimmer(
+				ctx,
+				buffers[i]!,
+				samples,
+				pulseU,
+				thread.pulseLength,
+				thread.coreWidth,
+				Math.min(1, thread.alpha * shimmer) * 0.38 * travelFade(pulseU, 0.12, 0.58),
+				threadCache.shimmer,
+			);
+		}
+	}
+
+	for (const speck of scene.specks) {
+		if (speck.u > heads[speck.thread]!) continue;
+		const points = buffers[speck.thread]!;
+		const p = pointAt(points, samples, speck.u);
+		const n = normalAt(points, samples, speck.u);
+		const wander = animate ? Math.sin(time * speck.drift + speck.phase) * 2 * motion : 0;
+		const pulse = 0.06 + (Math.sin(time * 0.7 + speck.phase) + 1) * 0.05;
+		stamp(
+			ctx,
+			cache.speck,
+			p.x + n.x * speck.nOff,
+			p.y + n.y * speck.nOff + wander,
+			speck.size,
+			pulse,
+		);
+	}
+
+	for (let s = 0; s < scene.sparkles.length; s += 1) {
+		const sparkle = scene.sparkles[s]!;
+		const sprite = cache.sparkles[s]!;
+		const u = animate
+			? ((sparkle.phase + time * sparkle.speed * motion * travel) % 0.62) + 0.12
+			: sparkle.phase;
+		if (u > heads[sparkle.thread]!) continue;
+		const p = pointAt(buffers[sparkle.thread]!, samples, u);
+		const twinkle = Math.pow(
+			0.5 + 0.5 * Math.sin(time * sparkle.twinkleSpeed + sparkle.twinklePhase),
+			2.2,
+		);
+		// Fades in as it sets off and out before it wraps round, so it never pops in or out.
+		ctx.globalAlpha = (0.3 + twinkle * 0.7) * (animate ? travelFade(u, 0.12, 0.62) : 1);
+		if (sparkle.flare) {
+			ctx.drawImage(
+				sprite.canvas,
+				p.x - sprite.extent,
+				p.y - sprite.extent,
+				sprite.extent * 2,
+				sprite.extent * 2,
+			);
+		} else {
+			ctx.save();
+			ctx.translate(p.x, p.y);
+			ctx.rotate(sparkle.tilt);
+			ctx.drawImage(
+				sprite.canvas,
+				-sprite.extent,
+				-sprite.extent,
+				sprite.extent * 2,
+				sprite.extent * 2,
+			);
+			ctx.restore();
+		}
+	}
+
+	const emberTime = animate ? time * state.emberSpeed * motion : 0;
+	for (const ember of scene.embers) {
+		const pos = emberPosition(ember, emberTime);
+		const x = pos.x * width;
+		const y = pos.y * height;
+		const alpha =
+			ember.alpha * reveal * (0.55 + 0.45 * Math.sin(time * ember.twinkleSpeed + ember.phase));
+		if (ember.size > 1.3) stamp(ctx, cache.emberHalo, x, y, ember.size, alpha);
+		stamp(ctx, cache.ember, x, y, ember.size, alpha);
+	}
+
+	ctx.globalAlpha = 1;
+	ctx.globalCompositeOperation = "source-over";
+}
+
+function drawOriginBloom(target: Ctx, layout: FlowLayout, glow: CanvasGradient): void {
+	const rx = Math.min(layout.width, layout.height) * 0.2;
+	const ry = Math.min(layout.width, layout.height) * 0.28;
+	target.save();
+	target.translate(layout.width * layout.originX, layout.height * layout.originY);
+	target.scale(1, ry / rx);
+	target.fillStyle = glow;
+	target.beginPath();
+	target.arc(0, 0, rx, 0, TAU);
+	target.fill();
+	target.restore();
+}

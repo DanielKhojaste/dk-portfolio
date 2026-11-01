@@ -1,0 +1,77 @@
+---
+/** A content section with an eyebrow number, a display heading and slotted content. */
+interface Props {
+	id: string;
+	index: string;
+	title: string;
+}
+
+const { id, index, title } = Astro.props;
+---
+
+<section class="section" id={id} aria-labelledby={`${id}-title`}>
+	<div class="section__inner">
+		<header class="section__header">
+			<p class="section__index" aria-hidden="true">{index}</p>
+			<h2 class="section__title" id={`${id}-title`}>{title}</h2>
+		</header>
+		<div class="section__body">
+			<slot />
+		</div>
+	</div>
+</section>
+
+<style>
+	.section {
+		padding-block: clamp(72px, 12vh, 140px);
+		border-top: 1px solid rgb(245 236 236 / 0.08);
+		scroll-margin-top: 24px;
+	}
+
+	.section__inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+		gap: clamp(24px, 5vw, 80px);
+		max-width: 1280px;
+		margin-inline: auto;
+		padding-inline: var(--gutter);
+	}
+
+	.section__index {
+		margin: 0 0 12px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		color: var(--color-accent-soft);
+	}
+
+	.section__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(32px, 4.2vw, 56px);
+		line-height: 1;
+		text-transform: uppercase;
+	}
+
+	.section__body {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		font-size: 17px;
+		line-height: 1.7;
+		color: var(--color-text-soft);
+	}
+
+	.section__body :global(p) {
+		margin: 0;
+		max-width: 68ch;
+	}
+
+	@media (max-width: 767px) {
+		.section__inner {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+</style>

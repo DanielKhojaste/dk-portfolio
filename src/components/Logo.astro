@@ -1,0 +1,99 @@
+---
+/**
+ * The DK signature logo, inlined so it can be coloured with `currentColor`.
+ * With `draw`, the ink sits behind an SVG mask made of hand-traced pen strokes; the client script
+ * (scripts/logo-draw.ts) draws those strokes in writing order, so the logo appears as if written.
+ * Without JavaScript the pens are fully drawn, so the logo simply shows.
+ */
+import logoSvg from "../assets/brand/dk-logo.svg?raw";
+import { dkLogoPens } from "../assets/brand/dk-logo-pens";
+
+interface Props {
+	class?: string;
+	/** Write the logo on page load. */
+	draw?: boolean;
+}
+
+let instance = 0;
+
+const { class: className, draw = false } = Astro.props;
+const paths = [...logoSvg.matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((match) => match[1]!);
+const maskId = `logo-pen-${++instance}`;
+---
+
+<svg
+	class:list={["logo", className]}
+	viewBox="0 0 62 53"
+	fill="currentColor"
+	aria-hidden="true"
+	focusable="false"
+	data-logo-draw={draw ? "" : undefined}
+>
+	{
+		draw && (
+			<defs>
+				<mask id={maskId} maskUnits="userSpaceOnUse" x="-4" y="-4" width="70" height="61">
+					{dkLogoPens.map((pen, i) => (
+						<path
+							class="logo__pen"
+							d={pen.d}
+							stroke-width={pen.width}
+							clip-path={pen.clip ? `url(#${maskId}-clip-${i})` : undefined}
+						/>
+					))}
+				</mask>
+				{dkLogoPens.map(
+					(pen, i) =>
+						pen.clip && (
+							<clipPath id={`${maskId}-clip-${i}`} clipPathUnits="userSpaceOnUse">
+								<path d={pen.clip} />
+							</clipPath>
+						),
+				)}
+			</defs>
+		)
+	}
+	<g class="logo__ink" mask={draw ? `url(#${maskId})` : undefined}>
+		{paths.map((d) => <path d={d} />)}
+	</g>
+</svg>
+
+<style>
+	.logo {
+		display: block;
+		width: auto;
+		height: 100%;
+		overflow: visible;
+	}
+
+	.logo :global(.logo__pen) {
+		fill: none;
+		stroke: #fff;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	/* With JS, start with nothing written. If the script never runs, a delayed CSS animation reveals
+	   the logo anyway. */
+	:global(.js) .logo[data-logo-draw] :global(.logo__pen) {
+		/* Hidden as well as undrawn: a zero-length dash with round caps still paints a dot. */
+		opacity: 0;
+		stroke-dasharray: 0 999;
+		animation: logo-fallback 0.01ms 4s forwards;
+	}
+
+	@keyframes logo-fallback {
+		to {
+			opacity: 1;
+			stroke-dasharray: 999 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.js) .logo[data-logo-draw] :global(.logo__pen) {
+			opacity: 1;
+			stroke-dasharray: none;
+			animation: none;
+		}
+	}
+</style>

@@ -1,0 +1,117 @@
+# DivineFlow
+
+Slow, glowing light filaments, travelling sparkles and drifting embers on a `<canvas>`.
+Plain TypeScript with no dependencies, part of the site (not a separate package). The site mounts it
+through `src/components/DivineFlow.astro` and `src/scripts/divine-flow.ts`.
+
+## Usage
+
+```ts
+import { createDivineFlow } from "../lib/divine-flow";
+
+const hero = document.querySelector<HTMLElement>(".hero")!;
+const flow = createDivineFlow(hero, {
+  theme: "crimson",
+  originY: 0.45,
+  emberCount: 60,
+});
+
+// later, e.g. on route change
+flow.destroy();
+```
+
+The container should be positioned (`position: relative` or similar). The engine appends an
+absolutely positioned, `aria-hidden` canvas that fills it, keeps it sized with a `ResizeObserver`, and
+removes it again on `destroy()`.
+
+## Options
+
+| Option            | Default                  | Description                                                                                                                                         |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme`           | `"gold"`                 | `"gold"`, `"crimson"`, `"violet"`, `"white"` or a complete palette object                                                                           |
+| `palette`         | `{}`                     | Partial palette overrides applied on top of `theme`                                                                                                 |
+| `lineCount`       | `7`                      | Main-band filaments per side                                                                                                                        |
+| `scatterCount`    | `2`                      | Extra high/low filaments per side                                                                                                                   |
+| `innerGap`        | `108`                    | Distance (CSS px) from the origin where filaments emerge                                                                                            |
+| `originX`         | `0.5`                    | Origin x as a fraction of the canvas width                                                                                                          |
+| `sides`           | `"both"`                 | `"left"` or `"right"` draws one side only: with `originX` 0 or 1 that makes a single strand (e.g. an underline)                                     |
+| `spread`          | `1`                      | Vertical fan multiplier; 0.1–0.3 keeps filaments in a tight band                                                                                    |
+| `amplitude`       | `1`                      | Wave height multiplier (waves scale with canvas height, so short canvases need more); speed unaffected                                              |
+| `tilt`            | `0`                      | Slant in degrees; positive rises from bottom left to top right (e.g. `5` for a slanted underline)                                                   |
+| `reveal`          | `1`                      | Initial draw-in progress (0–1); animate with `flow.setReveal()` to grow filaments out from the origin                                               |
+| `originY`         | `0.5`                    | Origin y as a fraction of the canvas height                                                                                                         |
+| `motion`          | `1`                      | Animation intensity; `0` draws a still frame                                                                                                        |
+| `seed`            | `8400`                   | Layout seed; the same seed always gives the same filaments                                                                                          |
+| `sparkleCount`    | `min(10, 4 + filaments)` | Sparkles sliding along filaments                                                                                                                    |
+| `speckCount`      | `28`                     | Dust specks hovering beside filaments                                                                                                               |
+| `emberCount`      | `0`                      | Ambient embers drifting upwards across the canvas                                                                                                   |
+| `emberSpeed`      | `1`                      | Ember drift multiplier                                                                                                                              |
+| `variance`        | `0`                      | Per-filament colour variation, 0–1 (up to ±14° hue / ±14% lightness)                                                                                |
+| `hueRange`        | `[-14, 14]`              | Hue range (degrees) shades are picked from at `variance: 1`, e.g. `[-9, 0]`                                                                         |
+| `lightRange`      | `[-0.14, 0.14]`          | Lightness range shades are picked from at `variance: 1`                                                                                             |
+| `maxFps`          | `60`                     | Frame-rate cap                                                                                                                                      |
+| `maxDpr`          | `2`                      | Device-pixel-ratio cap                                                                                                                              |
+| `bloomScale`      | `0.28`                   | Resolution of the soft-glow pass (0.1–1)                                                                                                            |
+| `reducedMotion`   | `"auto"`                 | `"auto"` follows `prefers-reduced-motion`; `true`/`false` force it                                                                                  |
+| `pauseWhenHidden` | `true`                   | Pause while off-screen or in a background tab                                                                                                       |
+| `wave`            | `0`                      | Height (px) of a gentle "~" wave across the canvas: dips under the left half, rises under the right                                                 |
+| `wavePeriods`     | `1`                      | Number of waves across the canvas                                                                                                                   |
+| `fadeFromOrigin`  | `true`                   | Fade filaments in near their origin; turn off for strands drawn out from the middle                                                                 |
+| `tailSway`        | `0`                      | Let the two tail ends sway slowly up and down (px) while the middle stays put, keeping one smooth curve                                             |
+| `travelSpeed`     | `1`                      | Speed multiplier for the sparkles and light pulses gliding along filaments                                                                          |
+| `thickness`       | `1`                      | Line thickness multiplier for every filament                                                                                                        |
+| `uniform`         | `false`                  | Same width and brightness for every filament (e.g. both halves of a centred strand)                                                                 |
+| `alpha`           | —                        | Fixed opacity (0–1) for every filament                                                                                                              |
+| `revealStagger`   | `0.25`                   | How staggered filaments are when drawing in; `0` draws them in step                                                                                 |
+| `offscreen`       | `true`                   | Draw in a shared web worker on an `OffscreenCanvas`, off the main thread; falls back to the main thread where unsupported or when `canvas` is given |
+| `canvas`          | —                        | Draw into an existing canvas instead of creating one                                                                                                |
+| `className`       | —                        | Class for the created canvas                                                                                                                        |
+
+Out-of-range values are clamped rather than thrown; unknown theme names and invalid colours throw.
+
+## Instance
+
+```ts
+interface DivineFlowInstance {
+  readonly canvas: HTMLCanvasElement;
+  readonly options: ResolvedDivineFlowOptions;
+  readonly isRunning: boolean;
+  start(): void; // resume the loop
+  stop(): void; // pause (last frame stays)
+  update(options): void; // merge options and rebuild the scene
+  resize(): void; // re-measure (automatic on resize)
+  renderFrame(timeMs?): void; // draw a single frame
+  destroy(): void; // remove listeners and the created canvas
+}
+```
+
+## Palettes
+
+Every colour is an `[r, g, b]` tuple:
+
+`bloom`, `glow`, `core`, `shimmer`, `sparkle`, `sparkleHalo`, `flare`, `speck`, `originInner`,
+`originOuter`, `ember`.
+
+```ts
+import { createDivineFlow, themes } from "../lib/divine-flow";
+
+createDivineFlow(el, { theme: "violet", palette: { core: [255, 255, 255] } });
+createDivineFlow(el, { theme: { ...themes.gold, ember: [255, 120, 40] } });
+```
+
+## Performance and accessibility
+
+- The glow is drawn on a low-resolution canvas (`bloomScale`). When the engine creates the canvases, the
+  bloom is its own element that the browser scales on the GPU, with the filament canvas blended over it
+  using `mix-blend-mode: plus-lighter`; otherwise it is upscaled into the main canvas.
+- Gradients and sprites are built once per size/palette, not per frame; each filament's path is one
+  `Path2D` reused for every pass.
+- `maxFps` (default 60) caps work on high-refresh displays.
+- The loop pauses when the canvas is off-screen or the tab is hidden.
+- With `prefers-reduced-motion: reduce` a single still frame is drawn and no loop runs; switching the
+  setting at runtime is picked up.
+- Point buffers are allocated once per filament and reused every frame.
+
+## Tests
+
+Unit tests live in `__tests__/` and run with the rest of the site's unit tests (`npm run test:unit`).
