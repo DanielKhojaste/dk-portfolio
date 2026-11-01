@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- README screenshots (desktop home, phone home, desktop menu) in `screenshots/`, and a DivineFlow section
-  (soon its own npm package; copyright Daniel Khojaste).
+- README titled "Daniel's Portfolio", showing the desktop home page with a button to a screenshot gallery
+  (`screenshots/README.md`: desktop, tablet and phone, home and menu), and a DivineFlow section (soon its
+  own npm package; copyright Daniel Khojaste).
 
 ### Changed
 
