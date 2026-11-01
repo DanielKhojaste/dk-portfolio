@@ -4,6 +4,23 @@ Personal portfolio of Daniel Khojaste, software developer. Built with [Astro](ht
 [GSAP](https://gsap.com) and DivineFlow, a canvas light-filament background in
 [`src/lib/divine-flow`](src/lib/divine-flow).
 
+![Home page on desktop: Daniel on a throne of golf clubs, with red DivineFlow light filaments behind](screenshots/home-desktop.png)
+
+<p>
+  <img src="screenshots/home-mobile.png" width="260" alt="Home page on a phone" />
+  &nbsp;
+  <img src="screenshots/menu-desktop.png" width="560" alt="Menu on desktop, with the DivineFlow underline under Skills" />
+</p>
+
+Phone (left) and the menu with the DivineFlow underline under Skills (right).
+
+## DivineFlow
+
+DivineFlow draws the hero's light filaments and the menu's underline. It lives in this repo for now, and
+it will soon be published as its own npm package.
+
+Copyright © 2026 Daniel Khojaste. All rights reserved. 😎
+
 ## Requirements
 
 - Node.js 22.23.4 or newer (Astro 7 requirement); `.nvmrc` pins the version CI uses (`nvm use`)
@@ -38,6 +55,7 @@ src/
   scripts/      client scripts (logo draw, DivineFlow mount, menu) + unit tests
   styles/       global tokens and resets
 tests/e2e/      Playwright specs
+screenshots/    README screenshots
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for what changed and when.
