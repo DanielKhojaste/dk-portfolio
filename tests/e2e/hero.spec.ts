@@ -225,6 +225,17 @@ test.describe("hero", () => {
 
 		// Filaments canvas on top of a separate, GPU-scaled bloom canvas.
 		await expect(flow.locator("canvas[data-divine-flow-bloom]")).toHaveCount(1);
+		// Both are drawn by a worker: their contexts were handed over, so the page can't take them.
+		const transferred = await flow.locator("canvas").evaluateAll((canvases) =>
+			canvases.map((c) => {
+				try {
+					return (c as HTMLCanvasElement).getContext("2d") === null;
+				} catch {
+					return true;
+				}
+			}),
+		);
+		expect(transferred).toEqual([true, true]);
 		const canvas = flow.locator("canvas[data-divine-flow-canvas]");
 		await expect(canvas).toHaveAttribute("aria-hidden", "true");
 		const size = await canvas.evaluate((el: HTMLCanvasElement) => [el.width, el.height]);
