@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Header with the DK logo, written stroke by stroke on page load like handwriting (GSAP DrawSVG; skipped
   for reduced motion), and a hamburger menu button on every screen size. The K's stem writes as a clean
   italic I before its arm and leg.
+- DivineFlow draws in a web worker on `OffscreenCanvas`es (one worker shared by every flow on the page),
+  so the main thread only handles layout and input: in testing, the page's main thread went from ~79%
+  busy to ~3% while the hero animates, and stayed at 60fps on a 4x-throttled CPU (24fps before).
+  Browsers without `OffscreenCanvas` draw on the main thread as before.
 - Smooth intro: the DivineFlow bloom layer composites without a blend mode and the hero caps its pixel
   density at 1.5, so the logo, the draw-in and hovers stay smooth together. The fonts and the hero
   photo are preloaded.
