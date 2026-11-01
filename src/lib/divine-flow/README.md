@@ -26,29 +26,34 @@ removes it again on `destroy()`.
 
 ## Options
 
-| Option            | Default                  | Description                                                          |
-| ----------------- | ------------------------ | -------------------------------------------------------------------- |
-| `theme`           | `"gold"`                 | `"gold"`, `"crimson"`, `"violet"` or a complete palette object       |
-| `palette`         | `{}`                     | Partial palette overrides applied on top of `theme`                  |
-| `lineCount`       | `7`                      | Main-band filaments per side                                         |
-| `scatterCount`    | `2`                      | Extra high/low filaments per side                                    |
-| `innerGap`        | `108`                    | Distance (CSS px) from the origin where filaments emerge             |
-| `originX`         | `0.5`                    | Origin x as a fraction of the canvas width                           |
-| `originY`         | `0.5`                    | Origin y as a fraction of the canvas height                          |
-| `motion`          | `1`                      | Animation intensity; `0` draws a still frame                         |
-| `seed`            | `8400`                   | Layout seed; the same seed always gives the same filaments           |
-| `sparkleCount`    | `min(10, 4 + filaments)` | Sparkles sliding along filaments                                     |
-| `speckCount`      | `28`                     | Dust specks hovering beside filaments                                |
-| `emberCount`      | `0`                      | Ambient embers drifting upwards across the canvas                    |
-| `emberSpeed`      | `1`                      | Ember drift multiplier                                               |
-| `variance`        | `0`                      | Per-filament colour variation, 0–1 (up to ±14° hue / ±14% lightness) |
-| `maxFps`          | `60`                     | Frame-rate cap                                                       |
-| `maxDpr`          | `2`                      | Device-pixel-ratio cap                                               |
-| `bloomScale`      | `0.28`                   | Resolution of the soft-glow pass (0.1–1)                             |
-| `reducedMotion`   | `"auto"`                 | `"auto"` follows `prefers-reduced-motion`; `true`/`false` force it   |
-| `pauseWhenHidden` | `true`                   | Pause while off-screen or in a background tab                        |
-| `canvas`          | —                        | Draw into an existing canvas instead of creating one                 |
-| `className`       | —                        | Class for the created canvas                                         |
+| Option            | Default                  | Description                                                                                                     |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `theme`           | `"gold"`                 | `"gold"`, `"crimson"`, `"violet"`, `"white"` or a complete palette object                                       |
+| `palette`         | `{}`                     | Partial palette overrides applied on top of `theme`                                                             |
+| `lineCount`       | `7`                      | Main-band filaments per side                                                                                    |
+| `scatterCount`    | `2`                      | Extra high/low filaments per side                                                                               |
+| `innerGap`        | `108`                    | Distance (CSS px) from the origin where filaments emerge                                                        |
+| `originX`         | `0.5`                    | Origin x as a fraction of the canvas width                                                                      |
+| `sides`           | `"both"`                 | `"left"` or `"right"` draws one side only: with `originX` 0 or 1 that makes a single strand (e.g. an underline) |
+| `spread`          | `1`                      | Vertical fan multiplier; 0.1–0.3 keeps filaments in a tight band                                                |
+| `amplitude`       | `1`                      | Wave height multiplier (waves scale with canvas height, so short canvases need more); speed unaffected          |
+| `originY`         | `0.5`                    | Origin y as a fraction of the canvas height                                                                     |
+| `motion`          | `1`                      | Animation intensity; `0` draws a still frame                                                                    |
+| `seed`            | `8400`                   | Layout seed; the same seed always gives the same filaments                                                      |
+| `sparkleCount`    | `min(10, 4 + filaments)` | Sparkles sliding along filaments                                                                                |
+| `speckCount`      | `28`                     | Dust specks hovering beside filaments                                                                           |
+| `emberCount`      | `0`                      | Ambient embers drifting upwards across the canvas                                                               |
+| `emberSpeed`      | `1`                      | Ember drift multiplier                                                                                          |
+| `variance`        | `0`                      | Per-filament colour variation, 0–1 (up to ±14° hue / ±14% lightness)                                            |
+| `hueRange`        | `[-14, 14]`              | Hue range (degrees) shades are picked from at `variance: 1`, e.g. `[-9, 0]`                                     |
+| `lightRange`      | `[-0.14, 0.14]`          | Lightness range shades are picked from at `variance: 1`                                                         |
+| `maxFps`          | `60`                     | Frame-rate cap                                                                                                  |
+| `maxDpr`          | `2`                      | Device-pixel-ratio cap                                                                                          |
+| `bloomScale`      | `0.28`                   | Resolution of the soft-glow pass (0.1–1)                                                                        |
+| `reducedMotion`   | `"auto"`                 | `"auto"` follows `prefers-reduced-motion`; `true`/`false` force it                                              |
+| `pauseWhenHidden` | `true`                   | Pause while off-screen or in a background tab                                                                   |
+| `canvas`          | —                        | Draw into an existing canvas instead of creating one                                                            |
+| `className`       | —                        | Class for the created canvas                                                                                    |
 
 Out-of-range values are clamped rather than thrown; unknown theme names and invalid colours throw.
 

@@ -8,6 +8,10 @@ export interface FlowLayout {
 	originX: number;
 	originY: number;
 	innerGap: number;
+	/** Vertical spread multiplier for the filaments' fan. Default `1`. */
+	spread?: number;
+	/** Wave height multiplier. Default `1`. */
+	amplitude?: number;
 	motion: number;
 	/** When true, time is frozen and filaments hold their resting shape. */
 	still: boolean;
@@ -34,19 +38,20 @@ export function writePoint(
 	out: Point,
 ): void {
 	const { width, height } = layout;
+	const spread = layout.spread ?? 1;
 	const cx = width * layout.originX;
 	const cy = height * layout.originY;
 	const originR = Math.min(layout.innerGap, Math.max(64, width * 0.072));
 	const startX = cx + thread.side * originR * (0.4 + thread.startInset * 0.34);
-	const startY = cy + thread.startY * height;
+	const startY = cy + thread.startY * spread * height;
 	const edgeX = thread.side === 1 ? width + 48 : -48;
 	const endX = startX + (edgeX - startX) * thread.reach;
-	const endY = cy + thread.endY * height;
+	const endY = cy + thread.endY * spread * height;
 	const span = Math.abs(endX - startX);
 	const c1x = startX + thread.side * span * thread.c1t;
-	const c1y = startY + thread.bow1 * height;
+	const c1y = startY + thread.bow1 * spread * height;
 	const c2x = startX + thread.side * span * thread.c2t;
-	const c2y = endY + thread.bow2 * height;
+	const c2y = endY + thread.bow2 * spread * height;
 
 	const x0 = cubicBezier(u, startX, c1x, c2x, endX);
 	const y0 = cubicBezier(u, startY, c1y, c2y, endY);
@@ -61,7 +66,11 @@ export function writePoint(
 	const n1 = smoothNoise(u * 2.1 + t * thread.speed + thread.phase, thread.seed);
 	const n2 = smoothNoise(u * 5.4 - t * thread.speed * 0.4 + thread.phase * 1.4, thread.seed + 11);
 	const wave =
-		((n1 - 0.5) * thread.amp1 + (n2 - 0.5) * thread.amp2) * envelope * layout.motion * height;
+		((n1 - 0.5) * thread.amp1 + (n2 - 0.5) * thread.amp2) *
+		envelope *
+		layout.motion *
+		(layout.amplitude ?? 1) *
+		height;
 
 	out.x = x0 + nx * wave;
 	out.y = y0 + ny * wave;

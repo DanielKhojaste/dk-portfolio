@@ -27,7 +27,10 @@ export interface DivineFlowPalette {
 	ember: RGB;
 }
 
-export type DivineFlowThemeName = "gold" | "crimson" | "violet";
+export type DivineFlowThemeName = "gold" | "crimson" | "violet" | "white";
+
+/** Which side(s) of the origin filaments flow towards. */
+export type DivineFlowSides = "both" | "left" | "right";
 
 export interface DivineFlowOptions {
 	/** Built-in theme name or a complete palette. Default `"gold"`. */
@@ -42,6 +45,21 @@ export interface DivineFlowOptions {
 	innerGap?: number;
 	/** Horizontal position of the origin, 0–1 of the canvas width. Default `0.5`. */
 	originX?: number;
+	/**
+	 * Which way filaments flow from the origin. `"right"` with `originX: 0` (or `"left"` with
+	 * `originX: 1`) turns the burst into a single strand, e.g. an underline. Default `"both"`.
+	 */
+	sides?: DivineFlowSides;
+	/**
+	 * Vertical spread of the filaments, as a multiple of the default fan. Small values (0.1–0.3) keep
+	 * them in a tight band. Default `1`.
+	 */
+	spread?: number;
+	/**
+	 * Wave height multiplier. Waves scale with the canvas height, so short canvases need more. Unlike
+	 * `motion`, this does not change the speed. Default `1`.
+	 */
+	amplitude?: number;
 	/** Vertical position of the origin, 0–1 of the canvas height. Default `0.5`. */
 	originY?: number;
 	/** Animation intensity. `0` renders a still frame. Default `1`. */
@@ -61,6 +79,13 @@ export interface DivineFlowOptions {
 	 * (up to ±14° hue and ±14% lightness at `1`). Default `0`.
 	 */
 	variance?: number;
+	/**
+	 * Hue range (degrees) a filament's shade is picked from at `variance: 1`, e.g. `[-9, 0]` to only
+	 * shift towards one neighbour. Default `[-14, 14]`.
+	 */
+	hueRange?: readonly [number, number];
+	/** Lightness range (−1–1) a filament's shade is picked from at `variance: 1`. Default `[-0.14, 0.14]`. */
+	lightRange?: readonly [number, number];
 	/** Frame-rate cap. Keeps high-refresh displays from doing 2–3x the work. Default `60`. */
 	maxFps?: number;
 	/** Device-pixel-ratio cap for the main canvas. Default `2`. */
@@ -88,6 +113,9 @@ export interface ResolvedDivineFlowOptions {
 	innerGap: number;
 	originX: number;
 	originY: number;
+	sides: DivineFlowSides;
+	spread: number;
+	amplitude: number;
 	motion: number;
 	seed: number;
 	sparkleCount: number | null;
@@ -95,6 +123,8 @@ export interface ResolvedDivineFlowOptions {
 	emberCount: number;
 	emberSpeed: number;
 	variance: number;
+	hueRange: readonly [number, number];
+	lightRange: readonly [number, number];
 	maxFps: number;
 	maxDpr: number;
 	bloomScale: number;

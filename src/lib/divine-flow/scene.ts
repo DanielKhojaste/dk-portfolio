@@ -74,6 +74,8 @@ export interface Scene {
 }
 
 export interface SceneConfig {
+	/** Which side(s) get filaments. Default `"both"`. */
+	sides?: "both" | "left" | "right";
 	lineCount: number;
 	scatterCount: number;
 	seed: number;
@@ -87,10 +89,13 @@ export function createThreads({
 	lineCount,
 	scatterCount,
 	seed,
-}: Pick<SceneConfig, "lineCount" | "scatterCount" | "seed">): Thread[] {
+	sides = "both",
+}: Pick<SceneConfig, "lineCount" | "scatterCount" | "seed" | "sides">): Thread[] {
 	const threads: Thread[] = [];
 
 	for (const side of [-1, 1] as const) {
+		// Each side keeps its own random stream, so dropping one never reshapes the other.
+		if ((sides === "left" && side === 1) || (sides === "right" && side === -1)) continue;
 		const random = mulberry32(seed + side * 173);
 
 		for (let i = 0; i < lineCount; i += 1) {

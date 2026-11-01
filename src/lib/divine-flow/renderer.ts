@@ -64,14 +64,27 @@ export function makeTrailGradient(
 	return grad;
 }
 
-/** Deterministic hue/lightness offset for a filament, scaled by `variance` (0–1). */
-export function threadShade(thread: Thread, variance: number): { hue: number; light: number } {
+/** Hue (degrees) and lightness ranges a filament's shade is picked from at `variance: 1`. */
+export interface ShadeRanges {
+	hue: readonly [number, number];
+	light: readonly [number, number];
+}
+
+const DEFAULT_SHADE_RANGES: ShadeRanges = { hue: [-14, 14], light: [-0.14, 0.14] };
+
+/**
+ * Deterministic hue/lightness offset for a filament: a stable pick within `ranges`, scaled by
+ * `variance` (0–1).
+ */
+export function threadShade(
+	thread: Thread,
+	variance: number,
+	ranges: ShadeRanges = DEFAULT_SHADE_RANGES,
+): { hue: number; light: number } {
 	if (variance <= 0) return { hue: 0, light: 0 };
 	const random = mulberry32(Math.floor(thread.seed * 1000) ^ (thread.side === 1 ? 0x9e37 : 0));
-	return {
-		hue: (random() * 2 - 1) * 14 * variance,
-		light: (random() * 2 - 1) * 0.14 * variance,
-	};
+	const pick = ([min, max]: readonly [number, number]) => (min + random() * (max - min)) * variance;
+	return { hue: pick(ranges.hue), light: pick(ranges.light) };
 }
 
 function makeSprite(
@@ -140,7 +153,12 @@ function sparkleExtent(sparkle: Sparkle): number {
  */
 export function buildRenderCache(
 	state: Omit<FrameState, "cache">,
-	options: { variance: number; dpr: number; createCanvas: CanvasFactory },
+	options: {
+		variance: number;
+		shadeRanges?: ShadeRanges;
+		dpr: number;
+		createCanvas: CanvasFactory;
+	},
 ): RenderCache {
 	const { ctx, bloomCtx, scene, layout, palette } = state;
 	const start: Point = { x: 0, y: 0 };
@@ -150,7 +168,7 @@ export function buildRenderCache(
 	const threads = scene.threads.map((thread) => {
 		writePoint(thread, 0, 0, rest, start);
 		writePoint(thread, 1, 0, rest, end);
-		const { hue, light } = threadShade(thread, options.variance);
+		const { hue, light } = threadShade(thread, options.variance, options.shadeRanges);
 		const tint = (color: RGB) => (hue || light ? shade(color, hue, light) : color);
 		return {
 			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5),

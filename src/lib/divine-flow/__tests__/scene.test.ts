@@ -34,6 +34,16 @@ describe("createThreads", () => {
 		expect(createThreads({ ...config, seed: 1 })).not.toEqual(createThreads(config));
 	});
 
+	it("only builds the requested side, without reshaping it", () => {
+		const both = createThreads(config);
+		const right = createThreads({ ...config, sides: "right" });
+		const left = createThreads({ ...config, sides: "left" });
+		expect(right.every((t) => t.side === 1)).toBe(true);
+		expect(left.every((t) => t.side === -1)).toBe(true);
+		expect(right).toEqual(both.filter((t) => t.side === 1));
+		expect(left).toEqual(both.filter((t) => t.side === -1));
+	});
+
 	it("handles zero filaments", () => {
 		const scene = createScene({ ...config, lineCount: 0, scatterCount: 0 });
 		expect(scene.threads).toEqual([]);
@@ -122,6 +132,31 @@ describe("geometry", () => {
 		expect(b).not.toEqual(a);
 	});
 
+	it("narrows the fan with spread and scales waves with amplitude", () => {
+		const threads = createThreads(config);
+		const samples = 44;
+		const buffer = makePointBuffer();
+		const cy = layout.height * layout.originY;
+		const reach = (l: FlowLayout) =>
+			Math.max(
+				...threads.map((t) => {
+					sampleThread(t, 0, { ...l, still: true }, samples, buffer);
+					return Math.max(...buffer.slice(0, samples + 1).map((p) => Math.abs(p.y - cy)));
+				}),
+			);
+		expect(reach({ ...layout, spread: 0.2 })).toBeLessThan(reach(layout) * 0.25);
+
+		const [thread] = threads;
+		const flat = makePointBuffer();
+		const tall = makePointBuffer();
+		const rest = makePointBuffer();
+		sampleThread(thread!, 7, { ...layout, amplitude: 0 }, samples, rest);
+		sampleThread(thread!, 7, layout, samples, flat);
+		sampleThread(thread!, 7, { ...layout, amplitude: 3 }, samples, tall);
+		const offset = (b: typeof flat) => Math.abs(b[samples / 2]!.y - rest[samples / 2]!.y);
+		expect(offset(tall)).toBeCloseTo(offset(flat) * 3, 3);
+	});
+
 	it("scales sample count with width inside fixed bounds", () => {
 		expect(samplesForWidth(100)).toBe(44);
 		expect(samplesForWidth(1600)).toBe(57);
@@ -142,5 +177,17 @@ describe("threadShade", () => {
 			expect(Math.abs(s.light)).toBeLessThanOrEqual(0.14);
 		}
 		expect(new Set(shades.map((s) => s.hue.toFixed(3))).size).toBeGreaterThan(threads.length / 2);
+	});
+
+	it("picks from custom ranges, scaled by variance", async () => {
+		const { threadShade } = await import("../renderer");
+		const ranges = { hue: [-9, 0] as const, light: [-0.21, 0.07] as const };
+		for (const thread of createThreads(config)) {
+			const { hue, light } = threadShade(thread, 0.5, ranges);
+			expect(hue).toBeGreaterThanOrEqual(-4.5);
+			expect(hue).toBeLessThanOrEqual(0);
+			expect(light).toBeGreaterThanOrEqual(-0.105);
+			expect(light).toBeLessThanOrEqual(0.035);
+		}
 	});
 });

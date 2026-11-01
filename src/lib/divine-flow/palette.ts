@@ -15,19 +15,19 @@ const gold: DivineFlowPalette = {
 	ember: [255, 214, 148],
 };
 
-/** Deep red filaments with hot pink-white cores. */
+/** Deep red filaments with soft pink-white cores. Kept on the blue side of red, never orange. */
 const crimson: DivineFlowPalette = {
-	bloom: [200, 28, 40],
-	glow: [228, 52, 64],
-	core: [255, 204, 198],
-	shimmer: [255, 150, 140],
-	sparkle: [255, 242, 238],
-	sparkleHalo: [255, 120, 110],
-	flare: [255, 182, 172],
-	speck: [232, 84, 84],
-	originInner: [255, 84, 84],
-	originOuter: [150, 18, 28],
-	ember: [255, 150, 120],
+	bloom: [150, 14, 26],
+	glow: [186, 24, 38],
+	core: [255, 200, 200],
+	shimmer: [230, 96, 104],
+	sparkle: [255, 236, 236],
+	sparkleHalo: [214, 60, 72],
+	flare: [250, 160, 164],
+	speck: [196, 44, 56],
+	originInner: [214, 44, 56],
+	originOuter: [100, 8, 18],
+	ember: [230, 80, 86],
 };
 
 /** Purple filaments with lavender cores. */
@@ -45,10 +45,26 @@ const violet: DivineFlowPalette = {
 	ember: [214, 190, 255],
 };
 
+/** Pure white light with a faint cool bloom, for accents over a coloured flow (e.g. underlines). */
+const white: DivineFlowPalette = {
+	bloom: [226, 226, 236],
+	glow: [242, 242, 248],
+	core: [255, 255, 255],
+	shimmer: [255, 255, 255],
+	sparkle: [255, 255, 255],
+	sparkleHalo: [235, 235, 245],
+	flare: [255, 255, 255],
+	speck: [240, 240, 246],
+	originInner: [255, 255, 255],
+	originOuter: [200, 200, 214],
+	ember: [255, 255, 255],
+};
+
 export const themes: Readonly<Record<DivineFlowThemeName, Readonly<DivineFlowPalette>>> = {
 	gold,
 	crimson,
 	violet,
+	white,
 };
 
 export const PALETTE_KEYS = Object.keys(gold) as (keyof DivineFlowPalette)[];

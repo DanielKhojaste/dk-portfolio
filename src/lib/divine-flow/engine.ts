@@ -112,6 +112,8 @@ export function createDivineFlow(
 		originX: resolved.originX,
 		originY: resolved.originY,
 		innerGap: resolved.innerGap,
+		spread: resolved.spread,
+		amplitude: resolved.amplitude,
 		motion: resolved.motion,
 		still: isStill(),
 	});
@@ -148,6 +150,7 @@ export function createDivineFlow(
 	function rebuildCache() {
 		cache = buildRenderCache(frameState(), {
 			variance: resolved.variance,
+			shadeRanges: { hue: resolved.hueRange, light: resolved.lightRange },
 			dpr,
 			createCanvas,
 		});

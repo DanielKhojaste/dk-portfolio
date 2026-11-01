@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDivineFlow } from "../engine";
+import { themes } from "../palette";
 
 type Listener = (event: { matches: boolean }) => void;
 
@@ -249,7 +250,7 @@ describe("createDivineFlow", () => {
 		flow.update({ originY: 0.3 });
 		expect(flow.options.lineCount).toBe(3);
 		expect(flow.options.originY).toBe(0.3);
-		expect(flow.options.palette.glow).toEqual([228, 52, 64]);
+		expect(flow.options.palette.glow).toEqual(themes.crimson.glow);
 	});
 
 	it("draws the bloom on its own canvas behind the filaments", () => {
