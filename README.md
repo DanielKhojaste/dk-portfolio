@@ -7,7 +7,7 @@ Personal portfolio of Daniel Khojaste, software developer. Built with [Astro](ht
 ![Home page on desktop: Daniel on a throne of golf clubs, with red DivineFlow light filaments behind](screenshots/home-desktop.png)
 
 <p align="center">
-  <a href="screenshots/README.md"><img src="https://img.shields.io/badge/View_all_screenshots-C8202B?style=for-the-badge" alt="View all screenshots" /></a>
+  <a href="SCREENSHOTS.md"><img src="https://img.shields.io/badge/View_all_screenshots-C8202B?style=for-the-badge" alt="View all screenshots" /></a>
 </p>
 
 ## DivineFlow
@@ -51,7 +51,7 @@ src/
   scripts/      client scripts (logo draw, DivineFlow mount, menu) + unit tests
   styles/       global tokens and resets
 tests/e2e/      Playwright specs
-screenshots/    screenshots shown in the README, with a gallery (screenshots/README.md)
+screenshots/    images for the README and SCREENSHOTS.md
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for what changed and when.
