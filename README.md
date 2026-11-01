@@ -29,12 +29,13 @@ First end-to-end run on a new machine: `npx playwright install chromium`.
 ```
 src/
   assets/       throne photo and DK logo (optimised by Astro at build time)
-  components/   Header, Logo, Hero, DivineFlow wrapper
+  components/   Header, Menu, Logo, Hero, DivineFlow wrapper
+  data/         site copy (profile, sections, socials) in one place
   layouts/      BaseLayout (fonts, meta, global styles)
   pages/        routes
   lib/
     divine-flow/  canvas renderer for the light-filament background + unit tests
-  scripts/      client scripts (logo draw, DivineFlow mount, name ghost) + unit tests
+  scripts/      client scripts (logo draw, DivineFlow mount, menu) + unit tests
   styles/       global tokens and resets
 tests/e2e/      Playwright specs
 ```
