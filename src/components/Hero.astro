@@ -1,50 +1,53 @@
 ---
 import { Picture } from "astro:assets";
-import throne from "../assets/images/throne.png";
+import { throne, throneSizes, throneWidths } from "./hero-image";
 import DivineFlow from "./DivineFlow.astro";
 import type { DivineFlowOptions } from "../lib/divine-flow";
 
 import { animation, backgroundFlow, colors, profile, underlineFlow } from "../site.config";
 
 /*
- * Underlines: each claim gets a strip of white DivineFlow under it, slanted by `underlineFlow.angle`
- * (rising from bottom left to top right) and flowing from the claim's outer edge. The strip is just
- * tall enough for the slant across the widest claim, and the strands start near its bottom (left
- * claim) or top (right claim) edge so they stay inside it.
+ * Underlines: each claim gets a strip of white DivineFlow under it, flowing from the claim's outer
+ * edge and rising by `underlineFlow.angle` towards that edge, so the two mirror each other. The strip
+ * is just tall enough for the slant, and the strands start near its top edge (or bottom edge for a
+ * negative angle) so they stay inside it.
  */
 const tan = Math.tan((Math.abs(underlineFlow.angle) * Math.PI) / 180);
-const rises = underlineFlow.angle >= 0;
 const PAD = 12;
 const ruleHeight = {
-	desktop: Math.ceil(380 * tan) + PAD * 2,
-	compact: Math.ceil(200 * tan) + PAD * 2,
+	desktop: Math.ceil(underlineFlow.width.desktop * tan) + PAD * 2,
+	compact: Math.ceil(underlineFlow.width.compact * tan) + PAD * 2,
 };
 
-const underline = (side: "start" | "end", height: number): Omit<DivineFlowOptions, "canvas"> => {
-	// The left strand flows right, so a rising line starts low; the right one flows left and starts high.
-	const startsLow = side === "start" ? rises : !rises;
-	return {
-		theme: colors.underlines,
-		sides: side === "start" ? "right" : "left",
-		originX: side === "start" ? 0 : 1,
-		originY: startsLow ? 1 - PAD / height : PAD / height,
-		tilt: underlineFlow.angle,
-		innerGap: 0,
-		lineCount: underlineFlow.lineCount,
-		scatterCount: 0,
-		spread: underlineFlow.spread,
-		amplitude: underlineFlow.amplitude,
-		motion: underlineFlow.motion,
-		sparkleCount: underlineFlow.sparkleCount,
-		speckCount: underlineFlow.speckCount,
-		emberCount: 0,
-		maxDpr: 2,
-		seed: side === "start" ? 3107 : 5281,
-	};
-};
+const underline = (side: "start" | "end", height: number): Omit<DivineFlowOptions, "canvas"> => ({
+	theme: colors.underlines,
+	sides: side === "start" ? "right" : "left",
+	originX: side === "start" ? 0 : 1,
+	// Starting at the high end: the outer edge, which is the top for a positive angle.
+	originY: underlineFlow.angle >= 0 ? PAD / height : 1 - PAD / height,
+	// `tilt` rises to the right, so the left underline (flowing right) gets the opposite sign.
+	tilt: side === "start" ? -underlineFlow.angle : underlineFlow.angle,
+	innerGap: 0,
+	lineCount: underlineFlow.lineCount,
+	scatterCount: 0,
+	spread: underlineFlow.spread,
+	amplitude: underlineFlow.amplitude,
+	motion: underlineFlow.motion,
+	sparkleCount: underlineFlow.sparkleCount,
+	speckCount: underlineFlow.speckCount,
+	emberCount: 0,
+	maxDpr: 2,
+	seed: side === "start" ? 3107 : 5281,
+});
 
 const ruleFade = `${Math.round((1 - underlineFlow.fade) * 100)}%`;
-const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHeight.compact}px; --rule-fade: ${ruleFade}`;
+const heroVars = [
+	`--rule-h: ${ruleHeight.desktop}px`,
+	`--rule-h-compact: ${ruleHeight.compact}px`,
+	`--rule-w: ${underlineFlow.width.desktop}px`,
+	`--rule-w-compact: ${underlineFlow.width.compact}px`,
+	`--rule-fade: ${ruleFade}`,
+].join("; ");
 ---
 
 <section class="hero" aria-labelledby="hero-title" style={heroVars}>
@@ -68,8 +71,8 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 			alt="Daniel sitting on a throne made of golf clubs, lit in red"
 			formats={["avif", "webp"]}
 			fallbackFormat="webp"
-			widths={[360, 540, 723]}
-			sizes="(max-width: 1023px) 80vw, 34vw"
+			widths={throneWidths}
+			sizes={throneSizes}
 			loading="eager"
 			fetchpriority="high"
 			draggable="false"
@@ -266,29 +269,38 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 		pointer-events: none;
 	}
 
+	/*
+	 * The claims share one grid of rows (label, headline, underline), so the two labels, the last lines
+	 * of the headlines and the two underlines always line up across the hero, whatever wraps.
+	 */
 	.hero__info {
+		--claim-w: clamp(240px, 25cqw, 380px);
+
 		position: absolute;
 		inset-inline: var(--gutter);
 		top: 59cqh;
 		z-index: 4;
-		display: flex;
-		/* Tops aligned, so "Based in" and "Currently building" always sit on one line. */
-		align-items: flex-start;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: minmax(0, var(--claim-w)) 1fr minmax(0, var(--claim-w));
+		grid-template-rows: auto auto auto;
 		translate: 0 -50%;
 		pointer-events: none;
 	}
 
 	.hero__claim {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		width: clamp(240px, 25cqw, 380px);
+		display: grid;
+		grid-row: 1 / span 3;
+		grid-column: 1;
+		grid-template-rows: subgrid;
+		row-gap: 10px;
+		align-items: end;
+		min-width: 0;
 		pointer-events: auto;
 	}
 
 	.hero__claim--end {
-		align-items: flex-end;
+		grid-column: -2;
+		justify-items: end;
 		text-align: right;
 	}
 
@@ -344,17 +356,13 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 	.hero__rule {
 		position: relative;
 		display: block;
-		width: 100%;
+		align-self: start;
+		width: min(100%, var(--rule-w));
 		height: var(--rule-h);
-		margin-top: -4px;
+		/* The strands start 12px into the strip; this keeps them just under the text. */
+		margin-top: -14px;
 		-webkit-mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
 		mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
-	}
-
-	/* The left strand starts at the strip's bottom edge, so tuck the strip up a little to keep the
-	   line close under the text; it still clears the text where it rises. */
-	.hero__claim--start .hero__rule {
-		margin-top: calc((var(--rule-h) - 24px) * -0.45 - 4px);
 	}
 
 	.hero__claim--end .hero__rule {
@@ -476,15 +484,13 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 		.hero__info {
 			top: auto;
 			bottom: calc(var(--actions-bottom) + var(--actions-height) + max(10px, 1.6cqh));
-			gap: 16px;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			column-gap: 16px;
 			translate: none;
 		}
 
 		.hero__claim {
-			flex: 1 1 0;
-			gap: 6px;
-			width: auto;
-			min-width: 0;
+			row-gap: 6px;
 		}
 
 		.hero__kicker {
@@ -497,11 +503,9 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 		}
 
 		.hero__rule {
+			width: min(100%, var(--rule-w-compact));
 			height: var(--rule-h-compact);
-		}
-
-		.hero__claim--start .hero__rule {
-			margin-top: calc((var(--rule-h-compact) - 24px) * -0.45 - 4px);
+			margin-top: -12px;
 		}
 
 		.hero__actions {
@@ -525,8 +529,8 @@ const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHei
 	/* Tablets: a touch more room for the text. */
 	@media (min-width: 640px) and (max-width: 1023px),
 		(min-width: 640px) and (max-aspect-ratio: 115/100) {
-		.hero__claim {
-			flex: 0 1 340px;
+		.hero__info {
+			grid-template-columns: minmax(0, 340px) 1fr minmax(0, 340px);
 		}
 
 		.hero__kicker {
