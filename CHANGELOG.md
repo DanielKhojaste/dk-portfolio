@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] - 2026-10-31
+
 ### Added
 
 - Astro 7 project with strict TypeScript, Prettier and EditorConfig.
@@ -59,3 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and the hero links have targets.
 - SVG favicon from the DK logo.
 - Unit tests for the site's client scripts (Vitest) and end-to-end tests for the hero, header and menu.
+
+[Unreleased]: https://github.com/DanielKhojaste/dk-portfolio/compare/v0.1.0-alpha.1...dev
+[0.1.0-alpha.1]: https://github.com/DanielKhojaste/dk-portfolio/releases/tag/v0.1.0-alpha.1
