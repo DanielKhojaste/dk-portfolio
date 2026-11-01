@@ -11,7 +11,7 @@ import type { DivineFlowOptions } from "../lib/divine-flow";
 import { colors, menuUnderlineFlow, sections } from "../site.config";
 import DivineFlow from "./DivineFlow.astro";
 
-const { from, wave, waves, ...strand } = menuUnderlineFlow;
+const { from, wave, waves, sway, ...strand } = menuUnderlineFlow;
 
 /** Where the strand starts, as DivineFlow's origin and the side(s) it flows towards. */
 const origin = {
@@ -20,17 +20,24 @@ const origin = {
 	right: { originX: 1, sides: "left" },
 } as const;
 
-/** Room for the wave, its up-and-down drift and the strand's glow. */
-const ruleHeight = Math.ceil(Math.abs(wave) + strand.amplitude * 0.35) * 2 + 24;
+/** Room for the wave, the tails' sway and the strand's glow. */
+const ruleHeight = Math.ceil(Math.abs(wave) + Math.abs(sway)) * 2 + 24;
 
-/** One strand of the background's DivineFlow, drawn out from `from` with a gentle wave. */
-const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
-	theme: colors.background,
+/**
+ * One strand of DivineFlow, drawn out from `from` with a gentle wave. Every link gets exactly the
+ * same strand (same seed), so the colour and brightness never change from one link to the next.
+ */
+const underline: Omit<DivineFlowOptions, "canvas"> = {
+	theme: colors.menuUnderline,
 	...origin[from],
 	originY: 0.5,
 	innerGap: 0,
 	wave,
 	wavePeriods: waves,
+	tailSway: sway,
+	// Only the tails move: no per-point wobble, so it stays one smooth curve.
+	amplitude: 0,
+	variance: 0,
 	fadeFromOrigin: false,
 	lineCount: 1,
 	scatterCount: 0,
@@ -40,9 +47,9 @@ const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
 	revealStagger: 0,
 	uniform: true,
 	maxDpr: 2,
-	seed,
+	seed: 7100,
 	...strand,
-});
+};
 ---
 
 <div
@@ -64,7 +71,7 @@ const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
 						<a class="menu__link" href={section.href} data-menu-link>
 							<span class="menu__label">{section.label}</span>
 							<span class="menu__rule" aria-hidden="true">
-								<DivineFlow manual fadeIn={0} options={underline(7100 + i * 97)} />
+								<DivineFlow manual fadeIn={0} options={underline} />
 							</span>
 						</a>
 					</li>

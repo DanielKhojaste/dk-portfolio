@@ -91,30 +91,38 @@ export const animation = {
  * 3. Colours: [red, green, blue], each 0–255.
  * --------------------------------------------------------------------------------------------- */
 
-export const colors: { background: DivineFlowPalette } = {
+/** The site's red: the hero's DivineFlow filaments, glows, sparkles and embers. */
+const crimson: DivineFlowPalette = {
+	/** Wide soft glow under each filament. */
+	bloom: [150, 14, 26],
+	/** Halo around each filament. */
+	glow: [186, 24, 38],
+	/** Thin bright core of each filament. */
+	core: [255, 200, 200],
+	/** Pulse of light travelling along the brighter filaments. */
+	shimmer: [230, 96, 104],
+	/** Sparkles sliding along filaments: centre and halo. */
+	sparkle: [255, 236, 236],
+	sparkleHalo: [214, 60, 72],
+	/** Edges of the lens flare on bigger sparkles. */
+	flare: [250, 160, 164],
+	/** Dust specks beside the filaments. */
+	speck: [196, 44, 56],
+	/** Glow where the filaments start: centre and edge. */
+	originInner: [214, 44, 56],
+	originOuter: [100, 8, 18],
+	/** Embers drifting up across the hero. */
+	ember: [230, 80, 86],
+};
+
+export const colors: { background: DivineFlowPalette; menuUnderline: DivineFlowPalette } = {
 	/** The hero's DivineFlow. */
-	background: {
-		/** Wide soft glow under each filament. */
-		bloom: [150, 14, 26],
-		/** Halo around each filament. */
-		glow: [186, 24, 38],
-		/** Thin bright core of each filament. */
-		core: [255, 200, 200],
-		/** Pulse of light travelling along the brighter filaments. */
-		shimmer: [230, 96, 104],
-		/** Sparkles sliding along filaments: centre and halo. */
-		sparkle: [255, 236, 236],
-		sparkleHalo: [214, 60, 72],
-		/** Edges of the lens flare on bigger sparkles. */
-		flare: [250, 160, 164],
-		/** Dust specks beside the filaments. */
-		speck: [196, 44, 56],
-		/** Glow where the filaments start: centre and edge. */
-		originInner: [214, 44, 56],
-		originOuter: [100, 8, 18],
-		/** Embers drifting up across the hero. */
-		ember: [230, 80, 86],
-	},
+	background: crimson,
+	/**
+	 * The underline under hovered menu links: the same red as the background, so it always matches.
+	 * Replace `crimson` with your own palette (same shape as above) to give it a colour of its own.
+	 */
+	menuUnderline: crimson,
 };
 
 /* ------------------------------------------------------------------------------------------------
@@ -163,7 +171,7 @@ export const menuUnderlineFlow: {
 	waves: number;
 	thickness: number;
 	alpha: number;
-	amplitude: number;
+	sway: number;
 	travelSpeed: number;
 	motion?: number;
 	sparkleCount: number;
@@ -181,10 +189,10 @@ export const menuUnderlineFlow: {
 	/** Brightness of the strand, 0–1. */
 	alpha: 1,
 	/**
-	 * How much the strand drifts up and down over time, like the background's filaments (px are
-	 * roughly this × 0.3, since the drift scales with the strip's height).
+	 * How far (px) the two tail ends slowly sway up and down, like the background's filaments. The
+	 * middle stays put and the line stays one smooth curve. 0 keeps it still.
 	 */
-	amplitude: 9,
+	sway: 4,
 	/** Speed of the sparkle and light pulse gliding along the strand. */
 	travelSpeed: 2.5,
 	/** Animation speed: the same as the background unless you change it. */
