@@ -290,9 +290,16 @@ test.describe("menu", () => {
 			revealStagger: 0,
 			wave: menuUnderlineFlow.wave,
 			wavePeriods: menuUnderlineFlow.waves,
+			tailSway: menuUnderlineFlow.sway,
+			amplitude: 0,
 			fadeFromOrigin: false,
 		});
-		expect(options.theme).toEqual(colors.background);
+		// Every link draws exactly the same strand, in the configured colours.
+		const all = await page
+			.locator("#site-menu [data-divine-flow]")
+			.evaluateAll((els) => els.map((el) => el.getAttribute("data-options")));
+		expect(new Set(all).size).toBe(1);
+		expect(options.theme).toEqual(colors.menuUnderline);
 		// Nothing runs until it's needed.
 		await expect(flow.locator("canvas")).toHaveCount(0);
 
