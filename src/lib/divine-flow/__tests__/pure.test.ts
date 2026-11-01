@@ -167,6 +167,8 @@ describe("resolveOptions", () => {
 		expect(options.sides).toBe("both");
 		expect(options.spread).toBe(1);
 		expect(options.amplitude).toBe(1);
+		expect(options.arc).toBe(0);
+		expect(options.reveal).toBe(1);
 		expect(options.hueRange).toEqual([-14, 14]);
 		expect(options.lightRange).toEqual([-0.14, 0.14]);
 	});
@@ -185,6 +187,7 @@ describe("resolveOptions", () => {
 		expect(options.hueRange).toEqual([-180, 5]);
 		expect(options.lightRange).toEqual([-0.14, 0.14]);
 		expect(resolveOptions({ sides: "right" }).sides).toBe("right");
+		expect(resolveOptions({ arc: 90, reveal: -2 })).toMatchObject({ arc: 60, reveal: 0 });
 	});
 
 	it("clamps out-of-range and non-finite values", () => {

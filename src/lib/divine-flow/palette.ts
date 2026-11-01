@@ -47,8 +47,8 @@ const violet: DivineFlowPalette = {
 
 /** Pure white light with a faint cool bloom, for accents over a coloured flow (e.g. underlines). */
 const white: DivineFlowPalette = {
-	bloom: [226, 226, 236],
-	glow: [242, 242, 248],
+	bloom: [120, 120, 134],
+	glow: [228, 228, 238],
 	core: [255, 255, 255],
 	shimmer: [255, 255, 255],
 	sparkle: [255, 255, 255],
@@ -56,7 +56,7 @@ const white: DivineFlowPalette = {
 	flare: [255, 255, 255],
 	speck: [240, 240, 246],
 	originInner: [255, 255, 255],
-	originOuter: [200, 200, 214],
+	originOuter: [150, 150, 164],
 	ember: [255, 255, 255],
 };
 

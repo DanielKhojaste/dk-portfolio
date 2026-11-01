@@ -60,6 +60,17 @@ export interface DivineFlowOptions {
 	 * `motion`, this does not change the speed. Default `1`.
 	 */
 	amplitude?: number;
+	/**
+	 * Bend every filament into a gentle hill: the angle (degrees) it leaves the origin at, levelling
+	 * off in the middle of the canvas and coming back down at the far edge. Negative bends it into a
+	 * valley. Default `0`.
+	 */
+	arc?: number;
+	/**
+	 * How much of each filament is drawn, 0–1, growing outwards from the origin. Start at `0` and
+	 * animate it with `setReveal()` to draw the flow in. Default `1`.
+	 */
+	reveal?: number;
 	/** Vertical position of the origin, 0–1 of the canvas height. Default `0.5`. */
 	originY?: number;
 	/** Animation intensity. `0` renders a still frame. Default `1`. */
@@ -116,6 +127,8 @@ export interface ResolvedDivineFlowOptions {
 	sides: DivineFlowSides;
 	spread: number;
 	amplitude: number;
+	arc: number;
+	reveal: number;
 	motion: number;
 	seed: number;
 	sparkleCount: number | null;
@@ -145,6 +158,10 @@ export interface DivineFlowInstance {
 	stop(): void;
 	/** Merge new options and rebuild the scene. */
 	update(options: DivineFlowOptions): void;
+	/** Current draw-in progress, 0–1. */
+	readonly reveal: number;
+	/** Set the draw-in progress (0–1). Cheap enough to call every frame from a tween. */
+	setReveal(progress: number): void;
 	/** Re-measure the container. Called automatically on resize. */
 	resize(): void;
 	/** Draw one frame at `timeMs` (defaults to `performance.now()`). */

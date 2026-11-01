@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createScene, createThreads, emberPosition } from "../scene";
-import { makePointBuffer, sampleThread, samplesForWidth, type FlowLayout } from "../geometry";
+import {
+	arcLift,
+	makePointBuffer,
+	sampleThread,
+	samplesForWidth,
+	type FlowLayout,
+} from "../geometry";
 
 const config = {
 	lineCount: 7,
@@ -157,10 +163,49 @@ describe("geometry", () => {
 		expect(offset(tall)).toBeCloseTo(offset(flat) * 3, 3);
 	});
 
+	it("bends filaments into a hill that leaves and lands at the arc angle", () => {
+		const tan15 = Math.tan((15 * Math.PI) / 180);
+		// From x=0 towards a 400px edge on the right.
+		expect(arcLift(0, 0, 1, 400, 15)).toBe(0);
+		expect(arcLift(400, 0, 1, 400, 15)).toBeCloseTo(0, 9);
+		expect(arcLift(200, 0, 1, 400, 15)).toBeCloseTo((tan15 * 400) / 4, 6);
+		expect(arcLift(1, 0, 1, 400, 15) / 1).toBeCloseTo(tan15, 2);
+		expect(arcLift(500, 0, 1, 400, 15)).toBe(0);
+		// Mirrored for filaments flowing left from the right edge.
+		expect(arcLift(200, 400, -1, 400, 15)).toBeCloseTo((tan15 * 400) / 4, 6);
+
+		const [thread] = createThreads({ ...config, sides: "right" });
+		const strip: FlowLayout = { ...layout, width: 400, height: 60, originX: 0, innerGap: 0 };
+		const flat = makePointBuffer();
+		const hill = makePointBuffer();
+		sampleThread(thread!, 0, { ...strip, still: true }, 44, flat);
+		sampleThread(thread!, 0, { ...strip, still: true, arc: 15 }, 44, hill);
+		const mid = flat.findIndex((p) => p.x >= 200);
+		expect(flat[mid]!.y - hill[mid]!.y).toBeGreaterThan(20);
+		expect(hill[0]).toEqual(flat[0]);
+	});
+
 	it("scales sample count with width inside fixed bounds", () => {
 		expect(samplesForWidth(100)).toBe(44);
 		expect(samplesForWidth(1600)).toBe(57);
 		expect(samplesForWidth(10_000)).toBe(72);
+	});
+});
+
+describe("threadProgress", () => {
+	it("grows each filament from nothing to full length, staggered by its offset", async () => {
+		const { threadProgress } = await import("../renderer");
+		expect(threadProgress(0, 0)).toBe(0);
+		expect(threadProgress(1, 0.9)).toBe(1);
+		expect(threadProgress(0.2, 1)).toBe(0);
+		expect(threadProgress(0.5, 0)).toBeGreaterThan(threadProgress(0.5, 1));
+		let last = 0;
+		for (let r = 0; r <= 1; r += 0.05) {
+			const p = threadProgress(r, 0.4);
+			expect(p).toBeGreaterThanOrEqual(last);
+			last = p;
+		}
+		expect(threadProgress(0.999, 1)).toBeGreaterThan(0.99);
 	});
 });
 

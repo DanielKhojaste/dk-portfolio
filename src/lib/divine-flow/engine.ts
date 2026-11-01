@@ -100,6 +100,7 @@ export function createDivineFlow(
 	let running = true;
 	let destroyed = false;
 	let onScreen = true;
+	let reveal = resolved.reveal;
 
 	const isStill = () =>
 		resolved.reducedMotion === "auto"
@@ -114,6 +115,7 @@ export function createDivineFlow(
 		innerGap: resolved.innerGap,
 		spread: resolved.spread,
 		amplitude: resolved.amplitude,
+		arc: resolved.arc,
 		motion: resolved.motion,
 		still: isStill(),
 	});
@@ -143,6 +145,7 @@ export function createDivineFlow(
 			palette: resolved.palette,
 			emberSpeed: resolved.emberSpeed,
 			composeBloom: !layered,
+			reveal,
 		};
 	}
 
@@ -256,6 +259,15 @@ export function createDivineFlow(
 		get isRunning() {
 			return running && !destroyed;
 		},
+		get reveal() {
+			return reveal;
+		},
+		setReveal(progress: number) {
+			if (destroyed) return;
+			reveal = Math.min(1, Math.max(0, Number.isFinite(progress) ? progress : 1));
+			// The running loop picks the new value up on its next frame; a still canvas needs a redraw.
+			if (!shouldAnimate()) renderFrame();
+		},
 		start() {
 			if (destroyed) return;
 			running = true;
@@ -269,6 +281,7 @@ export function createDivineFlow(
 			if (destroyed) return;
 			input = { ...input, ...next };
 			resolved = resolveOptions(input);
+			if (next.reveal !== undefined) reveal = resolved.reveal;
 			scene = createScene(resolved);
 			buffers = scene.threads.map(makePointBuffer);
 			cache = null;

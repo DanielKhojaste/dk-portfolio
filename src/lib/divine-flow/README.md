@@ -37,6 +37,8 @@ removes it again on `destroy()`.
 | `sides`           | `"both"`                 | `"left"` or `"right"` draws one side only: with `originX` 0 or 1 that makes a single strand (e.g. an underline) |
 | `spread`          | `1`                      | Vertical fan multiplier; 0.1–0.3 keeps filaments in a tight band                                                |
 | `amplitude`       | `1`                      | Wave height multiplier (waves scale with canvas height, so short canvases need more); speed unaffected          |
+| `arc`             | `0`                      | Bends filaments into a low hill: the angle (degrees) they leave the origin at and land on the far edge at       |
+| `reveal`          | `1`                      | Initial draw-in progress (0–1); animate with `flow.setReveal()` to grow filaments out from the origin           |
 | `originY`         | `0.5`                    | Origin y as a fraction of the canvas height                                                                     |
 | `motion`          | `1`                      | Animation intensity; `0` draws a still frame                                                                    |
 | `seed`            | `8400`                   | Layout seed; the same seed always gives the same filaments                                                      |

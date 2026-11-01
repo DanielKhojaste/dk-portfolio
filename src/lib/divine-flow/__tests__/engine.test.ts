@@ -245,6 +245,32 @@ describe("createDivineFlow", () => {
 		expect(rafQueue.size).toBe(1);
 	});
 
+	it("draws filaments in with setReveal, starting from nothing", () => {
+		const { flow } = mount({ reveal: 0 });
+		expect(flow.reveal).toBe(0);
+		contexts[0]!.calls.length = 0;
+		flushFrame(16);
+		expect(contexts[0]!.calls).not.toContain("stroke");
+
+		flow.setReveal(0.6);
+		flushFrame(32);
+		expect(contexts[0]!.calls).toContain("stroke");
+
+		flow.setReveal(7);
+		expect(flow.reveal).toBe(1);
+		flow.setReveal(Number.NaN);
+		expect(flow.reveal).toBe(1);
+	});
+
+	it("redraws straight away when revealing a still canvas", () => {
+		prefersReduced = true;
+		const { flow } = mount({ reveal: 0 });
+		contexts[0]!.calls.length = 0;
+		flow.setReveal(1);
+		expect(contexts[0]!.calls).toContain("stroke");
+		expect(rafQueue.size).toBe(0);
+	});
+
 	it("merges options on update", () => {
 		const { flow } = mount({ theme: "crimson", lineCount: 3 });
 		flow.update({ originY: 0.3 });

@@ -12,6 +12,8 @@ export interface FlowLayout {
 	spread?: number;
 	/** Wave height multiplier. Default `1`. */
 	amplitude?: number;
+	/** Hill angle in degrees at the origin (see `DivineFlowOptions.arc`). Default `0`. */
+	arc?: number;
 	motion: number;
 	/** When true, time is frozen and filaments hold their resting shape. */
 	still: boolean;
@@ -27,6 +29,23 @@ export function makePointBuffer(): Point[] {
 /** Samples per filament for a canvas width: more for wider canvases, within 44–MAX_SAMPLES. */
 export function samplesForWidth(width: number): number {
 	return Math.max(44, Math.min(MAX_SAMPLES, Math.round(width / 28)));
+}
+
+/**
+ * Height of the hill at `x`: a parabola over the stretch from `startX` to the canvas edge on the
+ * filament's side, leaving `startX` at `arcDeg` degrees and landing on the edge at the same angle.
+ * Zero beyond the edge.
+ */
+export function arcLift(
+	x: number,
+	startX: number,
+	side: -1 | 1,
+	width: number,
+	arcDeg: number,
+): number {
+	const span = Math.abs((side === 1 ? width : 0) - startX) || 1;
+	const t = Math.min(1, Math.max(0, ((x - startX) * side) / span));
+	return Math.tan((arcDeg * Math.PI) / 180) * span * t * (1 - t);
 }
 
 /** Write the point at `u` (0–1) along `thread` at `time` seconds into `out`. */
@@ -54,12 +73,14 @@ export function writePoint(
 	const c2y = endY + thread.bow2 * spread * height;
 
 	const x0 = cubicBezier(u, startX, c1x, c2x, endX);
-	const y0 = cubicBezier(u, startY, c1y, c2y, endY);
+	let y0 = cubicBezier(u, startY, c1y, c2y, endY);
 	const dx = cubicBezierDerivative(u, startX, c1x, c2x, endX);
 	const dy = cubicBezierDerivative(u, startY, c1y, c2y, endY);
 	const len = Math.hypot(dx, dy) || 1;
 	const nx = -dy / len;
 	const ny = dx / len;
+
+	if (layout.arc) y0 -= arcLift(x0, startX, thread.side, width, layout.arc);
 
 	const t = layout.still ? 0 : time;
 	const envelope = Math.sin(Math.PI * u);
