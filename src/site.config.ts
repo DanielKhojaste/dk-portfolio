@@ -161,6 +161,7 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 	},
 };
 
+// TODO: The middle of the wave looks like the two gradients are overlapping.
 /**
  * The underline that draws out under a hovered or focused menu link: one strand of the background's
  * DivineFlow (same colours) with a gentle "~" wave.
@@ -192,11 +193,13 @@ export const menuUnderlineFlow: {
 	 * How far (px) the two tail ends slowly sway up and down, like the background's filaments. The
 	 * middle stays put and the line stays one smooth curve. 0 keeps it still.
 	 */
-	sway: 4,
+	sway: 0,
 	/** Speed of the sparkle and light pulse gliding along the strand. */
-	travelSpeed: 2.5,
+	travelSpeed: 6.0,
 	/** Animation speed: the same as the background unless you change it. */
 	motion: backgroundFlow.desktop.motion,
 	/** Sparkles sliding along the strand. */
-	sparkleCount: 1,
+	// TODO: Measure performance on different devices and adjust the number of particles.
+	// PENDING: Use different options based on device type and connection speed.
+	sparkleCount: 30,
 };

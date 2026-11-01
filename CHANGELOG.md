@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- README screenshots (desktop home, phone home, desktop menu) in `screenshots/`, and a DivineFlow section
+  (soon its own npm package; copyright Daniel Khojaste).
+
+### Changed
+
+- Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
+
 ## [0.1.0-alpha.1] - 2026-10-31
 
 ### Added
