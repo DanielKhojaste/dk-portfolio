@@ -16,27 +16,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI: format check, type check, unit tests, build and end-to-end tests.
 - DivineFlow (`src/lib/divine-flow`): framework-agnostic canvas renderer for the light-filament background,
   with themes (gold, crimson, violet, white), per-filament colour variance within configurable hue and
-  lightness ranges, one-sided strands (`sides`), fan `spread`, wave `amplitude`, a `tilt` angle, a
-  draw-in `reveal`, ambient embers, a frame-rate cap, reduced-motion support and unit tests. Gradients
-  and sprites are cached and the bloom is a separate GPU-scaled layer, so frames are cheap.
+  lightness ranges, one-sided strands (`sides`), fan `spread`, wave `amplitude`, a `tilt` angle,
+  `thickness`, `uniform`/`alpha` strands, a draw-in `reveal` with `revealStagger`, ambient embers, a
+  frame-rate cap, reduced-motion support and unit tests. Gradients and sprites are cached and the bloom
+  is a separate GPU-scaled layer, so frames are cheap.
 - Full-viewport hero (`100svh`, 600px floor on desktop, 480px on compact screens) with the masthead name
   ("DANIEL" in white, "KHOJASTE" as a deep red shape behind the throne so the photo leads), the throne
   photo at 90% of the hero height and centred calls to action.
-- Two hero claims on either side of the throne: "Software Developer" (based in Canada) and the
-  current project (Lineup, linked), in white expanded caps with a red glow. Their labels, the last lines
-  of their headlines and their underlines always line up. Each underline is a few strands of white
-  DivineFlow rising gently towards its own side of the screen, drawn in alongside the signature.
+- Two hero claims on either side of the throne, low in the hero: "Software Developer" (based in Canada)
+  and the current project (Lineup, linked), in white expanded caps with a red glow. Their labels and
+  the first lines of their headlines always line up.
 - DivineFlow draws in on load, at the same time as the logo: filaments grow out from the origin towards
   the sides (GSAP-driven, skipped for reduced motion), with a bright tip leading each one.
 - Tablet and mobile share the desktop composition (large throne, info and buttons over a bottom scrim),
   and the whole hero fits on portrait phones without scrolling.
 - `src/site.config.ts`: one file for everything tweakable: the copy, every animation timing (logo,
-  DivineFlow draw-ins, menu, hovers), the DivineFlow colours and options, and the underlines' angle
-  and length.
+  DivineFlow draw-in, menu, hovers), the DivineFlow colours and options, and the menu underline.
 - Real copy: based in Canada, and Lineup (linked) as the current project.
 - Full-screen menu with the section links centred over a blurred page. Hovering, focusing or pressing a
-  link draws a white DivineFlow underline out from its centre. Esc, a section link or a click anywhere
-  else closes it; the rest of the page is inert while it is open, and DivineFlow pauses behind it.
+  link draws a single strand of the background's DivineFlow out from the middle of the word, fading
+  out at both ends. Esc, a section link or a click anywhere else closes it; the rest of the page is
+  inert while it is open, and DivineFlow pauses behind it.
+- The header (logo and menu button) stays fixed at the top while scrolling.
 - Crimson DivineFlow background in varying shades of deep red (never drifting towards orange) with
   drifting embers behind the hero, with separate settings for compact screens.
 - Header with the DK logo, written stroke by stroke on page load like handwriting (GSAP DrawSVG; skipped
