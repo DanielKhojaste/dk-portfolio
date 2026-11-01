@@ -57,6 +57,7 @@ removes it again on `destroy()`.
 | `wave`            | `0`                      | Height (px) of a gentle "~" wave across the canvas: dips under the left half, rises under the right                                                 |
 | `wavePeriods`     | `1`                      | Number of waves across the canvas                                                                                                                   |
 | `fadeFromOrigin`  | `true`                   | Fade filaments in near their origin; turn off for strands drawn out from the middle                                                                 |
+| `travelSpeed`     | `1`                      | Speed multiplier for the sparkles and light pulses gliding along filaments                                                                          |
 | `thickness`       | `1`                      | Line thickness multiplier for every filament                                                                                                        |
 | `uniform`         | `false`                  | Same width and brightness for every filament (e.g. both halves of a centred strand)                                                                 |
 | `alpha`           | —                        | Fixed opacity (0–1) for every filament                                                                                                              |

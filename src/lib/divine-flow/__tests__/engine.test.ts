@@ -191,15 +191,16 @@ describe("createDivineFlow", () => {
 		expect(rafQueue.size).toBe(0);
 	});
 
-	it("creates gradients once, not every frame", () => {
-		mount({ theme: "crimson", emberCount: 20 });
+	it("caches filament gradients; only travelling pulses get a fresh one per frame", () => {
+		mount({ theme: "crimson", emberCount: 20, lineCount: 4, scatterCount: 0 });
 		const count = () => contexts.reduce((sum, c) => sum + c.gradients(), 0);
 		const afterMount = count();
 		expect(afterMount).toBeGreaterThan(0);
 		flushFrame(16);
 		flushFrame(33);
 		flushFrame(50);
-		expect(count()).toBe(afterMount);
+		// At most one pulse per filament (8 here) per frame, instead of 3 gradients per filament.
+		expect(count() - afterMount).toBeLessThanOrEqual(3 * 8);
 	});
 
 	it("caps the frame rate with maxFps", () => {

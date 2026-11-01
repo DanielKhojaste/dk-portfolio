@@ -239,6 +239,17 @@ describe("geometry", () => {
 	});
 });
 
+describe("travelFade", () => {
+	it("fades sparkles and pulses in and out over their travel instead of popping", async () => {
+		const { travelFade } = await import("../renderer");
+		expect(travelFade(0.12, 0.12, 0.62)).toBe(0);
+		expect(travelFade(0.74, 0.12, 0.62)).toBe(0);
+		expect(travelFade(0.43, 0.12, 0.62)).toBeCloseTo(1, 6);
+		expect(travelFade(0.15, 0.12, 0.62)).toBeLessThan(0.2);
+		expect(travelFade(0.9, 0.12, 0.62)).toBe(0);
+	});
+});
+
 describe("threadProgress", () => {
 	it("grows each filament from nothing to full length, staggered by its offset", async () => {
 		const { threadProgress } = await import("../renderer");

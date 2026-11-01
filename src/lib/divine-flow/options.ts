@@ -70,6 +70,7 @@ export function resolveOptions(options: DivineFlowOptions = {}): ResolvedDivineF
 		fadeFromOrigin: options.fadeFromOrigin ?? true,
 		thickness: clamp(finite(options.thickness, DEFAULTS.thickness), 0.05, 10),
 		uniform: options.uniform ?? false,
+		travelSpeed: clamp(finite(options.travelSpeed, 1), 0, 20),
 		alpha: options.alpha === undefined ? null : clamp(finite(options.alpha, 1), 0, 1),
 		revealStagger: clamp(finite(options.revealStagger, DEFAULTS.revealStagger), 0, 0.9),
 		reveal: clamp(finite(options.reveal, DEFAULTS.reveal), 0, 1),

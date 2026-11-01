@@ -70,6 +70,11 @@ export interface DivineFlowOptions {
 	/** Fixed opacity (0–1) for every filament, instead of each picking its own. */
 	alpha?: number;
 	/**
+	 * Speed of the sparkles and light pulses travelling along the filaments, as a multiple. They move a
+	 * share of the filament's length per second, so short filaments may want this higher. Default `1`.
+	 */
+	travelSpeed?: number;
+	/**
 	 * When drawing in, how far apart (as a share of the draw-in) filaments start. `0` starts them all
 	 * together, e.g. for a symmetric strand. Default `0.25`.
 	 */
@@ -168,6 +173,7 @@ export interface ResolvedDivineFlowOptions {
 	thickness: number;
 	uniform: boolean;
 	alpha: number | null;
+	travelSpeed: number;
 	revealStagger: number;
 	motion: number;
 	seed: number;

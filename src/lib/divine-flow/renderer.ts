@@ -14,7 +14,7 @@ interface ThreadCache {
 	bloom: CanvasGradient;
 	glow: CanvasGradient;
 	core: CanvasGradient;
-	shimmer: string;
+	shimmer: RGB;
 }
 
 interface Sprite {
@@ -50,6 +50,8 @@ export interface FrameState {
 	reveal?: number;
 	/** See `DivineFlowOptions.revealStagger`. Default `0.25`. */
 	revealStagger?: number;
+	/** See `DivineFlowOptions.travelSpeed`. Default `1`. */
+	travelSpeed?: number;
 	cache: RenderCache;
 }
 
@@ -183,7 +185,7 @@ export function buildRenderCache(
 			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5, fade),
 			glow: makeTrailGradient(ctx, start, end, tint(palette.glow), thread.alpha * 0.22, fade),
 			core: makeTrailGradient(ctx, start, end, tint(palette.core), thread.alpha * 0.78, fade),
-			shimmer: rgba(tint(palette.shimmer), 1),
+			shimmer: tint(palette.shimmer),
 		};
 	});
 
@@ -260,6 +262,24 @@ function polyline(points: readonly Point[], from: number, to: number): Path2D {
 	return path;
 }
 
+/** A path along `points` from `u0` to `u1` (0–1), starting and ending exactly there, not on samples. */
+function segment(points: readonly Point[], samples: number, u0: number, u1: number): Path2D {
+	const start = pointAt(points, samples, u0);
+	const end = pointAt(points, samples, u1);
+	const path = new Path2D();
+	path.moveTo(start.x, start.y);
+	const first = Math.floor(u0 * samples) + 1;
+	const last = Math.ceil(u1 * samples) - 1;
+	for (let i = first; i <= last; i += 1) path.lineTo(points[i]!.x, points[i]!.y);
+	path.lineTo(end.x, end.y);
+	return path;
+}
+
+/**
+ * A pulse of light travelling along a filament: one stroke with a gradient that fades in from the
+ * tail, peaks in the middle and fades out at the head. Its ends sit exactly at `headU - length` and
+ * `headU` (not snapped to samples), so it glides rather than stepping along short filaments.
+ */
 function strokeShimmer(
 	ctx: Ctx,
 	points: readonly Point[],
@@ -268,29 +288,29 @@ function strokeShimmer(
 	length: number,
 	width: number,
 	alpha: number,
-	color: string,
+	color: RGB,
 ): void {
 	const uStart = Math.max(0.1, headU - length);
 	const uEnd = Math.min(0.76, headU);
-	const span = uEnd - uStart;
-	if (span < 0.03) return;
+	if (uEnd - uStart < 0.01 || alpha < 0.01) return;
 
-	ctx.strokeStyle = color;
-	ctx.lineWidth = width;
-	const chunks = 8;
-	for (let c = 0; c < chunks; c += 1) {
-		const t0 = c / chunks;
-		const t1 = (c + 1) / chunks;
-		const envelope = Math.sin(Math.PI * ((t0 + t1) * 0.5));
-		const a = alpha * envelope * envelope;
-		if (a < 0.02) continue;
-		const i0 = Math.max(0, Math.floor((uStart + span * t0) * samples));
-		const i1 = Math.min(samples, Math.ceil((uStart + span * t1) * samples));
-		if (i1 <= i0) continue;
-		ctx.globalAlpha = a;
-		ctx.stroke(polyline(points, i0, i1));
-	}
+	const tail = pointAt(points, samples, uStart);
+	const head = pointAt(points, samples, uEnd);
+	const grad = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+	grad.addColorStop(0, rgba(color, 0));
+	grad.addColorStop(0.5, rgba(color, alpha));
+	grad.addColorStop(1, rgba(color, 0));
 	ctx.globalAlpha = 1;
+	ctx.strokeStyle = grad;
+	ctx.lineWidth = width;
+	ctx.stroke(segment(points, samples, uStart, uEnd));
+}
+
+/** 0 at both ends of a travel range and 1 in the middle, so things fade in and out instead of popping. */
+export function travelFade(u: number, from: number, span: number): number {
+	const t = (u - from) / span;
+	if (t <= 0 || t >= 1) return 0;
+	return Math.sin(Math.PI * t);
 }
 
 function stamp(ctx: Ctx, sprite: Sprite, x: number, y: number, scale: number, alpha: number) {
@@ -306,6 +326,7 @@ export function drawFrame(state: FrameState, time: number): void {
 	const { width, height, motion, still } = layout;
 	const animate = !still && motion > 0;
 	const reveal = state.reveal ?? 1;
+	const travel = state.travelSpeed ?? 1;
 	const paths: (Path2D | null)[] = new Array(scene.threads.length);
 	const heads: number[] = new Array(scene.threads.length);
 
@@ -376,7 +397,8 @@ export function drawFrame(state: FrameState, time: number): void {
 		}
 
 		if (thread.hasPulse && animate && head >= 1) {
-			const pulseU = ((thread.pulsePhase + time * thread.pulseSpeed * motion) % 0.58) + 0.12;
+			const pulseU =
+				((thread.pulsePhase + time * thread.pulseSpeed * motion * travel) % 0.58) + 0.12;
 			strokeShimmer(
 				ctx,
 				buffers[i]!,
@@ -384,7 +406,7 @@ export function drawFrame(state: FrameState, time: number): void {
 				pulseU,
 				thread.pulseLength,
 				thread.coreWidth,
-				Math.min(1, thread.alpha * shimmer) * 0.38,
+				Math.min(1, thread.alpha * shimmer) * 0.38 * travelFade(pulseU, 0.12, 0.58),
 				threadCache.shimmer,
 			);
 		}
@@ -411,7 +433,7 @@ export function drawFrame(state: FrameState, time: number): void {
 		const sparkle = scene.sparkles[s]!;
 		const sprite = cache.sparkles[s]!;
 		const u = animate
-			? ((sparkle.phase + time * sparkle.speed * motion) % 0.62) + 0.12
+			? ((sparkle.phase + time * sparkle.speed * motion * travel) % 0.62) + 0.12
 			: sparkle.phase;
 		if (u > heads[sparkle.thread]!) continue;
 		const p = pointAt(buffers[sparkle.thread]!, samples, u);
@@ -419,7 +441,8 @@ export function drawFrame(state: FrameState, time: number): void {
 			0.5 + 0.5 * Math.sin(time * sparkle.twinkleSpeed + sparkle.twinklePhase),
 			2.2,
 		);
-		ctx.globalAlpha = 0.3 + twinkle * 0.7;
+		// Fades in as it sets off and out before it wraps round, so it never pops in or out.
+		ctx.globalAlpha = (0.3 + twinkle * 0.7) * (animate ? travelFade(u, 0.12, 0.62) : 1);
 		if (sparkle.flare) {
 			ctx.drawImage(
 				sprite.canvas,
