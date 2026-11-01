@@ -118,17 +118,33 @@ test.describe("hero", () => {
 		await expect(hero(page)).not.toContainText("temporary slogan");
 	});
 
-	test("claims sit on either side, with bottoms aligned", async ({ page }) => {
-		await page.goto("/");
-		const [a, b] = await Promise.all([
-			box(page, ".hero__claim--start"),
-			box(page, ".hero__claim--end"),
-		]);
-		expect(a.x + a.width).toBeLessThan(b.x);
-		expect(Math.abs(a.y + a.height - (b.y + b.height))).toBeLessThanOrEqual(1);
+	test("claims sit on either side, with their labels on one line at every size", async ({
+		page,
+	}) => {
+		for (const size of [
+			{ width: 1440, height: 900 },
+			{ width: 1024, height: 768 },
+			{ width: 820, height: 1180 },
+			{ width: 390, height: 844 },
+			{ width: 360, height: 640 },
+		]) {
+			await page.setViewportSize(size);
+			await page.goto("/");
+			const [a, b] = await Promise.all([
+				box(page, ".hero__claim--start"),
+				box(page, ".hero__claim--end"),
+			]);
+			expect(a.x + a.width).toBeLessThan(b.x);
+			const [based, building] = await Promise.all([
+				box(page, ".hero__claim--start .hero__kicker"),
+				box(page, ".hero__claim--end .hero__kicker"),
+			]);
+			expect(based.height).toBeLessThan(20);
+			expect(Math.abs(based.y - building.y)).toBeLessThanOrEqual(0.5);
+		}
 	});
 
-	test("underlines each claim with a low hill of white DivineFlow that draws in", async ({
+	test("underlines each claim with a slanted strand of white DivineFlow that draws in", async ({
 		page,
 	}) => {
 		await page.goto("/");
@@ -139,7 +155,8 @@ test.describe("hero", () => {
 			[1, "left"],
 		] as const) {
 			const options = JSON.parse((await rules.nth(i).getAttribute("data-options"))!);
-			expect(options).toMatchObject({ theme: "white", sides: side, arc: 15, emberCount: 0 });
+			expect(options).toMatchObject({ sides: side, tilt: 5, emberCount: 0 });
+			expect(options.theme.core).toEqual([255, 255, 255]);
 			await expect(rules.nth(i)).toHaveAttribute("data-reveal", /duration/);
 			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true");
 		}
