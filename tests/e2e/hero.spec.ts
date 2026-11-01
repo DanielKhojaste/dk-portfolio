@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { animation, underlineFlow } from "../../src/site.config";
+import { colors } from "../../src/site.config";
 
 const hero = (page: Page) => page.locator("section.hero");
 const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
@@ -143,45 +143,15 @@ test.describe("hero", () => {
 			expect(based.height).toBeLessThan(20);
 			expect(Math.abs(based.y - building.y)).toBeLessThanOrEqual(0.5);
 
-			// The headlines end on the same line, and the underlines start at the same height.
-			const [developer, lineup, ruleA, ruleB] = await Promise.all([
+			// The headlines start on the same line: "SOFTWARE" level with "LINEUP".
+			const [software, lineup] = await Promise.all([
 				box(page, ".hero__claim--start .hero__headline"),
 				box(page, ".hero__claim--end .hero__headline"),
-				box(page, ".hero__claim--start .hero__rule"),
-				box(page, ".hero__claim--end .hero__rule"),
 			]);
-			expect(Math.abs(developer.y + developer.height - (lineup.y + lineup.height))).toBeLessThan(2);
-			expect(Math.abs(ruleA.y - ruleB.y)).toBeLessThanOrEqual(0.5);
+			expect(Math.abs(software.y - lineup.y)).toBeLessThanOrEqual(1);
+			// No underlines in the hero any more.
+			await expect(page.locator(".hero__rule")).toHaveCount(0);
 		}
-	});
-
-	test("underlines each claim with mirrored white DivineFlow strands, timed with the signature", async ({
-		page,
-	}) => {
-		await page.goto("/");
-		const rules = page.locator(".hero__rule [data-divine-flow]");
-		await expect(rules).toHaveCount(2);
-		// Each rises towards its own side: the left one up to the left, the right one up to the right.
-		for (const [i, side, tilt] of [
-			[0, "right", -underlineFlow.angle],
-			[1, "left", underlineFlow.angle],
-		] as const) {
-			const options = JSON.parse((await rules.nth(i).getAttribute("data-options"))!);
-			expect(options).toMatchObject({ sides: side, tilt, emberCount: 0 });
-			expect(options.theme.core).toEqual([255, 255, 255]);
-			const reveal = JSON.parse((await rules.nth(i).getAttribute("data-reveal"))!);
-			expect(reveal.delay).toBe(animation.logo.delay);
-			expect(reveal.duration).toBeCloseTo(animation.logo.duration + 3 * animation.logo.penLift);
-			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true");
-			const width = (await rules.nth(i).boundingBox())!.width;
-			expect(width).toBeLessThanOrEqual(underlineFlow.width.desktop + 1);
-		}
-		// Same pace as the background flow.
-		const main = JSON.parse(
-			(await page.locator(".hero > [data-divine-flow]").getAttribute("data-options"))!,
-		);
-		const rule = JSON.parse((await rules.first().getAttribute("data-options"))!);
-		expect(rule.motion).toBe(main.motion);
 	});
 
 	test("fits the whole hero on portrait phones without scrolling", async ({ page }) => {
@@ -308,6 +278,10 @@ test.describe("menu", () => {
 		const link = page.locator("#site-menu").getByRole("link", { name: "Skills", exact: true });
 		const flow = link.locator("[data-divine-flow]");
 		await expect(flow).toHaveAttribute("data-manual", "");
+		// One strand of the background's DivineFlow, drawn out from the middle of the word together.
+		const options = JSON.parse((await flow.getAttribute("data-options"))!);
+		expect(options).toMatchObject({ sides: "both", originX: 0.5, lineCount: 1, revealStagger: 0 });
+		expect(options.theme).toEqual(colors.background);
 		// Nothing runs until it's needed.
 		await expect(flow.locator("canvas")).toHaveCount(0);
 
@@ -347,6 +321,16 @@ test.describe("header", () => {
 		const rect = await menu.boundingBox();
 		expect(rect!.width).toBeGreaterThanOrEqual(44);
 		expect(rect!.height).toBeGreaterThanOrEqual(44);
+	});
+
+	test("keeps the menu button on screen after scrolling down", async ({ page }) => {
+		await page.goto("/");
+		await page.locator("#contact").scrollIntoViewIfNeeded();
+		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+		const button = page.getByRole("button", { name: "Open menu" });
+		await expect(button).toBeInViewport();
+		await button.click();
+		await expect(page.locator("#site-menu")).toBeVisible();
 	});
 
 	test("writes the logo stroke by stroke and ends with the original artwork", async ({ page }) => {
