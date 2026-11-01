@@ -7,22 +7,23 @@ import type { DivineFlowOptions } from "../lib/divine-flow";
 import { profile } from "../data/site";
 
 /**
- * The underline under each claim: a thin strand of white DivineFlow, flowing away from the outer
- * edge at the same pace as the background (same `motion`), fading out towards the throne.
+ * The underline under each claim: a few thin strands of white DivineFlow, drawn out from the outer
+ * edge in a low hill (15° at either end) at the same pace as the background (same `motion`).
  */
 const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => ({
 	theme: "white",
 	sides: side === "start" ? "right" : "left",
-	originX: side === "start" ? 0.01 : 0.99,
-	originY: 0.5,
+	originX: side === "start" ? 0 : 1,
+	originY: 0.82,
 	innerGap: 0,
-	lineCount: 5,
+	arc: 15,
+	lineCount: 4,
 	scatterCount: 0,
-	spread: 0.22,
-	amplitude: 7,
+	spread: 0.7,
+	amplitude: 2.5,
 	motion: 1.6,
 	sparkleCount: 2,
-	speckCount: 6,
+	speckCount: 4,
 	emberCount: 0,
 	maxDpr: 2,
 	seed: side === "start" ? 3107 : 5281,
@@ -33,7 +34,7 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 	<div class="hero__glow" aria-hidden="true"></div>
 
 	<DivineFlow
-		afterLogo
+		reveal={{ delay: 0.2, duration: 2.2 }}
 		options={{
 			theme: "crimson",
 			variance: 0.7,
@@ -82,14 +83,13 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 
 	<div class="hero__info">
 		<div class="hero__claim hero__claim--start">
-			<p class="hero__kicker">
-				<span>Based in {profile.location}</span><span class="hero__kicker-sep"> · </span><span
-					>{profile.relocation}</span
-				>
-			</p>
+			<p class="hero__kicker">Based in {profile.location}</p>
 			<p class="hero__headline">{profile.role}</p>
 			<span class="hero__rule" aria-hidden="true">
-				<DivineFlow afterLogo options={underline("start")} />
+				<DivineFlow
+					reveal={{ delay: 0.5, duration: 1.8, ease: "power2.inOut" }}
+					options={underline("start")}
+				/>
 			</span>
 		</div>
 		<div class="hero__claim hero__claim--end">
@@ -116,7 +116,10 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 				<span class="sr-only">(opens in a new tab)</span>
 			</a>
 			<span class="hero__rule" aria-hidden="true">
-				<DivineFlow afterLogo options={underline("end")} />
+				<DivineFlow
+					reveal={{ delay: 0.5, duration: 1.8, ease: "power2.inOut" }}
+					options={underline("end")}
+				/>
 			</span>
 		</div>
 	</div>
@@ -289,33 +292,26 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 
 	.hero__kicker {
 		margin: 0;
-		font-size: 12px;
+		font-size: 11px;
 		font-weight: 600;
-		letter-spacing: 0.24em;
+		letter-spacing: 0.3em;
 		text-transform: uppercase;
-		color: var(--color-text-soft);
+		color: var(--color-accent-soft);
 	}
 
-	/* Big claims in a silver-to-red metal finish. */
+	/* Big claims: expanded caps in white with a red glow. */
 	.hero__headline {
 		margin: 0;
 		font-family: var(--font-display);
 		font-stretch: 125%;
-		font-weight: 900;
-		font-size: clamp(22px, 2.45cqw, 40px);
-		line-height: 1.02;
+		font-weight: 800;
+		font-size: clamp(18px, 1.75cqw, 28px);
+		line-height: 1.12;
+		letter-spacing: 0.02em;
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--color-text);
-	}
-
-	@supports (background-clip: text) or (-webkit-background-clip: text) {
-		.hero__headline {
-			color: transparent;
-			background: linear-gradient(180deg, #fff 10%, #ffd6d9 48%, #e8323f 100%);
-			-webkit-background-clip: text;
-			background-clip: text;
-		}
+		color: #fff;
+		text-shadow: 0 0 28px rgb(230 40 55 / 0.6);
 	}
 
 	.hero__headline--link {
@@ -339,24 +335,22 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 	}
 
 	/*
-	 * The underline: a strand of white DivineFlow in a short strip, bleeding a little past the text.
-	 * It flows from the outer edge and fades out towards the throne.
+	 * The underline: a few strands of white DivineFlow arching low under the claim, drawn out from
+	 * the outer edge and fading out before they reach the throne.
 	 */
 	.hero__rule {
 		position: relative;
 		display: block;
-		width: calc(100% + 24px);
-		height: 36px;
-		margin-top: -6px;
-		margin-left: -12px;
-		-webkit-mask-image: linear-gradient(90deg, #000 60%, transparent);
-		mask-image: linear-gradient(90deg, #000 60%, transparent);
+		width: 100%;
+		height: 52px;
+		margin-top: -2px;
+		-webkit-mask-image: linear-gradient(90deg, #000 72%, transparent);
+		mask-image: linear-gradient(90deg, #000 72%, transparent);
 	}
 
 	.hero__claim--end .hero__rule {
-		margin: -6px -12px 0 0;
-		-webkit-mask-image: linear-gradient(-90deg, #000 60%, transparent);
-		mask-image: linear-gradient(-90deg, #000 60%, transparent);
+		-webkit-mask-image: linear-gradient(-90deg, #000 72%, transparent);
+		mask-image: linear-gradient(-90deg, #000 72%, transparent);
 	}
 
 	.hero__actions {
@@ -490,22 +484,12 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 			letter-spacing: 0.16em;
 		}
 
-		/* Location and relocation on their own lines rather than an awkward wrap. */
-		.hero__kicker span {
-			display: block;
-		}
-
-		.hero__kicker .hero__kicker-sep {
-			display: none;
-		}
-
 		.hero__headline {
 			font-size: clamp(14px, 4.3cqw, 26px);
 		}
 
 		.hero__rule {
-			height: 28px;
-			margin-top: -4px;
+			height: 40px;
 		}
 
 		.hero__actions {

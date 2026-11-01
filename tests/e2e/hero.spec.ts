@@ -93,8 +93,20 @@ test.describe("hero", () => {
 
 		await expect(claims.nth(0)).toContainText("Software Developer");
 		await expect(claims.nth(0)).toContainText("Based in Canada");
-		await expect(claims.nth(0)).toContainText("Open to relocating");
 		await expect(hero(page)).not.toContainText("Ottawa");
+		await expect(hero(page)).not.toContainText("relocat");
+
+		// Solid white headlines with a red glow, not a gradient fill.
+		const headline = await claims
+			.nth(0)
+			.locator(".hero__headline")
+			.evaluate((el) => {
+				const cs = getComputedStyle(el);
+				return { color: cs.color, image: cs.backgroundImage, shadow: cs.textShadow };
+			});
+		expect(headline.color).toBe("rgb(255, 255, 255)");
+		expect(headline.image).toBe("none");
+		expect(headline.shadow).not.toBe("none");
 
 		const project = claims.nth(1).getByRole("link", { name: /Lineup/ });
 		await expect(claims.nth(1)).toContainText("Currently building");
@@ -116,7 +128,9 @@ test.describe("hero", () => {
 		expect(Math.abs(a.y + a.height - (b.y + b.height))).toBeLessThanOrEqual(1);
 	});
 
-	test("underlines each claim with its own white DivineFlow strand", async ({ page }) => {
+	test("underlines each claim with a low hill of white DivineFlow that draws in", async ({
+		page,
+	}) => {
 		await page.goto("/");
 		const rules = page.locator(".hero__rule [data-divine-flow]");
 		await expect(rules).toHaveCount(2);
@@ -125,8 +139,9 @@ test.describe("hero", () => {
 			[1, "left"],
 		] as const) {
 			const options = JSON.parse((await rules.nth(i).getAttribute("data-options"))!);
-			expect(options).toMatchObject({ theme: "white", sides: side, emberCount: 0 });
-			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true", { timeout: 8_000 });
+			expect(options).toMatchObject({ theme: "white", sides: side, arc: 15, emberCount: 0 });
+			await expect(rules.nth(i)).toHaveAttribute("data-reveal", /duration/);
+			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true");
 		}
 		// Same pace as the background flow.
 		const main = JSON.parse(
@@ -166,12 +181,14 @@ test.describe("hero", () => {
 		expect(Math.abs(centre - (actions.x + actions.width / 2))).toBeLessThanOrEqual(2);
 	});
 
-	test("starts DivineFlow behind the hero once the logo is written", async ({ page }) => {
+	test("draws DivineFlow in on load, alongside the logo rather than after it", async ({ page }) => {
 		await page.goto("/");
 		const flow = page.locator(".hero > [data-divine-flow]");
-		await expect(flow).toHaveAttribute("data-after-logo", "");
-		await expect(flow).toHaveAttribute("data-flow-ready", "true", { timeout: 8_000 });
-		await expect(page.locator("svg[data-logo-draw]")).toHaveAttribute("data-drawn", "true");
+		await expect(flow).toHaveAttribute("data-reveal", /duration/);
+		await expect(flow).not.toHaveAttribute("data-after-logo");
+		// Mounted while the logo is still being written.
+		await expect(flow).toHaveAttribute("data-flow-ready", "true");
+		await expect(page.locator("svg[data-logo-draw]")).not.toHaveAttribute("data-drawn", "true");
 
 		// Filaments canvas on top of a separate, GPU-scaled bloom canvas.
 		await expect(flow.locator("canvas[data-divine-flow-bloom]")).toHaveCount(1);
@@ -225,7 +242,7 @@ test.describe("menu", () => {
 			await expect(menu.getByRole("link", { name: new RegExp(label) })).toBeVisible();
 		}
 		await expect(menu).toContainText("Canada");
-		await expect(menu).toContainText("Open to relocating");
+		await expect(menu).not.toContainText("relocat");
 		await expect(menu.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
 			"href",
 			"https://github.com/DanielKhojaste",

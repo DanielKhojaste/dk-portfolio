@@ -12,8 +12,6 @@ export const profile = {
 	role: "Software Developer",
 	slogan: "temporary slogan",
 	location: "Canada",
-	/** Shown next to the location. */
-	relocation: "Open to relocating",
 	coaching: "Coaching soccer",
 	currently: {
 		/** Project name, shown as "Currently building <name>" in the hero. */
