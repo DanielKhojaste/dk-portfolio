@@ -164,6 +164,30 @@ describe("resolveOptions", () => {
 		expect(options.sparkleCount).toBeNull();
 		expect(options.variance).toBe(0);
 		expect(options.maxFps).toBe(60);
+		expect(options.sides).toBe("both");
+		expect(options.spread).toBe(1);
+		expect(options.amplitude).toBe(1);
+		expect(options.tilt).toBe(0);
+		expect(options.reveal).toBe(1);
+		expect(options.hueRange).toEqual([-14, 14]);
+		expect(options.lightRange).toEqual([-0.14, 0.14]);
+	});
+
+	it("validates sides, spread, amplitude and shade ranges", () => {
+		const options = resolveOptions({
+			sides: "up" as never,
+			spread: -1,
+			amplitude: 99,
+			hueRange: [5, -400],
+			lightRange: [Number.NaN, 0] as never,
+		});
+		expect(options.sides).toBe("both");
+		expect(options.spread).toBe(0);
+		expect(options.amplitude).toBe(40);
+		expect(options.hueRange).toEqual([-180, 5]);
+		expect(options.lightRange).toEqual([-0.14, 0.14]);
+		expect(resolveOptions({ sides: "right" }).sides).toBe("right");
+		expect(resolveOptions({ tilt: 90, reveal: -2 })).toMatchObject({ tilt: 45, reveal: 0 });
 	});
 
 	it("clamps out-of-range and non-finite values", () => {

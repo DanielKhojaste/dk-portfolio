@@ -8,6 +8,12 @@ export interface FlowLayout {
 	originX: number;
 	originY: number;
 	innerGap: number;
+	/** Vertical spread multiplier for the filaments' fan. Default `1`. */
+	spread?: number;
+	/** Wave height multiplier. Default `1`. */
+	amplitude?: number;
+	/** Slant in degrees, rising to the right (see `DivineFlowOptions.tilt`). Default `0`. */
+	tilt?: number;
 	motion: number;
 	/** When true, time is frozen and filaments hold their resting shape. */
 	still: boolean;
@@ -25,6 +31,11 @@ export function samplesForWidth(width: number): number {
 	return Math.max(44, Math.min(MAX_SAMPLES, Math.round(width / 28)));
 }
 
+/** How far a point `x` px along from `startX` is lifted by a `tiltDeg` slant (rising to the right). */
+export function tiltLift(x: number, startX: number, tiltDeg: number): number {
+	return Math.tan((tiltDeg * Math.PI) / 180) * (x - startX);
+}
+
 /** Write the point at `u` (0–1) along `thread` at `time` seconds into `out`. */
 export function writePoint(
 	thread: Thread,
@@ -34,34 +45,41 @@ export function writePoint(
 	out: Point,
 ): void {
 	const { width, height } = layout;
+	const spread = layout.spread ?? 1;
 	const cx = width * layout.originX;
 	const cy = height * layout.originY;
 	const originR = Math.min(layout.innerGap, Math.max(64, width * 0.072));
 	const startX = cx + thread.side * originR * (0.4 + thread.startInset * 0.34);
-	const startY = cy + thread.startY * height;
+	const startY = cy + thread.startY * spread * height;
 	const edgeX = thread.side === 1 ? width + 48 : -48;
 	const endX = startX + (edgeX - startX) * thread.reach;
-	const endY = cy + thread.endY * height;
+	const endY = cy + thread.endY * spread * height;
 	const span = Math.abs(endX - startX);
 	const c1x = startX + thread.side * span * thread.c1t;
-	const c1y = startY + thread.bow1 * height;
+	const c1y = startY + thread.bow1 * spread * height;
 	const c2x = startX + thread.side * span * thread.c2t;
-	const c2y = endY + thread.bow2 * height;
+	const c2y = endY + thread.bow2 * spread * height;
 
 	const x0 = cubicBezier(u, startX, c1x, c2x, endX);
-	const y0 = cubicBezier(u, startY, c1y, c2y, endY);
+	let y0 = cubicBezier(u, startY, c1y, c2y, endY);
 	const dx = cubicBezierDerivative(u, startX, c1x, c2x, endX);
 	const dy = cubicBezierDerivative(u, startY, c1y, c2y, endY);
 	const len = Math.hypot(dx, dy) || 1;
 	const nx = -dy / len;
 	const ny = dx / len;
 
+	if (layout.tilt) y0 -= tiltLift(x0, startX, layout.tilt);
+
 	const t = layout.still ? 0 : time;
 	const envelope = Math.sin(Math.PI * u);
 	const n1 = smoothNoise(u * 2.1 + t * thread.speed + thread.phase, thread.seed);
 	const n2 = smoothNoise(u * 5.4 - t * thread.speed * 0.4 + thread.phase * 1.4, thread.seed + 11);
 	const wave =
-		((n1 - 0.5) * thread.amp1 + (n2 - 0.5) * thread.amp2) * envelope * layout.motion * height;
+		((n1 - 0.5) * thread.amp1 + (n2 - 0.5) * thread.amp2) *
+		envelope *
+		layout.motion *
+		(layout.amplitude ?? 1) *
+		height;
 
 	out.x = x0 + nx * wave;
 	out.y = y0 + ny * wave;

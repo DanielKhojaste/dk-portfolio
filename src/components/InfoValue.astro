@@ -42,7 +42,7 @@ const { value, href } = Astro.props;
 		text-decoration: underline;
 		text-decoration-color: rgb(245 236 236 / 0.35);
 		text-underline-offset: 4px;
-		transition: text-decoration-color 0.2s var(--ease-out);
+		transition: text-decoration-color var(--hover-duration) var(--ease-out);
 	}
 
 	.info-link:hover {
@@ -51,7 +51,7 @@ const { value, href } = Astro.props;
 
 	.info-link svg {
 		flex: none;
-		transition: translate 0.2s var(--ease-out);
+		transition: translate var(--hover-duration) var(--ease-out);
 	}
 
 	.info-link:hover svg {

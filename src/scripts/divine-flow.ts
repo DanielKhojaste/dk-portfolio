@@ -1,3 +1,4 @@
+import { gsap } from "gsap";
 import {
 	createDivineFlow,
 	type DivineFlowInstance,
@@ -48,6 +49,8 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 	try {
 		flow = createDivineFlow(el, {
 			...optionsFor(base, compact, Boolean(query?.matches)),
+			// Flows that draw in start empty, so nothing flashes before the tween begins.
+			...(el.dataset.reveal !== undefined || el.hasAttribute("data-manual") ? { reveal: 0 } : {}),
 			className: "divine-flow__canvas",
 		});
 	} catch (error) {
@@ -59,7 +62,9 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 		flow.update(optionsFor(base, compact, event.matches)),
 	);
 
-	pauseWhileMenuOpen(flow);
+	// Flows outside the menu have nothing to show while it covers them. Manual flows (like the menu's
+	// own underlines) are started and stopped by whoever mounted them.
+	if (!el.hasAttribute("data-manual")) pauseWhileMenuOpen(flow);
 	instances.set(el, flow);
 	el.dataset.flowReady = "true";
 	return flow;
@@ -78,40 +83,64 @@ export function pauseWhileMenuOpen(
 	doc.addEventListener("menu:close", () => flow.start());
 }
 
-const LOGO_DRAWN = "logo:drawn";
-
-/** Resolve once the header logo has finished writing (or straight away if it already has). */
-function logoDrawn(timeout: number): Promise<void> {
-	if (document.documentElement.hasAttribute("data-logo-drawn")) return Promise.resolve();
-	return new Promise((resolve) => {
-		const done = () => {
-			document.removeEventListener(LOGO_DRAWN, done);
-			clearTimeout(timer);
-			resolve();
-		};
-		const timer = setTimeout(done, timeout);
-		document.addEventListener(LOGO_DRAWN, done);
-	});
+export interface RevealSettings {
+	/** Seconds before drawing starts. */
+	delay?: number;
+	/** Seconds to draw every filament out to its end. */
+	duration?: number;
+	/** GSAP ease. */
+	ease?: string;
 }
 
-/** Run `task` when the browser is idle (with a short deadline), so it never lands mid-animation. */
-function whenIdle(task: () => void) {
-	if ("requestIdleCallback" in window) window.requestIdleCallback(task, { timeout: 400 });
-	else setTimeout(task, 50);
+export function parseReveal(value: string | undefined): Required<RevealSettings> | null {
+	if (value === undefined) return null;
+	let parsed: RevealSettings = {};
+	try {
+		parsed = (JSON.parse(value || "{}") as RevealSettings) ?? {};
+	} catch {
+		parsed = {};
+	}
+	const seconds = (v: unknown, fallback: number) =>
+		typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : fallback;
+	return {
+		delay: seconds(parsed.delay, 0.2),
+		duration: seconds(parsed.duration, 2),
+		ease: typeof parsed.ease === "string" ? parsed.ease : "power2.out",
+	};
 }
 
 /**
- * Mount every DivineFlow on the page. Elements marked `data-after-logo` wait for the logo to finish
- * writing (up to `data-start-timeout` ms) and then for an idle moment, so the logo animation gets the
- * main thread to itself during load.
+ * Draw a flow in: every filament grows from the origin out towards the side. GSAP drives the
+ * progress so it shares a ticker (and timing) with the logo animation. Reduced motion skips it.
+ */
+export function revealFlow(
+	flow: Pick<DivineFlowInstance, "setReveal">,
+	settings: Required<RevealSettings>,
+	reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+): gsap.core.Tween | null {
+	if (reducedMotion) {
+		flow.setReveal(1);
+		return null;
+	}
+	const progress = { value: 0 };
+	flow.setReveal(0);
+	return gsap.to(progress, {
+		value: 1,
+		delay: settings.delay,
+		duration: settings.duration,
+		ease: settings.ease,
+		onUpdate: () => flow.setReveal(progress.value),
+	});
+}
+
+/**
+ * Mount every DivineFlow on the page. Elements with `data-reveal` draw in on load, alongside the
+ * logo, instead of appearing all at once.
  */
 export function mountDivineFlows(root: ParentNode = document) {
-	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => {
-		if (!el.hasAttribute("data-after-logo")) {
-			mountDivineFlow(el);
-			return;
-		}
-		const timeout = Number(el.dataset.startTimeout) || 2600;
-		logoDrawn(timeout).then(() => whenIdle(() => mountDivineFlow(el)));
+	root.querySelectorAll<HTMLElement>("[data-divine-flow]:not([data-manual])").forEach((el) => {
+		const flow = mountDivineFlow(el);
+		const reveal = parseReveal(el.dataset.reveal);
+		if (flow && reveal) revealFlow(flow, reveal);
 	});
 }

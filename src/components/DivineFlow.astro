@@ -13,11 +13,14 @@ interface Props {
 	compactQuery?: string;
 	class?: string;
 	/**
-	 * Wait for the header logo to finish writing before starting, so the two never compete for the
-	 * main thread during load. Starts anyway after `startTimeout` ms.
+	 * Draw the flow in on load: filaments grow from the origin out to the sides (GSAP, skipped for
+	 * reduced motion). `true` uses the defaults (0.2s delay, 2s, power2.out).
 	 */
-	afterLogo?: boolean;
-	startTimeout?: number;
+	reveal?: boolean | { delay?: number; duration?: number; ease?: string };
+	/** Seconds the canvas takes to fade in once started. */
+	fadeIn?: number;
+	/** Leave mounting to a script (e.g. on hover) instead of starting on page load. */
+	manual?: boolean;
 }
 
 const {
@@ -25,8 +28,9 @@ const {
 	compactOptions,
 	compactQuery = "(max-width: 1023px), (max-aspect-ratio: 115/100)",
 	class: className,
-	afterLogo = false,
-	startTimeout = 2600,
+	reveal = false,
+	fadeIn = 1.6,
+	manual = false,
 } = Astro.props;
 ---
 
@@ -37,8 +41,9 @@ const {
 	data-options={JSON.stringify(options)}
 	data-compact-options={compactOptions ? JSON.stringify(compactOptions) : undefined}
 	data-compact-query={compactOptions ? compactQuery : undefined}
-	data-after-logo={afterLogo ? "" : undefined}
-	data-start-timeout={startTimeout}
+	data-reveal={reveal ? JSON.stringify(reveal === true ? {} : reveal) : undefined}
+	data-manual={manual ? "" : undefined}
+	style={`--flow-fade: ${fadeIn}s`}
 >
 </div>
 
@@ -57,7 +62,7 @@ const {
 		pointer-events: none;
 		/* Fades in once started; opacity is compositor-only, so the fade costs nothing per frame. */
 		opacity: 0;
-		transition: opacity 1.6s var(--ease-out);
+		transition: opacity var(--flow-fade, 1.6s) var(--ease-out);
 	}
 
 	.divine-flow[data-flow-ready] {

@@ -74,6 +74,14 @@ export interface Scene {
 }
 
 export interface SceneConfig {
+	/** Which side(s) get filaments. Default `"both"`. */
+	sides?: "both" | "left" | "right";
+	/** Line thickness multiplier. Default `1`. */
+	thickness?: number;
+	/** Same width and brightness for every filament. */
+	uniform?: boolean;
+	/** Fixed opacity for every filament. */
+	alpha?: number | null;
 	lineCount: number;
 	scatterCount: number;
 	seed: number;
@@ -87,10 +95,19 @@ export function createThreads({
 	lineCount,
 	scatterCount,
 	seed,
-}: Pick<SceneConfig, "lineCount" | "scatterCount" | "seed">): Thread[] {
+	sides = "both",
+	thickness = 1,
+	uniform = false,
+	alpha = null,
+}: Pick<
+	SceneConfig,
+	"lineCount" | "scatterCount" | "seed" | "sides" | "thickness" | "uniform" | "alpha"
+>): Thread[] {
 	const threads: Thread[] = [];
 
 	for (const side of [-1, 1] as const) {
+		// Each side keeps its own random stream, so dropping one never reshapes the other.
+		if ((sides === "left" && side === 1) || (sides === "right" && side === -1)) continue;
 		const random = mulberry32(seed + side * 173);
 
 		for (let i = 0; i < lineCount; i += 1) {
@@ -157,6 +174,18 @@ export function createThreads({
 		}
 	}
 
+	const first = threads[0];
+	for (const thread of threads) {
+		if (uniform && first) {
+			thread.coreWidth = first.coreWidth;
+			thread.glowWidth = first.glowWidth;
+			thread.alpha = first.alpha;
+			thread.hasPulse = first.hasPulse;
+		}
+		thread.coreWidth *= thickness;
+		thread.glowWidth *= thickness;
+		if (alpha !== null) thread.alpha = alpha;
+	}
 	return threads;
 }
 

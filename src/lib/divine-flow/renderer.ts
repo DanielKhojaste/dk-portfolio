@@ -5,8 +5,9 @@ import { emberPosition, type Scene, type Sparkle, type Thread } from "./scene";
 import { sampleThread, writePoint, type FlowLayout } from "./geometry";
 import type { DivineFlowPalette, RGB } from "./types";
 
-type Ctx = CanvasRenderingContext2D;
-type CanvasFactory = (width: number, height: number) => HTMLCanvasElement;
+type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type AnyCanvas = HTMLCanvasElement | OffscreenCanvas;
+type CanvasFactory = (width: number, height: number) => AnyCanvas;
 
 /** Per-filament resources that only change when the canvas size, palette or scene changes. */
 interface ThreadCache {
@@ -17,7 +18,7 @@ interface ThreadCache {
 }
 
 interface Sprite {
-	canvas: HTMLCanvasElement;
+	canvas: AnyCanvas;
 	/** Half the sprite's size in CSS px; the sprite is drawn centred on its point. */
 	extent: number;
 }
@@ -28,6 +29,8 @@ export interface RenderCache {
 	sparkles: Sprite[];
 	speck: Sprite;
 	ember: Sprite;
+	/** Soft bright dot at the tip of a filament while it is being drawn in. */
+	head: Sprite;
 	emberHalo: Sprite;
 }
 
@@ -43,6 +46,10 @@ export interface FrameState {
 	emberSpeed: number;
 	/** Draw the bloom into the main canvas (false when the bloom is its own, CSS-scaled canvas). */
 	composeBloom: boolean;
+	/** Draw-in progress, 0–1. Default `1`. */
+	reveal?: number;
+	/** See `DivineFlowOptions.revealStagger`. Default `0.25`. */
+	revealStagger?: number;
 	cache: RenderCache;
 }
 
@@ -64,14 +71,27 @@ export function makeTrailGradient(
 	return grad;
 }
 
-/** Deterministic hue/lightness offset for a filament, scaled by `variance` (0–1). */
-export function threadShade(thread: Thread, variance: number): { hue: number; light: number } {
+/** Hue (degrees) and lightness ranges a filament's shade is picked from at `variance: 1`. */
+export interface ShadeRanges {
+	hue: readonly [number, number];
+	light: readonly [number, number];
+}
+
+const DEFAULT_SHADE_RANGES: ShadeRanges = { hue: [-14, 14], light: [-0.14, 0.14] };
+
+/**
+ * Deterministic hue/lightness offset for a filament: a stable pick within `ranges`, scaled by
+ * `variance` (0–1).
+ */
+export function threadShade(
+	thread: Thread,
+	variance: number,
+	ranges: ShadeRanges = DEFAULT_SHADE_RANGES,
+): { hue: number; light: number } {
 	if (variance <= 0) return { hue: 0, light: 0 };
 	const random = mulberry32(Math.floor(thread.seed * 1000) ^ (thread.side === 1 ? 0x9e37 : 0));
-	return {
-		hue: (random() * 2 - 1) * 14 * variance,
-		light: (random() * 2 - 1) * 0.14 * variance,
-	};
+	const pick = ([min, max]: readonly [number, number]) => (min + random() * (max - min)) * variance;
+	return { hue: pick(ranges.hue), light: pick(ranges.light) };
 }
 
 function makeSprite(
@@ -140,7 +160,12 @@ function sparkleExtent(sparkle: Sparkle): number {
  */
 export function buildRenderCache(
 	state: Omit<FrameState, "cache">,
-	options: { variance: number; dpr: number; createCanvas: CanvasFactory },
+	options: {
+		variance: number;
+		shadeRanges?: ShadeRanges;
+		dpr: number;
+		createCanvas: CanvasFactory;
+	},
 ): RenderCache {
 	const { ctx, bloomCtx, scene, layout, palette } = state;
 	const start: Point = { x: 0, y: 0 };
@@ -150,7 +175,7 @@ export function buildRenderCache(
 	const threads = scene.threads.map((thread) => {
 		writePoint(thread, 0, 0, rest, start);
 		writePoint(thread, 1, 0, rest, end);
-		const { hue, light } = threadShade(thread, options.variance);
+		const { hue, light } = threadShade(thread, options.variance, options.shadeRanges);
 		const tint = (color: RGB) => (hue || light ? shade(color, hue, light) : color);
 		return {
 			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5),
@@ -185,6 +210,16 @@ export function buildRenderCache(
 		// Unit-radius dots, scaled per particle when drawn. Rendered at 8x so scaling up stays crisp.
 		speck: makeSprite(createCanvas, 1, dpr * 8, dot(palette.speck)),
 		ember: makeSprite(createCanvas, 1, dpr * 8, dot(palette.ember)),
+		head: makeSprite(createCanvas, 5, dpr * 2, (c) => {
+			const g = c.createRadialGradient(0, 0, 0, 0, 0, 5);
+			g.addColorStop(0, rgba(palette.sparkle, 1));
+			g.addColorStop(0.25, rgba(palette.sparkleHalo, 0.45));
+			g.addColorStop(1, "rgba(0, 0, 0, 0)");
+			c.fillStyle = g;
+			c.beginPath();
+			c.arc(0, 0, 5, 0, TAU);
+			c.fill();
+		}),
 		emberHalo: makeSprite(createCanvas, 4, dpr * 4, (c) => {
 			c.fillStyle = rgba(palette.ember, 0.15);
 			c.beginPath();
@@ -192,6 +227,28 @@ export function buildRenderCache(
 			c.fill();
 		}),
 	};
+}
+
+/**
+ * How far along its length (0–1) a filament is drawn at overall progress `reveal`. `offset` (0–1)
+ * staggers filaments by up to `stagger` of the reveal, so they don't all grow in lockstep.
+ */
+export function threadProgress(reveal: number, offset: number, stagger = 0.25): number {
+	if (reveal >= 1) return 1;
+	const start = offset * stagger;
+	return Math.min(1, Math.max(0, (reveal - start) / (1 - stagger)));
+}
+
+/** The polyline from the start to `progress` (0–1) of the way along, ending exactly at that point. */
+function partialPolyline(points: readonly Point[], samples: number, progress: number): Path2D {
+	const end = progress * samples;
+	const last = Math.min(samples - 1, Math.floor(end));
+	const path = polyline(points, 0, last);
+	const a = points[last]!;
+	const b = points[last + 1]!;
+	const f = end - last;
+	path.lineTo(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+	return path;
 }
 
 function polyline(points: readonly Point[], from: number, to: number): Path2D {
@@ -246,12 +303,22 @@ export function drawFrame(state: FrameState, time: number): void {
 	const { ctx, bloomCtx, scene, buffers, samples, layout, cache } = state;
 	const { width, height, motion, still } = layout;
 	const animate = !still && motion > 0;
-	const paths: Path2D[] = new Array(scene.threads.length);
+	const reveal = state.reveal ?? 1;
+	const paths: (Path2D | null)[] = new Array(scene.threads.length);
+	const heads: number[] = new Array(scene.threads.length);
 
 	for (let i = 0; i < scene.threads.length; i += 1) {
+		const thread = scene.threads[i]!;
 		const points = buffers[i]!;
-		sampleThread(scene.threads[i]!, time, layout, samples, points);
-		paths[i] = polyline(points, 0, samples);
+		const progress = threadProgress(reveal, thread.pulsePhase, state.revealStagger);
+		heads[i] = progress;
+		if (progress <= 0) {
+			paths[i] = null;
+			continue;
+		}
+		sampleThread(thread, time, layout, samples, points);
+		paths[i] =
+			progress >= 1 ? polyline(points, 0, samples) : partialPolyline(points, samples, progress);
 	}
 
 	// Low-resolution bloom pass, upscaled onto the main canvas for a cheap soft glow.
@@ -259,10 +326,12 @@ export function drawFrame(state: FrameState, time: number): void {
 	bloomCtx.globalAlpha = 1;
 	bloomCtx.clearRect(0, 0, width, height);
 	bloomCtx.globalCompositeOperation = "lighter";
+	bloomCtx.globalAlpha = Math.min(1, reveal * 2.5);
 	drawOriginBloom(bloomCtx, layout, cache.origin);
 
 	for (let i = 0; i < scene.threads.length; i += 1) {
 		const thread = scene.threads[i]!;
+		if (!paths[i]) continue;
 		bloomCtx.globalAlpha = 0.8 + 0.2 * Math.sin(time * thread.shimmerSpeed + thread.phase);
 		bloomCtx.strokeStyle = cache.threads[i]!.bloom;
 		bloomCtx.lineWidth = thread.glowWidth * 1.7;
@@ -284,17 +353,27 @@ export function drawFrame(state: FrameState, time: number): void {
 	for (let i = 0; i < scene.threads.length; i += 1) {
 		const thread = scene.threads[i]!;
 		const threadCache = cache.threads[i]!;
+		const path = paths[i];
+		if (!path) continue;
 		const shimmer = 0.82 + 0.18 * Math.sin(time * thread.shimmerSpeed + thread.phase);
 
 		ctx.globalAlpha = shimmer;
 		ctx.strokeStyle = threadCache.glow;
 		ctx.lineWidth = thread.glowWidth * 0.32;
-		ctx.stroke(paths[i]!);
+		ctx.stroke(path);
 		ctx.strokeStyle = threadCache.core;
 		ctx.lineWidth = thread.coreWidth;
-		ctx.stroke(paths[i]!);
+		ctx.stroke(path);
 
-		if (thread.hasPulse && animate) {
+		// While drawing in, a bright tip leads the filament out (faded in as it leaves the origin).
+		const head = heads[i]!;
+		if (head < 1) {
+			const tip = pointAt(buffers[i]!, samples, head);
+			const fade = Math.min(1, head / 0.12) * Math.min(1, (1 - head) / 0.15);
+			stamp(ctx, cache.head, tip.x, tip.y, 0.5 + thread.coreWidth, thread.alpha * fade);
+		}
+
+		if (thread.hasPulse && animate && head >= 1) {
 			const pulseU = ((thread.pulsePhase + time * thread.pulseSpeed * motion) % 0.58) + 0.12;
 			strokeShimmer(
 				ctx,
@@ -310,6 +389,7 @@ export function drawFrame(state: FrameState, time: number): void {
 	}
 
 	for (const speck of scene.specks) {
+		if (speck.u > heads[speck.thread]!) continue;
 		const points = buffers[speck.thread]!;
 		const p = pointAt(points, samples, speck.u);
 		const n = normalAt(points, samples, speck.u);
@@ -331,6 +411,7 @@ export function drawFrame(state: FrameState, time: number): void {
 		const u = animate
 			? ((sparkle.phase + time * sparkle.speed * motion) % 0.62) + 0.12
 			: sparkle.phase;
+		if (u > heads[sparkle.thread]!) continue;
 		const p = pointAt(buffers[sparkle.thread]!, samples, u);
 		const twinkle = Math.pow(
 			0.5 + 0.5 * Math.sin(time * sparkle.twinkleSpeed + sparkle.twinklePhase),
@@ -365,7 +446,8 @@ export function drawFrame(state: FrameState, time: number): void {
 		const pos = emberPosition(ember, emberTime);
 		const x = pos.x * width;
 		const y = pos.y * height;
-		const alpha = ember.alpha * (0.55 + 0.45 * Math.sin(time * ember.twinkleSpeed + ember.phase));
+		const alpha =
+			ember.alpha * reveal * (0.55 + 0.45 * Math.sin(time * ember.twinkleSpeed + ember.phase));
 		if (ember.size > 1.3) stamp(ctx, cache.emberHalo, x, y, ember.size, alpha);
 		stamp(ctx, cache.ember, x, y, ember.size, alpha);
 	}
