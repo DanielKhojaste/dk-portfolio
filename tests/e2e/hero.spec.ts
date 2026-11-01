@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const hero = (page: Page) => page.locator("section.hero");
+const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
 
 async function box(page: Page, selector: string) {
 	const rect = await page.locator(selector).first().boundingBox();
@@ -13,7 +14,8 @@ test.describe("hero", () => {
 		await page.goto("/");
 		const viewport = page.viewportSize()!;
 		const rect = await box(page, "section.hero");
-		expect(Math.round(rect.height)).toBe(Math.max(viewport.height, 600));
+		const floor = (await page.evaluate((query) => matchMedia(query).matches, COMPACT)) ? 480 : 600;
+		expect(Math.round(rect.height)).toBe(Math.max(viewport.height, floor));
 		expect(Math.round(rect.width)).toBe(viewport.width);
 	});
 
@@ -22,11 +24,12 @@ test.describe("hero", () => {
 		await page.goto("/");
 		expect(Math.round((await box(page, "section.hero")).height)).toBe(600);
 
-		await page.setViewportSize({ width: 390, height: 520 });
-		expect(Math.round((await box(page, "section.hero")).height)).toBe(640);
+		// Landscape phone: compact layout with a lower floor.
+		await page.setViewportSize({ width: 740, height: 360 });
+		expect(Math.round((await box(page, "section.hero")).height)).toBe(480);
 	});
 
-	test("shows the name as a single heading with an outlined last name behind the throne", async ({
+	test("shows the name as one heading, with the last name as a deep red shape behind the throne", async ({
 		page,
 	}) => {
 		await page.goto("/");
@@ -37,27 +40,26 @@ test.describe("hero", () => {
 		const styles = await page.evaluate(() => {
 			const last = getComputedStyle(document.querySelector(".hero__last")!);
 			const first = getComputedStyle(document.querySelector(".hero__first")!);
-			const base = getComputedStyle(document.querySelector(".hero__name-layer--base")!);
-			const ghost = getComputedStyle(document.querySelector(".hero__name-layer--ghost")!);
+			const name = getComputedStyle(document.querySelector(".hero__name")!);
 			const figure = getComputedStyle(document.querySelector(".hero__figure")!);
 			return {
 				lastColor: last.color,
-				lastStroke: last.getPropertyValue("-webkit-text-stroke-color"),
-				lastStrokeWidth: parseFloat(last.getPropertyValue("-webkit-text-stroke-width")),
+				lastClip: last.backgroundClip || last.getPropertyValue("-webkit-background-clip"),
+				lastBackground: last.backgroundImage,
 				lastSize: parseFloat(last.fontSize),
 				firstSize: parseFloat(first.fontSize),
-				nameZ: Number(base.zIndex),
-				ghostZ: Number(ghost.zIndex),
+				nameZ: Number(name.zIndex),
 				figureZ: Number(figure.zIndex),
 			};
 		});
 
 		expect(styles.lastColor).toBe("rgba(0, 0, 0, 0)");
-		expect(styles.lastStroke).toBe("rgb(255, 255, 255)");
-		expect(styles.lastStrokeWidth).toBeGreaterThan(0);
+		expect(styles.lastClip).toBe("text");
+		expect(styles.lastBackground).toContain("linear-gradient");
 		expect(styles.nameZ).toBeLessThan(styles.figureZ);
-		expect(styles.ghostZ).toBeGreaterThan(styles.figureZ);
 		expect(styles.lastSize).toBeGreaterThan(styles.firstSize * 2);
+		// No ghost copy of the name over the photo any more.
+		await expect(page.locator("[data-name-ghost]")).toHaveCount(0);
 	});
 
 	test("the throne image loads and overlaps the last name", async ({ page }) => {
@@ -76,35 +78,6 @@ test.describe("hero", () => {
 		);
 	});
 
-	test("shows a faint ghost of the name where it crosses the throne", async ({ page }) => {
-		await page.goto("/");
-		const ghost = page.locator("[data-name-ghost]");
-		await expect(ghost).toHaveAttribute("aria-hidden", "true");
-		await expect(ghost).toHaveAttribute("data-ready", "true");
-
-		const style = await ghost.evaluate((el) => {
-			const cs = getComputedStyle(el);
-			return {
-				opacity: Number(cs.opacity),
-				visibility: cs.visibility,
-				mask: cs.maskImage || cs.getPropertyValue("-webkit-mask-image"),
-				maskWidth: parseFloat(el.style.getPropertyValue("--mask-w")),
-			};
-		});
-		expect(style.visibility).toBe("visible");
-		expect(style.opacity).toBeGreaterThan(0);
-		expect(style.opacity).toBeLessThan(1);
-		expect(style.mask).toContain("url(");
-		expect(style.maskWidth).toBeGreaterThan(0);
-
-		// The mask matches the rendered throne photo.
-		const img = await box(page, ".hero__figure img");
-		const maskHeight = await ghost.evaluate((el) =>
-			parseFloat(el.style.getPropertyValue("--mask-h")),
-		);
-		expect(Math.abs(maskHeight - Math.min(img.height, (img.width * 1210) / 723))).toBeLessThan(2);
-	});
-
 	test("desktop throne is 90% of the hero height", async ({ page }, info) => {
 		test.skip(info.project.name !== "desktop", "desktop layout only");
 		await page.goto("/");
@@ -113,22 +86,71 @@ test.describe("hero", () => {
 		expect(figure.height / heroBox.height).toBeCloseTo(0.9, 2);
 	});
 
-	test("uses the temporary slogan and no ApotheonAI credit", async ({ page }) => {
+	test("makes two claims: the role with location, and the current project", async ({ page }) => {
 		await page.goto("/");
-		await expect(hero(page).getByText("temporary slogan", { exact: true })).toBeVisible();
+		const claims = page.locator(".hero__claim");
+		await expect(claims).toHaveCount(2);
+
+		await expect(claims.nth(0)).toContainText("Software Developer");
+		await expect(claims.nth(0)).toContainText("Based in Canada");
+		await expect(claims.nth(0)).toContainText("Open to relocating");
+		await expect(hero(page)).not.toContainText("Ottawa");
+
+		const project = claims.nth(1).getByRole("link", { name: /Lineup/ });
+		await expect(claims.nth(1)).toContainText("Currently building");
+		await expect(project).toHaveAttribute("href", "https://github.com/DanielKhojaste/lineup");
+		await expect(project).toHaveAttribute("target", "_blank");
+		await expect(project).toHaveAttribute("rel", /noopener/);
+
 		await expect(hero(page)).not.toContainText("ApotheonAI");
-		await expect(hero(page)).not.toContainText("idea to deploy");
+		await expect(hero(page)).not.toContainText("temporary slogan");
 	});
 
-	test("side info groups are aligned with each other", async ({ page }) => {
+	test("claims sit on either side, with bottoms aligned", async ({ page }) => {
 		await page.goto("/");
-		const groups = page.locator("[data-hero-group]");
-		await expect(groups).toHaveCount(2);
-		const [a, b] = await Promise.all([groups.nth(0).boundingBox(), groups.nth(1).boundingBox()]);
+		const [a, b] = await Promise.all([
+			box(page, ".hero__claim--start"),
+			box(page, ".hero__claim--end"),
+		]);
+		expect(a.x + a.width).toBeLessThan(b.x);
+		expect(Math.abs(a.y + a.height - (b.y + b.height))).toBeLessThanOrEqual(1);
+	});
 
-		expect(Math.abs(a!.y - b!.y)).toBeLessThanOrEqual(1);
-		expect(Math.abs(a!.height - b!.height)).toBeLessThanOrEqual(1);
-		expect(a!.x + a!.width).toBeLessThan(b!.x);
+	test("underlines each claim with its own white DivineFlow strand", async ({ page }) => {
+		await page.goto("/");
+		const rules = page.locator(".hero__rule [data-divine-flow]");
+		await expect(rules).toHaveCount(2);
+		for (const [i, side] of [
+			[0, "right"],
+			[1, "left"],
+		] as const) {
+			const options = JSON.parse((await rules.nth(i).getAttribute("data-options"))!);
+			expect(options).toMatchObject({ theme: "white", sides: side, emberCount: 0 });
+			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true", { timeout: 8_000 });
+		}
+		// Same pace as the background flow.
+		const main = JSON.parse(
+			(await page.locator(".hero > [data-divine-flow]").getAttribute("data-options"))!,
+		);
+		const rule = JSON.parse((await rules.first().getAttribute("data-options"))!);
+		expect(rule.motion).toBe(main.motion);
+	});
+
+	test("fits the whole hero on portrait phones without scrolling", async ({ page }) => {
+		for (const size of [
+			{ width: 375, height: 553 },
+			{ width: 390, height: 844 },
+			{ width: 820, height: 1180 },
+		]) {
+			await page.setViewportSize(size);
+			await page.goto("/");
+			const actions = await box(page, ".hero__actions");
+			const claims = await box(page, ".hero__info");
+			expect(actions.y + actions.height).toBeLessThanOrEqual(size.height);
+			expect(claims.y + claims.height).toBeLessThanOrEqual(actions.y);
+			expect(claims.x).toBeGreaterThanOrEqual(0);
+			expect(claims.x + claims.width).toBeLessThanOrEqual(size.width);
+		}
 	});
 
 	test("calls to action are centred and link to their sections", async ({ page }) => {
@@ -144,10 +166,12 @@ test.describe("hero", () => {
 		expect(Math.abs(centre - (actions.x + actions.width / 2))).toBeLessThanOrEqual(2);
 	});
 
-	test("mounts DivineFlow behind the hero", async ({ page }) => {
+	test("starts DivineFlow behind the hero once the logo is written", async ({ page }) => {
 		await page.goto("/");
-		const flow = page.locator("[data-divine-flow]");
-		await expect(flow).toHaveAttribute("data-flow-ready", "true");
+		const flow = page.locator(".hero > [data-divine-flow]");
+		await expect(flow).toHaveAttribute("data-after-logo", "");
+		await expect(flow).toHaveAttribute("data-flow-ready", "true", { timeout: 8_000 });
+		await expect(page.locator("svg[data-logo-draw]")).toHaveAttribute("data-drawn", "true");
 
 		// Filaments canvas on top of a separate, GPU-scaled bloom canvas.
 		await expect(flow.locator("canvas[data-divine-flow-bloom]")).toHaveCount(1);
@@ -167,6 +191,49 @@ test.describe("hero", () => {
 		await page.goto("/");
 		await page.waitForTimeout(500);
 		expect(errors).toEqual([]);
+	});
+});
+
+test.describe("menu", () => {
+	test("opens and closes from the keyboard, trapping focus and returning it", async ({ page }) => {
+		await page.goto("/");
+		const button = page.locator("[data-menu-button]");
+		const menu = page.locator("#site-menu");
+		await expect(button).toHaveAttribute("aria-controls", "site-menu");
+		await expect(menu).toBeHidden();
+
+		await button.focus();
+		await page.keyboard.press("Enter");
+		await expect(button).toHaveAttribute("aria-expanded", "true");
+		await expect(button).toHaveAccessibleName("Close menu");
+		await expect(menu).toBeVisible();
+		await expect(menu.getByRole("link", { name: /Work/ })).toBeFocused();
+		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+
+		await page.keyboard.press("Escape");
+		await expect(button).toHaveAttribute("aria-expanded", "false");
+		await expect(button).toBeFocused();
+		await expect(menu).toBeHidden();
+		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(false);
+	});
+
+	test("lists the sections and quick facts, and a section link closes it", async ({ page }) => {
+		await page.goto("/");
+		await page.locator("[data-menu-button]").click();
+		const menu = page.locator("#site-menu");
+		for (const label of ["Work", "Skills", "About", "Contact"]) {
+			await expect(menu.getByRole("link", { name: new RegExp(label) })).toBeVisible();
+		}
+		await expect(menu).toContainText("Canada");
+		await expect(menu).toContainText("Open to relocating");
+		await expect(menu.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
+			"href",
+			"https://github.com/DanielKhojaste",
+		);
+
+		await menu.getByRole("link", { name: /Contact/ }).click();
+		await expect(menu).toBeHidden();
+		await expect(page).toHaveURL(/#contact$/);
 	});
 });
 

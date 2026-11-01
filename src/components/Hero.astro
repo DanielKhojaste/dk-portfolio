@@ -2,26 +2,31 @@
 import { Picture } from "astro:assets";
 import throne from "../assets/images/throne.png";
 import DivineFlow from "./DivineFlow.astro";
-import InfoValue from "./InfoValue.astro";
+import type { DivineFlowOptions } from "../lib/divine-flow";
 
 import { profile } from "../data/site";
 
-interface InfoItem {
-	label: string;
-	value: string;
-	href?: string;
-	accent?: boolean;
-}
-
-/** Left and right info groups. */
-const startGroup: InfoItem[] = [
-	{ label: profile.role, value: profile.slogan, accent: true },
-	{ label: "Based in", value: profile.location },
-];
-const endGroup: InfoItem[] = [
-	{ label: "Currently", value: profile.currently.label, href: profile.currently.href },
-	{ label: "Off the keyboard", value: profile.coaching },
-];
+/**
+ * The underline under each claim: a thin strand of white DivineFlow, flowing away from the outer
+ * edge at the same pace as the background (same `motion`), fading out towards the throne.
+ */
+const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => ({
+	theme: "white",
+	sides: side === "start" ? "right" : "left",
+	originX: side === "start" ? 0.01 : 0.99,
+	originY: 0.5,
+	innerGap: 0,
+	lineCount: 5,
+	scatterCount: 0,
+	spread: 0.22,
+	amplitude: 7,
+	motion: 1.6,
+	sparkleCount: 2,
+	speckCount: 6,
+	emberCount: 0,
+	maxDpr: 2,
+	seed: side === "start" ? 3107 : 5281,
+});
 ---
 
 <section class="hero" aria-labelledby="hero-title">
@@ -32,6 +37,9 @@ const endGroup: InfoItem[] = [
 		options={{
 			theme: "crimson",
 			variance: 0.7,
+			// Shades only drift towards deeper, cooler reds; never towards orange.
+			hueRange: [-9, 0],
+			lightRange: [-0.21, 0.07],
 			maxDpr: 1.5,
 			originY: 0.46,
 			lineCount: 8,
@@ -51,16 +59,8 @@ const endGroup: InfoItem[] = [
 	/>
 
 	<h1 id="hero-title" class="hero__name">
-		<span class="hero__name-layer hero__name-layer--base">
-			<span class="hero__first">Daniel</span>
-			<span class="hero__last">Khojaste</span>
-		</span>
-		<!-- Ghost copy above the throne, masked to the throne's silhouette by scripts/name-ghost.ts,
-		     so the name shows faintly where it crosses the photo. -->
-		<span class="hero__name-layer hero__name-layer--ghost" aria-hidden="true" data-name-ghost>
-			<span class="hero__first">Daniel</span>
-			<span class="hero__last">Khojaste</span>
-		</span>
+		<span class="hero__first">Daniel</span>
+		<span class="hero__last">Khojaste</span>
 	</h1>
 
 	<div class="hero__figure">
@@ -81,32 +81,44 @@ const endGroup: InfoItem[] = [
 	<div class="hero__vignette" aria-hidden="true"></div>
 
 	<div class="hero__info">
-		<dl class="hero__group hero__group--start" data-hero-group>
-			{
-				startGroup.map((item) => (
-					<div class="hero__item">
-						<dt class:list={["hero__label", { "hero__label--accent": item.accent }]}>
-							{item.label}
-						</dt>
-						<dd class="hero__value">
-							<InfoValue {...item} />
-						</dd>
-					</div>
-				))
-			}
-		</dl>
-		<dl class="hero__group hero__group--end" data-hero-group>
-			{
-				endGroup.map((item) => (
-					<div class="hero__item">
-						<dt class="hero__label">{item.label}</dt>
-						<dd class="hero__value">
-							<InfoValue {...item} />
-						</dd>
-					</div>
-				))
-			}
-		</dl>
+		<div class="hero__claim hero__claim--start">
+			<p class="hero__kicker">
+				<span>Based in {profile.location}</span><span class="hero__kicker-sep"> · </span><span
+					>{profile.relocation}</span
+				>
+			</p>
+			<p class="hero__headline">{profile.role}</p>
+			<span class="hero__rule" aria-hidden="true">
+				<DivineFlow afterLogo options={underline("start")} />
+			</span>
+		</div>
+		<div class="hero__claim hero__claim--end">
+			<p class="hero__kicker">Currently building</p>
+			<a
+				class="hero__headline hero__headline--link"
+				href={profile.currently.href}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				{profile.currently.name}<svg
+					class="hero__arrow"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.6"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M7 17L17 7"></path>
+					<path d="M8 7h9v9"></path>
+				</svg>
+				<span class="sr-only">(opens in a new tab)</span>
+			</a>
+			<span class="hero__rule" aria-hidden="true">
+				<DivineFlow afterLogo options={underline("end")} />
+			</span>
+		</div>
 	</div>
 
 	<div class="hero__actions">
@@ -131,21 +143,13 @@ const endGroup: InfoItem[] = [
 	</div>
 </section>
 
-<script>
-	import { syncNameGhosts } from "../scripts/name-ghost";
-
-	syncNameGhosts();
-</script>
-
 <style>
 	/*
-	 * Desktop: everything is absolutely placed in a full-viewport stage and sized with container query
-	 * units (cqw/cqh), so the composition scales with the hero itself, including when the 600px floor
-	 * kicks in. Compact (small or portrait screens): a vertical flex stack.
+	 * Everything is absolutely placed in a full-viewport stage and sized with container query units
+	 * (cqw/cqh), so the composition scales with the hero itself, including when the height floor
+	 * kicks in.
 	 *
-	 * Layering, back to front: glow, DivineFlow (0) → name (1) → throne (2) → name ghost and
-	 * vignette (3) → text (4). The h1 itself has no z-index, so its two layers can sit on either side
-	 * of the throne.
+	 * Layering, back to front: glow, DivineFlow (0) → name (1) → throne (2) → vignette (3) → text (4).
 	 */
 	.hero {
 		position: relative;
@@ -176,17 +180,14 @@ const endGroup: InfoItem[] = [
 	}
 
 	.hero__name {
-		/*
-		 * How the name looks where it crosses the throne: the throne itself shows through the letters,
-		 * run through this filter. Alternatives that also work well:
-		 *   bright red: brightness(1.9) saturate(1.1)
-		 *   warm gold:  brightness(2.2) saturate(1.4) hue-rotate(18deg)
-		 */
-		--name-ghost-filter: grayscale(1) brightness(2.6) contrast(1.2);
-
 		position: absolute;
 		inset-inline: 0;
 		top: 11.5cqh;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.3cqh;
 		margin: 0;
 		font-family: var(--font-display);
 		font-stretch: 125%;
@@ -194,60 +195,6 @@ const endGroup: InfoItem[] = [
 		text-align: center;
 		text-transform: uppercase;
 		user-select: none;
-	}
-
-	.hero__name-layer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1.3cqh;
-	}
-
-	.hero__name-layer--base {
-		position: relative;
-		z-index: 1;
-	}
-
-	/*
-	 * Ghost copy above the throne, masked to the throne's silhouette and aligned by
-	 * scripts/name-ghost.ts. Inside the letters of the last name the throne photo shows through
-	 * (background-clip: text) with --name-ghost-filter applied, so the name turns to engraved silver
-	 * where it crosses the photo. Hidden until the mask is in place.
-	 */
-	.hero__name-layer--ghost {
-		position: absolute;
-		inset: 0;
-		z-index: 3;
-		visibility: hidden;
-		filter: var(--name-ghost-filter);
-		pointer-events: none;
-		-webkit-mask-image: var(--throne-mask, none);
-		mask-image: var(--throne-mask, none);
-		-webkit-mask-repeat: no-repeat;
-		mask-repeat: no-repeat;
-		-webkit-mask-size: var(--mask-w, 0) var(--mask-h, 0);
-		mask-size: var(--mask-w, 0) var(--mask-h, 0);
-		-webkit-mask-position: var(--mask-x, 0) var(--mask-y, 0);
-		mask-position: var(--mask-x, 0) var(--mask-y, 0);
-	}
-
-	.hero__name-layer--ghost[data-ready] {
-		visibility: visible;
-	}
-
-	.hero__name-layer--ghost .hero__first {
-		color: rgb(255 255 255 / 0.9);
-	}
-
-	.hero__name-layer--ghost .hero__last {
-		color: transparent;
-		-webkit-text-stroke-color: #fff;
-		background-image: var(--throne-mask, none);
-		background-repeat: no-repeat;
-		background-size: var(--mask-w, 0) var(--mask-h, 0);
-		background-position: var(--bg-x, 0) var(--bg-y, 0);
-		-webkit-background-clip: text;
-		background-clip: text;
 	}
 
 	.hero__first {
@@ -258,17 +205,21 @@ const endGroup: InfoItem[] = [
 		color: var(--color-text);
 	}
 
+	/* The last name is a deep red shape behind the throne, so the photo leads. */
 	.hero__last {
 		font-size: min(12.2cqw, 19.6cqh);
 		font-weight: 900;
 		letter-spacing: -0.01em;
-		color: var(--color-text);
+		color: rgb(110 14 24 / 0.5);
 	}
 
-	@supports (-webkit-text-stroke: 1px) {
+	@supports (background-clip: text) or (-webkit-background-clip: text) {
 		.hero__last {
 			color: transparent;
-			-webkit-text-stroke: clamp(1.25px, 0.14cqw, 2.5px) #fff;
+			-webkit-text-stroke: 1px rgb(255 70 82 / 0.2);
+			background: linear-gradient(180deg, rgb(130 16 28 / 0.6), rgb(60 6 12 / 0.2));
+			-webkit-background-clip: text;
+			background-clip: text;
 		}
 	}
 
@@ -313,51 +264,99 @@ const endGroup: InfoItem[] = [
 	.hero__info {
 		position: absolute;
 		inset-inline: var(--gutter);
-		top: 58.3cqh;
+		top: 59cqh;
 		z-index: 4;
 		display: flex;
-		align-items: center;
+		/* Bottoms aligned, so the two underlines sit on one line. */
+		align-items: flex-end;
 		justify-content: space-between;
 		translate: 0 -50%;
 		pointer-events: none;
 	}
 
-	.hero__group {
+	.hero__claim {
 		display: flex;
 		flex-direction: column;
-		gap: 24px;
-		width: clamp(200px, 21cqw, 300px);
-		margin: 0;
+		gap: 10px;
+		width: clamp(240px, 25cqw, 380px);
 		pointer-events: auto;
 	}
 
-	.hero__group--end {
+	.hero__claim--end {
+		align-items: flex-end;
 		text-align: right;
 	}
 
-	.hero__item {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.hero__label {
+	.hero__kicker {
+		margin: 0;
 		font-size: 12px;
 		font-weight: 600;
-		letter-spacing: 0.2em;
+		letter-spacing: 0.24em;
 		text-transform: uppercase;
-		color: var(--color-text-muted);
+		color: var(--color-text-soft);
 	}
 
-	.hero__label--accent {
-		color: var(--color-accent-soft);
-	}
-
-	.hero__value {
+	/* Big claims in a silver-to-red metal finish. */
+	.hero__headline {
 		margin: 0;
-		font-size: 16px;
-		line-height: 1.5;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(22px, 2.45cqw, 40px);
+		line-height: 1.02;
+		text-transform: uppercase;
+		text-decoration: none;
 		color: var(--color-text);
+	}
+
+	@supports (background-clip: text) or (-webkit-background-clip: text) {
+		.hero__headline {
+			color: transparent;
+			background: linear-gradient(180deg, #fff 10%, #ffd6d9 48%, #e8323f 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+		}
+	}
+
+	.hero__headline--link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		border-radius: 4px;
+	}
+
+	.hero__arrow {
+		width: 0.62em;
+		height: 0.62em;
+		flex: none;
+		color: var(--color-accent-soft);
+		transition: translate 0.25s var(--ease-out);
+	}
+
+	.hero__headline--link:hover .hero__arrow,
+	.hero__headline--link:focus-visible .hero__arrow {
+		translate: 0.08em -0.08em;
+	}
+
+	/*
+	 * The underline: a strand of white DivineFlow in a short strip, bleeding a little past the text.
+	 * It flows from the outer edge and fades out towards the throne.
+	 */
+	.hero__rule {
+		position: relative;
+		display: block;
+		width: calc(100% + 24px);
+		height: 36px;
+		margin-top: -6px;
+		margin-left: -12px;
+		-webkit-mask-image: linear-gradient(90deg, #000 60%, transparent);
+		mask-image: linear-gradient(90deg, #000 60%, transparent);
+	}
+
+	.hero__claim--end .hero__rule {
+		margin: -6px -12px 0 0;
+		-webkit-mask-image: linear-gradient(-90deg, #000 60%, transparent);
+		mask-image: linear-gradient(-90deg, #000 60%, transparent);
 	}
 
 	.hero__actions {
@@ -438,9 +437,6 @@ const endGroup: InfoItem[] = [
 
 		.hero__name {
 			top: max(64px, 9cqh);
-		}
-
-		.hero__name-layer {
 			gap: 1cqh;
 		}
 
@@ -476,31 +472,40 @@ const endGroup: InfoItem[] = [
 
 		.hero__info {
 			top: auto;
-			bottom: calc(var(--actions-bottom) + var(--actions-height) + max(14px, 2.4cqh));
+			bottom: calc(var(--actions-bottom) + var(--actions-height) + max(10px, 1.6cqh));
 			align-items: flex-end;
 			gap: 16px;
 			translate: none;
 		}
 
-		.hero__group {
-			gap: 12px;
-			width: auto;
+		.hero__claim {
 			flex: 1 1 0;
+			gap: 6px;
+			width: auto;
 			min-width: 0;
 		}
 
-		.hero__item {
-			gap: 4px;
+		.hero__kicker {
+			font-size: 9px;
+			letter-spacing: 0.16em;
 		}
 
-		.hero__label {
-			font-size: 10px;
-			letter-spacing: 0.18em;
+		/* Location and relocation on their own lines rather than an awkward wrap. */
+		.hero__kicker span {
+			display: block;
 		}
 
-		.hero__value {
-			font-size: 14px;
-			line-height: 1.35;
+		.hero__kicker .hero__kicker-sep {
+			display: none;
+		}
+
+		.hero__headline {
+			font-size: clamp(14px, 4.3cqw, 26px);
+		}
+
+		.hero__rule {
+			height: 28px;
+			margin-top: -4px;
 		}
 
 		.hero__actions {
@@ -524,16 +529,12 @@ const endGroup: InfoItem[] = [
 	/* Tablets: a touch more room for the text. */
 	@media (min-width: 640px) and (max-width: 1023px),
 		(min-width: 640px) and (max-aspect-ratio: 115/100) {
-		.hero__group {
-			flex: 0 1 300px;
+		.hero__claim {
+			flex: 0 1 340px;
 		}
 
-		.hero__label {
+		.hero__kicker {
 			font-size: 11px;
-		}
-
-		.hero__value {
-			font-size: 16px;
 		}
 
 		.button svg {
