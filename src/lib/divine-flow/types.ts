@@ -80,6 +80,20 @@ export interface DivineFlowOptions {
 	 */
 	tilt?: number;
 	/**
+	 * Bend every filament into a gentle wave across the canvas, this many px high: with one wave
+	 * (`wavePeriods: 1`) it dips under the left half and rises under the right, like "~". The shape
+	 * depends only on the position across the canvas, so it's the same whichever way filaments flow.
+	 * Default `0`.
+	 */
+	wave?: number;
+	/** How many waves fit across the canvas. Default `1`. */
+	wavePeriods?: number;
+	/**
+	 * Fade each filament in near its origin (the usual look). Turn off for strands drawn out from the
+	 * middle, so the two halves join without a gap. Default `true`.
+	 */
+	fadeFromOrigin?: boolean;
+	/**
 	 * How much of each filament is drawn, 0–1, growing outwards from the origin. Start at `0` and
 	 * animate it with `setReveal()` to draw the flow in. Default `1`.
 	 */
@@ -147,6 +161,9 @@ export interface ResolvedDivineFlowOptions {
 	spread: number;
 	amplitude: number;
 	tilt: number;
+	wave: number;
+	wavePeriods: number;
+	fadeFromOrigin: boolean;
 	reveal: number;
 	thickness: number;
 	uniform: boolean;

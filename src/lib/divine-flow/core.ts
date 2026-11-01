@@ -69,6 +69,9 @@ export function createFlowCore(
 		spread: resolved.spread,
 		amplitude: resolved.amplitude,
 		tilt: resolved.tilt,
+		wave: resolved.wave,
+		wavePeriods: resolved.wavePeriods,
+		fadeFromOrigin: resolved.fadeFromOrigin,
 		motion: resolved.motion,
 		still,
 	});

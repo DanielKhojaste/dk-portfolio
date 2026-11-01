@@ -187,6 +187,12 @@ describe("resolveOptions", () => {
 		expect(options.hueRange).toEqual([-180, 5]);
 		expect(options.lightRange).toEqual([-0.14, 0.14]);
 		expect(resolveOptions({ sides: "right" }).sides).toBe("right");
+		expect(resolveOptions({})).toMatchObject({ wave: 0, wavePeriods: 1, fadeFromOrigin: true });
+		expect(resolveOptions({ wave: 9999, wavePeriods: -1, fadeFromOrigin: false })).toMatchObject({
+			wave: 500,
+			wavePeriods: 0,
+			fadeFromOrigin: false,
+		});
 		expect(resolveOptions({ tilt: 90, reveal: -2 })).toMatchObject({ tilt: 45, reveal: 0 });
 	});
 

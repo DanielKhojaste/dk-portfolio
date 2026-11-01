@@ -3,6 +3,7 @@ import { createScene, createThreads, emberPosition } from "../scene";
 import {
 	makePointBuffer,
 	tiltLift,
+	waveLift,
 	sampleThread,
 	samplesForWidth,
 	type FlowLayout,
@@ -203,6 +204,31 @@ describe("geometry", () => {
 			expect(lift(0)).toBeCloseTo(0, 6);
 			const i = 30;
 			expect(lift(i)).toBeCloseTo(tan5 * (flat[i]!.x - flat[0]!.x), 2);
+		}
+	});
+
+	it("waves filaments into a ~ across the canvas, whichever way they flow", () => {
+		// One wave: level at the edges and middle, dips (down = +y) on the left, rises on the right.
+		expect(waveLift(0, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(200, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(400, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(100, 400, 7)).toBeCloseTo(-7, 9);
+		expect(waveLift(300, 400, 7)).toBeCloseTo(7, 9);
+		expect(waveLift(100, 400, 7, 2)).toBeCloseTo(0, 9);
+
+		const strip: FlowLayout = { ...layout, width: 400, height: 40, originY: 0.5, innerGap: 0 };
+		for (const [sides, originX] of [
+			["right", 0],
+			["left", 1],
+		] as const) {
+			const [thread] = createThreads({ ...config, sides });
+			const flat = makePointBuffer();
+			const wavy = makePointBuffer();
+			sampleThread(thread!, 0, { ...strip, originX, still: true }, 44, flat);
+			sampleThread(thread!, 0, { ...strip, originX, still: true, wave: 7 }, 44, wavy);
+			for (let i = 0; i <= 44; i += 11) {
+				expect(flat[i]!.y - wavy[i]!.y).toBeCloseTo(waveLift(flat[i]!.x, 400, 7), 2);
+			}
 		}
 	});
 

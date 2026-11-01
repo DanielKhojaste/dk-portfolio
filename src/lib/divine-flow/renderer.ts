@@ -60,9 +60,10 @@ export function makeTrailGradient(
 	to: Point,
 	color: RGB,
 	alpha: number,
+	fadeFromOrigin = true,
 ): CanvasGradient {
 	const grad = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
-	grad.addColorStop(0, rgba(color, 0));
+	grad.addColorStop(0, rgba(color, fadeFromOrigin ? 0 : alpha * 0.8));
 	grad.addColorStop(0.1, rgba(color, alpha * 0.8));
 	grad.addColorStop(0.42, rgba(color, alpha));
 	grad.addColorStop(0.66, rgba(color, alpha * 0.42));
@@ -172,15 +173,16 @@ export function buildRenderCache(
 	const end: Point = { x: 0, y: 0 };
 	const rest: FlowLayout = { ...layout, still: true };
 
+	const fade = layout.fadeFromOrigin ?? true;
 	const threads = scene.threads.map((thread) => {
 		writePoint(thread, 0, 0, rest, start);
 		writePoint(thread, 1, 0, rest, end);
 		const { hue, light } = threadShade(thread, options.variance, options.shadeRanges);
 		const tint = (color: RGB) => (hue || light ? shade(color, hue, light) : color);
 		return {
-			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5),
-			glow: makeTrailGradient(ctx, start, end, tint(palette.glow), thread.alpha * 0.22),
-			core: makeTrailGradient(ctx, start, end, tint(palette.core), thread.alpha * 0.78),
+			bloom: makeTrailGradient(bloomCtx, start, end, tint(palette.bloom), thread.alpha * 0.5, fade),
+			glow: makeTrailGradient(ctx, start, end, tint(palette.glow), thread.alpha * 0.22, fade),
+			core: makeTrailGradient(ctx, start, end, tint(palette.core), thread.alpha * 0.78, fade),
 			shimmer: rgba(tint(palette.shimmer), 1),
 		};
 	});

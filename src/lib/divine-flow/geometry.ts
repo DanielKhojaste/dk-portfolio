@@ -14,6 +14,11 @@ export interface FlowLayout {
 	amplitude?: number;
 	/** Slant in degrees, rising to the right (see `DivineFlowOptions.tilt`). Default `0`. */
 	tilt?: number;
+	/** Wave height in px and number of waves across the canvas (see `DivineFlowOptions.wave`). */
+	wave?: number;
+	wavePeriods?: number;
+	/** See `DivineFlowOptions.fadeFromOrigin`. Default `true`. */
+	fadeFromOrigin?: boolean;
 	motion: number;
 	/** When true, time is frozen and filaments hold their resting shape. */
 	still: boolean;
@@ -34,6 +39,15 @@ export function samplesForWidth(width: number): number {
 /** How far a point `x` px along from `startX` is lifted by a `tiltDeg` slant (rising to the right). */
 export function tiltLift(x: number, startX: number, tiltDeg: number): number {
 	return Math.tan((tiltDeg * Math.PI) / 180) * (x - startX);
+}
+
+/**
+ * How far a point at `x` is lifted by a `height` px wave with `periods` waves across `width`: one wave
+ * dips under the left half and rises under the right ("~"), level at both edges and the middle.
+ */
+export function waveLift(x: number, width: number, height: number, periods = 1): number {
+	if (width <= 0) return 0;
+	return height * Math.sin(Math.PI * periods * ((2 * x) / width - 1));
 }
 
 /** Write the point at `u` (0–1) along `thread` at `time` seconds into `out`. */
@@ -69,6 +83,7 @@ export function writePoint(
 	const ny = dx / len;
 
 	if (layout.tilt) y0 -= tiltLift(x0, startX, layout.tilt);
+	if (layout.wave) y0 -= waveLift(x0, width, layout.wave, layout.wavePeriods ?? 1);
 
 	const t = layout.still ? 0 : time;
 	const envelope = Math.sin(Math.PI * u);

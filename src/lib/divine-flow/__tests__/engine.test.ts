@@ -262,6 +262,17 @@ describe("createDivineFlow", () => {
 		expect(flow.reveal).toBe(1);
 	});
 
+	it("draws the last reveal before the loop stops, so nothing stale stays on screen", () => {
+		const { flow } = mount({ reveal: 1, offscreen: false });
+		flushFrame(16);
+		flow.setReveal(0);
+		contexts[0]!.calls.length = 0;
+		flow.stop();
+		// The frame drawn on stop has nothing left to stroke.
+		expect(contexts[0]!.calls).toContain("clearRect");
+		expect(contexts[0]!.calls).not.toContain("stroke");
+	});
+
 	it("redraws straight away when revealing a still canvas", () => {
 		prefersReduced = true;
 		const { flow } = mount({ reveal: 0 });
