@@ -50,7 +50,7 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 		flow = createDivineFlow(el, {
 			...optionsFor(base, compact, Boolean(query?.matches)),
 			// Flows that draw in start empty, so nothing flashes before the tween begins.
-			...(el.dataset.reveal ? { reveal: 0 } : {}),
+			...(el.dataset.reveal !== undefined || el.hasAttribute("data-manual") ? { reveal: 0 } : {}),
 			className: "divine-flow__canvas",
 		});
 	} catch (error) {
@@ -62,7 +62,9 @@ export function mountDivineFlow(el: HTMLElement): DivineFlowInstance | null {
 		flow.update(optionsFor(base, compact, event.matches)),
 	);
 
-	pauseWhileMenuOpen(flow);
+	// Flows outside the menu have nothing to show while it covers them. Manual flows (like the menu's
+	// own underlines) are started and stopped by whoever mounted them.
+	if (!el.hasAttribute("data-manual")) pauseWhileMenuOpen(flow);
 	instances.set(el, flow);
 	el.dataset.flowReady = "true";
 	return flow;
@@ -136,7 +138,7 @@ export function revealFlow(
  * logo, instead of appearing all at once.
  */
 export function mountDivineFlows(root: ParentNode = document) {
-	root.querySelectorAll<HTMLElement>("[data-divine-flow]").forEach((el) => {
+	root.querySelectorAll<HTMLElement>("[data-divine-flow]:not([data-manual])").forEach((el) => {
 		const flow = mountDivineFlow(el);
 		const reveal = parseReveal(el.dataset.reveal);
 		if (flow && reveal) revealFlow(flow, reveal);

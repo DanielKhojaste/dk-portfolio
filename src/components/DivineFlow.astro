@@ -19,6 +19,8 @@ interface Props {
 	reveal?: boolean | { delay?: number; duration?: number; ease?: string };
 	/** Seconds the canvas takes to fade in once started. */
 	fadeIn?: number;
+	/** Leave mounting to a script (e.g. on hover) instead of starting on page load. */
+	manual?: boolean;
 }
 
 const {
@@ -28,6 +30,7 @@ const {
 	class: className,
 	reveal = false,
 	fadeIn = 1.6,
+	manual = false,
 } = Astro.props;
 ---
 
@@ -39,6 +42,7 @@ const {
 	data-compact-options={compactOptions ? JSON.stringify(compactOptions) : undefined}
 	data-compact-query={compactOptions ? compactQuery : undefined}
 	data-reveal={reveal ? JSON.stringify(reveal === true ? {} : reveal) : undefined}
+	data-manual={manual ? "" : undefined}
 	style={`--flow-fade: ${fadeIn}s`}
 >
 </div>

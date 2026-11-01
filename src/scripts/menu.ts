@@ -80,10 +80,12 @@ export function setupMenu(root: Document = document): MenuController | null {
 		}
 	});
 
-	// Following a section link closes the menu first, so the page can scroll to it.
+	// Clicking the overlay (anywhere but a link) closes the menu. Following a section link closes it
+	// too, first, so the page can scroll to the section.
 	menu.addEventListener("click", (event) => {
 		const link = (event.target as Element).closest("a");
-		if (link && link.getAttribute("href")?.startsWith("#")) set(false, false);
+		if (!link) set(false);
+		else if (link.getAttribute("href")?.startsWith("#")) set(false, false);
 	});
 
 	return {

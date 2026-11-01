@@ -17,25 +17,18 @@ import type { DivineFlowOptions, DivineFlowPalette } from "./lib/divine-flow";
 export interface LinkItem {
 	label: string;
 	href: string;
-	/** Opens in a new tab. */
-	external?: boolean;
 }
 
 export const profile = {
 	name: "Daniel Khojaste",
+	/** Hero: the big claim on the left. */
 	role: "Software Developer",
-	slogan: "temporary slogan",
 	/** Hero: "Based in <location>". */
 	location: "Canada",
-	coaching: "Coaching soccer",
+	/** Hero: "Currently building <name>", linking to `href` in a new tab. */
 	currently: {
-		/** Hero: "Currently building <name>". */
 		name: "Lineup",
-		/** Menu: "Currently: <label>". */
-		label: "Building Lineup",
-		description: "A tactical board for coaches",
 		href: "https://github.com/DanielKhojaste/lineup",
-		external: true,
 	},
 } as const;
 
@@ -47,40 +40,45 @@ export const sections: readonly LinkItem[] = [
 	{ label: "Contact", href: "#contact" },
 ];
 
-export const socials: readonly LinkItem[] = [
-	{ label: "GitHub", href: "https://github.com/DanielKhojaste", external: true },
-];
-
 /* ------------------------------------------------------------------------------------------------
  * 2. Animation (seconds). Eases are GSAP ease names: https://gsap.com/docs/v3/Eases
  *    Everything is skipped for visitors who prefer reduced motion.
  * --------------------------------------------------------------------------------------------- */
 
+/** The DK signature in the header, written stroke by stroke. */
+const logo = {
+	delay: 0.2,
+	/** Total writing time, shared between the strokes by length. */
+	duration: 1.7,
+	/** Pause between strokes, as if the pen lifts. */
+	penLift: 0.08,
+};
+
+/** How long the signature takes from start to finish (four strokes, three pen lifts). */
+const signature = { delay: logo.delay, duration: logo.duration + 3 * logo.penLift };
+
 export const animation = {
-	/** The DK signature in the header, written stroke by stroke. */
-	logo: {
-		delay: 0.2,
-		/** Total writing time, shared between the strokes by length. */
-		duration: 1.7,
-		/** Pause between strokes, as if the pen lifts. */
-		penLift: 0.08,
-	},
+	logo,
 
 	/** The red DivineFlow behind the hero, drawn out from the centre on load (alongside the logo). */
 	background: {
-		delay: 0.2,
-		duration: 2.2,
-		ease: "power2.out",
+		delay: 0.0,
+		duration: 6.5,
+		ease: "power1.out",
 		/** Opacity fade-in of the whole canvas, under the draw-in. */
-		fadeIn: 0.5,
+		fadeIn: 0.0,
 	},
 
-	/** The white DivineFlow underlines under the hero claims, drawn out from their outer edge. */
+	/**
+	 * The white DivineFlow underlines under the hero claims, drawn out from their outer edge. They
+	 * start and finish with the signature; replace `signature.delay`/`signature.duration` with
+	 * numbers to time them separately.
+	 */
 	underlines: {
-		delay: 0.5,
-		duration: 1.8,
-		ease: "power2.inOut",
-		fadeIn: 0.5,
+		delay: signature.delay,
+		duration: signature.duration,
+		ease: "power1.inOut",
+		fadeIn: 0,
 	},
 
 	/** The full-screen menu. */
@@ -91,11 +89,11 @@ export const animation = {
 		links: 0.75,
 		/** Delay between one link and the next. */
 		linkStagger: 0.06,
-		/** The quick facts fading in, and how long after opening they start. */
-		facts: 0.6,
-		factsDelay: 0.35,
 		/** The menu button's bars folding into an X, and its label swapping. */
 		button: 0.4,
+		/** The DivineFlow underline drawing out under a hovered or focused menu link, and back in. */
+		underlineIn: 0.6,
+		underlineOut: 0.35,
 	},
 
 	/** Hover and focus feedback: buttons, links, arrows, the menu button's spin. */
@@ -185,8 +183,13 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 
 /** The underlines under the hero claims. */
 export const underlineFlow = {
-	/** Slant of the line in degrees: positive rises from bottom left to top right. */
-	angle: 5,
+	/**
+	 * Slant in degrees. Each underline rises towards its own side of the screen (the left one up to
+	 * the left, the right one up to the right); negative tips them down instead.
+	 */
+	angle: 1,
+	/** Length of the underlines in px: on desktop, and on phones/tablets. */
+	width: { desktop: 220, compact: 130 },
 	/** Strands per underline, and how far apart they fan (multiple of the default fan). */
 	lineCount: 4,
 	spread: 0.4,
@@ -199,4 +202,15 @@ export const underlineFlow = {
 	speckCount: 4,
 	/** Share of the underline (from the throne side) that fades out, 0–1. */
 	fade: 0.28,
+} as const;
+
+/** The underline that draws out under a hovered or focused menu link. */
+export const menuUnderlineFlow = {
+	/** Strands drawn out from the centre to each side, and how far apart they fan. */
+	lineCount: 3,
+	spread: 0.35,
+	amplitude: 2,
+	motion: backgroundFlow.desktop.motion,
+	sparkleCount: 2,
+	speckCount: 2,
 } as const;

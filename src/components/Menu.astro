@@ -1,59 +1,60 @@
 ---
 /**
- * Full-screen menu, opened by the header's menu button (scripts/menu.ts).
- * Animations are CSS transitions on opacity/transform only, so the compositor runs them even when
- * the main thread is busy.
+ * Full-screen menu, opened by the header's menu button (scripts/menu.ts). The page behind it is
+ * blurred. Hovering or focusing a link draws a white DivineFlow underline out from its centre
+ * (scripts/menu-underlines.ts). Clicking anywhere but a link closes it.
+ *
+ * Open/close animations are CSS transitions on opacity/transform only, so the compositor runs them
+ * even when the main thread is busy.
  */
-import { profile, sections, socials } from "../site.config";
-import InfoValue from "./InfoValue.astro";
+import type { DivineFlowOptions } from "../lib/divine-flow";
+import { colors, menuUnderlineFlow, sections } from "../site.config";
+import DivineFlow from "./DivineFlow.astro";
+
+const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
+	theme: colors.underlines,
+	sides: "both",
+	originX: 0.5,
+	originY: 0.5,
+	innerGap: 0,
+	scatterCount: 0,
+	emberCount: 0,
+	maxDpr: 2,
+	seed,
+	...menuUnderlineFlow,
+});
 ---
 
 <div class="menu" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" data-menu>
 	<div class="menu__glow" aria-hidden="true"></div>
 
-	<div class="menu__inner">
-		<nav class="menu__nav" aria-label="Sections">
-			<ol class="menu__list">
-				{
-					sections.map((section, i) => (
-						<li class="menu__item" style={`--i: ${i}`}>
-							<a class="menu__link" href={section.href} data-menu-link>
-								<span class="menu__index" aria-hidden="true">
-									{String(i + 1).padStart(2, "0")}
-								</span>
-								<span class="menu__label">{section.label}</span>
-							</a>
-						</li>
-					))
-				}
-			</ol>
-		</nav>
-
-		<dl class="menu__aside">
-			<div class="menu__fact">
-				<dt>Currently</dt>
-				<dd>
-					<InfoValue value={profile.currently.label} href={profile.currently.href} />
-					<span class="menu__note">{profile.currently.description}</span>
-				</dd>
-			</div>
-			<div class="menu__fact">
-				<dt>Based in</dt>
-				<dd>{profile.location}</dd>
-			</div>
-			<div class="menu__fact">
-				<dt>Off the keyboard</dt>
-				<dd>{profile.coaching}</dd>
-			</div>
-			<div class="menu__fact">
-				<dt>Elsewhere</dt>
-				<dd class="menu__socials">
-					{socials.map((social) => <InfoValue value={social.label} href={social.href} />)}
-				</dd>
-			</div>
-		</dl>
-	</div>
+	<nav class="menu__nav" aria-label="Sections">
+		<ol class="menu__list">
+			{
+				sections.map((section, i) => (
+					<li class="menu__item" style={`--i: ${i}`}>
+						<a class="menu__link" href={section.href} data-menu-link>
+							<span class="menu__label">{section.label}</span>
+							<span class="menu__rule" aria-hidden="true">
+								<DivineFlow manual fadeIn={0} options={underline(7100 + i * 97)} />
+							</span>
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</nav>
 </div>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupMenuUnderlines } from "../scripts/menu-underlines";
+
+	setupMenuUnderlines(document, {
+		in: animation.menu.underlineIn,
+		out: animation.menu.underlineOut,
+	});
+</script>
 
 <style>
 	.menu {
@@ -65,7 +66,11 @@ import InfoValue from "./InfoValue.astro";
 		display: flex;
 		overflow-y: auto;
 		overscroll-behavior: contain;
-		background: rgb(8 4 5 / 0.97);
+		/* See-through enough to keep the hero's colour, blurred so nothing behind competes with the links. */
+		background: rgb(8 4 5 / 0.62);
+		-webkit-backdrop-filter: blur(18px) saturate(1.1);
+		backdrop-filter: blur(18px) saturate(1.1);
+		cursor: pointer;
 		visibility: hidden;
 		opacity: 0;
 		transition:
@@ -89,22 +94,18 @@ import InfoValue from "./InfoValue.astro";
 		pointer-events: none;
 	}
 
-	.menu__inner {
+	.menu__nav {
 		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-		align-items: end;
-		gap: clamp(32px, 6vw, 96px);
 		width: 100%;
-		max-width: 1440px;
 		margin: auto;
-		padding: clamp(110px, 16vh, 160px) var(--gutter) clamp(40px, 8vh, 80px);
+		padding: clamp(96px, 14vh, 140px) var(--gutter) clamp(40px, 8vh, 80px);
 	}
 
 	.menu__list {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(4px, 1vh, 12px);
+		align-items: center;
+		gap: clamp(2px, 0.6vh, 8px);
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -115,12 +116,12 @@ import InfoValue from "./InfoValue.astro";
 	}
 
 	.menu__link {
-		display: inline-flex;
-		align-items: baseline;
-		gap: clamp(12px, 1.6vw, 24px);
-		padding-block: 4px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		color: var(--color-text);
 		text-decoration: none;
+		cursor: pointer;
 		transform: translateY(105%);
 		transition: transform calc(var(--menu-links) * 0.55) var(--menu-ease);
 	}
@@ -131,18 +132,17 @@ import InfoValue from "./InfoValue.astro";
 			calc(0.12s + var(--i) * var(--menu-link-stagger));
 	}
 
-	.menu__index {
-		font-size: 13px;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		color: var(--color-accent-soft);
+	.menu__link:focus-visible {
+		outline: none;
 	}
 
 	.menu__label {
+		display: block;
+		padding-top: 4px;
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 900;
-		font-size: clamp(40px, min(7.2vw, 11vh), 112px);
+		font-size: clamp(40px, min(7.2vw, 10vh), 104px);
 		line-height: 1;
 		text-transform: uppercase;
 		color: transparent;
@@ -151,7 +151,8 @@ import InfoValue from "./InfoValue.astro";
 	}
 
 	.menu__link:hover .menu__label,
-	.menu__link:focus-visible .menu__label {
+	.menu__link:focus-visible .menu__label,
+	.menu__link:active .menu__label {
 		color: var(--color-text);
 	}
 
@@ -161,77 +162,19 @@ import InfoValue from "./InfoValue.astro";
 		}
 	}
 
-	.menu__aside {
-		display: grid;
-		gap: 24px;
-		margin: 0;
-		padding-bottom: 12px;
-		opacity: 0;
-		transform: translateY(16px);
-		transition:
-			opacity calc(var(--menu-facts) * 0.5) var(--menu-ease),
-			transform calc(var(--menu-facts) * 0.5) var(--menu-ease);
-	}
-
-	.menu[data-open] .menu__aside {
-		opacity: 1;
-		transform: none;
-		transition:
-			opacity var(--menu-facts) var(--menu-ease) var(--menu-facts-delay),
-			transform var(--menu-facts) var(--menu-ease) var(--menu-facts-delay);
-	}
-
-	.menu__fact {
-		display: grid;
-		gap: 6px;
-	}
-
-	.menu__fact dt {
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.2em;
-		text-transform: uppercase;
-		color: var(--color-text-muted);
-	}
-
-	.menu__fact dd {
-		display: grid;
-		gap: 4px;
-		margin: 0;
-		font-size: 17px;
-		color: var(--color-text);
-	}
-
-	.menu__note {
-		font-size: 14px;
-		color: var(--color-text-soft);
-	}
-
-	.menu__socials {
-		display: flex !important;
-		flex-wrap: wrap;
-		gap: 16px;
+	/* Strip for the DivineFlow underline, a little wider than the word so the strands can fade out. */
+	.menu__rule {
+		position: relative;
+		display: block;
+		width: calc(100% + 40px);
+		height: 26px;
+		margin-top: -2px;
+		pointer-events: none;
 	}
 
 	@media (max-width: 767px) {
-		.menu__inner {
-			grid-template-columns: minmax(0, 1fr);
-			align-items: start;
-			gap: 40px;
-			padding-top: 96px;
-		}
-
 		.menu__label {
 			font-size: clamp(36px, 12vw, 64px);
-		}
-
-		.menu__aside {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 20px 16px;
-		}
-
-		.menu__fact dd {
-			font-size: 15px;
 		}
 	}
 </style>

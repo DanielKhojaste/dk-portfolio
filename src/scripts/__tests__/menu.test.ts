@@ -89,6 +89,14 @@ describe("setupMenu", () => {
 		expect(menu.isOpen).toBe(false);
 	});
 
+	it("closes when the overlay itself is clicked, returning focus to the button", () => {
+		const { menu, button } = render();
+		menu.open();
+		document.querySelector<HTMLElement>("[data-menu]")!.click();
+		expect(menu.isOpen).toBe(false);
+		expect(document.activeElement).toBe(button);
+	});
+
 	it("keeps Tab inside the header and menu while open", () => {
 		const { menu } = render();
 		menu.open();
@@ -170,5 +178,37 @@ describe("revealFlow", () => {
 		const flow = { setReveal: vi.fn() };
 		expect(revealFlow(flow, settings, true)).toBeNull();
 		expect(flow.setReveal).toHaveBeenCalledExactlyOnceWith(1);
+	});
+});
+
+describe("underlineController", () => {
+	const timing = { in: 0.6, out: 0.3 };
+	const fakeFlow = () => ({ start: vi.fn(), stop: vi.fn(), setReveal: vi.fn() });
+
+	it("mounts on first show only and starts the flow drawing out", async () => {
+		const { underlineController } = await import("../menu-underlines");
+		const flow = fakeFlow();
+		const mount = vi.fn(() => flow);
+		const underline = underlineController(mount, timing, false);
+
+		underline.hide();
+		expect(mount).not.toHaveBeenCalled();
+
+		underline.show();
+		underline.show();
+		expect(mount).toHaveBeenCalledTimes(1);
+		expect(flow.start).toHaveBeenCalled();
+		expect(flow.stop).not.toHaveBeenCalled();
+	});
+
+	it("shows and hides instantly for reduced motion", async () => {
+		const { underlineController } = await import("../menu-underlines");
+		const flow = fakeFlow();
+		const underline = underlineController(() => flow, timing, true);
+		underline.show();
+		expect(flow.setReveal).toHaveBeenLastCalledWith(1);
+		underline.hide();
+		expect(flow.setReveal).toHaveBeenLastCalledWith(0);
+		expect(flow.stop).toHaveBeenCalledTimes(1);
 	});
 });
