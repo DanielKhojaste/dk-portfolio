@@ -54,6 +54,10 @@ removes it again on `destroy()`.
 | `bloomScale`      | `0.28`                   | Resolution of the soft-glow pass (0.1–1)                                                                                                            |
 | `reducedMotion`   | `"auto"`                 | `"auto"` follows `prefers-reduced-motion`; `true`/`false` force it                                                                                  |
 | `pauseWhenHidden` | `true`                   | Pause while off-screen or in a background tab                                                                                                       |
+| `thickness`       | `1`                      | Line thickness multiplier for every filament                                                                                                        |
+| `uniform`         | `false`                  | Same width and brightness for every filament (e.g. both halves of a centred strand)                                                                 |
+| `alpha`           | —                        | Fixed opacity (0–1) for every filament                                                                                                              |
+| `revealStagger`   | `0.25`                   | How staggered filaments are when drawing in; `0` draws them in step                                                                                 |
 | `offscreen`       | `true`                   | Draw in a shared web worker on an `OffscreenCanvas`, off the main thread; falls back to the main thread where unsupported or when `canvas` is given |
 | `canvas`          | —                        | Draw into an existing canvas instead of creating one                                                                                                |
 | `className`       | —                        | Class for the created canvas                                                                                                                        |

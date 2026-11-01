@@ -48,6 +48,8 @@ export interface FrameState {
 	composeBloom: boolean;
 	/** Draw-in progress, 0–1. Default `1`. */
 	reveal?: number;
+	/** See `DivineFlowOptions.revealStagger`. Default `0.25`. */
+	revealStagger?: number;
 	cache: RenderCache;
 }
 
@@ -227,17 +229,14 @@ export function buildRenderCache(
 	};
 }
 
-/** Filaments start drawing in at staggered moments (up to this share of the reveal). */
-const REVEAL_STAGGER = 0.25;
-
 /**
  * How far along its length (0–1) a filament is drawn at overall progress `reveal`. `offset` (0–1)
- * staggers filaments so they don't all grow in lockstep.
+ * staggers filaments by up to `stagger` of the reveal, so they don't all grow in lockstep.
  */
-export function threadProgress(reveal: number, offset: number): number {
+export function threadProgress(reveal: number, offset: number, stagger = 0.25): number {
 	if (reveal >= 1) return 1;
-	const start = offset * REVEAL_STAGGER;
-	return Math.min(1, Math.max(0, (reveal - start) / (1 - REVEAL_STAGGER)));
+	const start = offset * stagger;
+	return Math.min(1, Math.max(0, (reveal - start) / (1 - stagger)));
 }
 
 /** The polyline from the start to `progress` (0–1) of the way along, ending exactly at that point. */
@@ -311,7 +310,7 @@ export function drawFrame(state: FrameState, time: number): void {
 	for (let i = 0; i < scene.threads.length; i += 1) {
 		const thread = scene.threads[i]!;
 		const points = buffers[i]!;
-		const progress = threadProgress(reveal, thread.pulsePhase);
+		const progress = threadProgress(reveal, thread.pulsePhase, state.revealStagger);
 		heads[i] = progress;
 		if (progress <= 0) {
 			paths[i] = null;

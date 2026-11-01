@@ -84,6 +84,7 @@ export function createFlowCore(
 		emberSpeed: resolved.emberSpeed,
 		composeBloom: !layered,
 		reveal,
+		revealStagger: resolved.revealStagger,
 	});
 
 	/** Gradients and sprites depend on size, DPR, palette and scene, so rebuild them only then. */

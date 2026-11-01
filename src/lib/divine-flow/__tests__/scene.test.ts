@@ -50,6 +50,24 @@ describe("createThreads", () => {
 		expect(left).toEqual(both.filter((t) => t.side === -1));
 	});
 
+	it("scales thickness, and can make every filament match with a fixed brightness", () => {
+		const base = createThreads(config);
+		const thick = createThreads({ ...config, thickness: 2 });
+		expect(thick[0]!.coreWidth).toBeCloseTo(base[0]!.coreWidth * 2);
+		expect(thick[3]!.glowWidth).toBeCloseTo(base[3]!.glowWidth * 2);
+
+		const strand = createThreads({
+			...config,
+			lineCount: 1,
+			scatterCount: 0,
+			uniform: true,
+			alpha: 0.9,
+		});
+		expect(strand).toHaveLength(2);
+		expect(strand[1]!.coreWidth).toBe(strand[0]!.coreWidth);
+		expect(strand.every((t) => t.alpha === 0.9)).toBe(true);
+	});
+
 	it("handles zero filaments", () => {
 		const scene = createScene({ ...config, lineCount: 0, scatterCount: 0 });
 		expect(scene.threads).toEqual([]);
@@ -209,6 +227,8 @@ describe("threadProgress", () => {
 			last = p;
 		}
 		expect(threadProgress(0.999, 1)).toBeGreaterThan(0.99);
+		// No stagger: every filament grows in step.
+		expect(threadProgress(0.5, 0, 0)).toBe(threadProgress(0.5, 1, 0));
 	});
 });
 

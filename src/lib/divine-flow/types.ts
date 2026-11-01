@@ -60,6 +60,20 @@ export interface DivineFlowOptions {
 	 * `motion`, this does not change the speed. Default `1`.
 	 */
 	amplitude?: number;
+	/** Line thickness multiplier for every filament (core, glow and bloom). Default `1`. */
+	thickness?: number;
+	/**
+	 * Give every filament the same width and brightness (taken from the first), e.g. so the two halves
+	 * of a strand drawn out from the middle match. Default `false`.
+	 */
+	uniform?: boolean;
+	/** Fixed opacity (0–1) for every filament, instead of each picking its own. */
+	alpha?: number;
+	/**
+	 * When drawing in, how far apart (as a share of the draw-in) filaments start. `0` starts them all
+	 * together, e.g. for a symmetric strand. Default `0.25`.
+	 */
+	revealStagger?: number;
 	/**
 	 * Slant every filament by this angle in degrees: positive rises from bottom left to top right,
 	 * whichever way the filament flows. Default `0`.
@@ -134,6 +148,10 @@ export interface ResolvedDivineFlowOptions {
 	amplitude: number;
 	tilt: number;
 	reveal: number;
+	thickness: number;
+	uniform: boolean;
+	alpha: number | null;
+	revealStagger: number;
 	motion: number;
 	seed: number;
 	sparkleCount: number | null;
