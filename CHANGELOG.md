@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DivineFlow (`src/lib/divine-flow`): framework-agnostic canvas renderer for the light-filament background,
   with themes (gold, crimson, violet, white), per-filament colour variance within configurable hue and
   lightness ranges, one-sided strands (`sides`), fan `spread`, wave `amplitude`, a `tilt` angle,
-  `wave`, `thickness`, `uniform`/`alpha` strands, a draw-in `reveal` with `revealStagger`, ambient embers, a
+  `wave`, `tailSway`, `thickness`, `uniform`/`alpha` strands, a draw-in `reveal` with `revealStagger`, ambient embers, a
   frame-rate cap, reduced-motion support and unit tests. Light pulses and sparkles glide smoothly
   (pulses are one gradient stroke ending exactly at their position, not snapped to samples) and fade in
   and out instead of popping; their speed is adjustable (`travelSpeed`). Gradients and sprites are cached and the bloom
@@ -37,8 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Real copy: based in Canada, and Lineup (linked) as the current project.
 - Full-screen menu with the section links centred over a blurred page. Hovering, focusing or pressing a
   link draws a single strand of the background's DivineFlow with a gentle "~" wave, from the centre,
-  the left or the right (set in `site.config.ts`), fading out at both ends. It eases in and out, drifts
-  gently up and down like the background, and its sparkle and light pulse glide along it. Esc, a section link or a click anywhere else closes it; the rest of the page is
+  the left or the right (set in `site.config.ts`), fading out at both ends. It eases in and out, its
+  tail ends sway slowly up and down while it stays one smooth curve, and its sparkle and light pulse
+  glide along it. Every link draws the same strand, in its own configurable colour (`colors.menuUnderline`,
+  the background's red by default). Esc, a section link or a click anywhere else closes it; the rest of the page is
   inert while it is open, and DivineFlow pauses behind it.
 - The header (logo and menu button) stays fixed at the top while scrolling.
 - Crimson DivineFlow background in varying shades of deep red (never drifting towards orange) with
