@@ -4,7 +4,7 @@
  * Animations are CSS transitions on opacity/transform only, so the compositor runs them even when
  * the main thread is busy.
  */
-import { profile, sections, socials } from "../data/site";
+import { profile, sections, socials } from "../site.config";
 import InfoValue from "./InfoValue.astro";
 ---
 
@@ -69,14 +69,14 @@ import InfoValue from "./InfoValue.astro";
 		visibility: hidden;
 		opacity: 0;
 		transition:
-			opacity 0.45s var(--menu-ease),
-			visibility 0s linear 0.45s;
+			opacity var(--menu-fade) var(--menu-ease),
+			visibility 0s linear var(--menu-fade);
 	}
 
 	.menu[data-open] {
 		visibility: visible;
 		opacity: 1;
-		transition: opacity 0.45s var(--menu-ease);
+		transition: opacity var(--menu-fade) var(--menu-ease);
 	}
 
 	.menu__glow {
@@ -122,12 +122,13 @@ import InfoValue from "./InfoValue.astro";
 		color: var(--color-text);
 		text-decoration: none;
 		transform: translateY(105%);
-		transition: transform 0.4s var(--menu-ease);
+		transition: transform calc(var(--menu-links) * 0.55) var(--menu-ease);
 	}
 
 	.menu[data-open] .menu__link {
 		transform: none;
-		transition: transform 0.75s var(--menu-ease) calc(0.12s + var(--i) * 0.06s);
+		transition: transform var(--menu-links) var(--menu-ease)
+			calc(0.12s + var(--i) * var(--menu-link-stagger));
 	}
 
 	.menu__index {
@@ -146,7 +147,7 @@ import InfoValue from "./InfoValue.astro";
 		text-transform: uppercase;
 		color: transparent;
 		-webkit-text-stroke: clamp(1px, 0.12vw, 2px) var(--color-text);
-		transition: color 0.25s var(--ease-out);
+		transition: color var(--hover-duration) var(--ease-out);
 	}
 
 	.menu__link:hover .menu__label,
@@ -168,16 +169,16 @@ import InfoValue from "./InfoValue.astro";
 		opacity: 0;
 		transform: translateY(16px);
 		transition:
-			opacity 0.3s var(--menu-ease),
-			transform 0.3s var(--menu-ease);
+			opacity calc(var(--menu-facts) * 0.5) var(--menu-ease),
+			transform calc(var(--menu-facts) * 0.5) var(--menu-ease);
 	}
 
 	.menu[data-open] .menu__aside {
 		opacity: 1;
 		transform: none;
 		transition:
-			opacity 0.6s var(--menu-ease) 0.35s,
-			transform 0.6s var(--menu-ease) 0.35s;
+			opacity var(--menu-facts) var(--menu-ease) var(--menu-facts-delay),
+			transform var(--menu-facts) var(--menu-ease) var(--menu-facts-delay);
 	}
 
 	.menu__fact {

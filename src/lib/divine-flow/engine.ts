@@ -115,7 +115,7 @@ export function createDivineFlow(
 		innerGap: resolved.innerGap,
 		spread: resolved.spread,
 		amplitude: resolved.amplitude,
-		arc: resolved.arc,
+		tilt: resolved.tilt,
 		motion: resolved.motion,
 		still: isStill(),
 	});

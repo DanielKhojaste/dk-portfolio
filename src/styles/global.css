@@ -5,6 +5,15 @@
 :root {
 	color-scheme: dark;
 
+	/* Timings. BaseLayout overrides these from src/site.config.ts; these are only fallbacks. */
+	--hover-duration: 0.2s;
+	--menu-fade: 0.45s;
+	--menu-links: 0.75s;
+	--menu-link-stagger: 0.06s;
+	--menu-facts: 0.6s;
+	--menu-facts-delay: 0.35s;
+	--menu-button-duration: 0.4s;
+
 	/* Colour */
 	--color-bg: #080405;
 	--color-text: #f5ecec;

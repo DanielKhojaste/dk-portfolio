@@ -40,10 +40,11 @@ import Menu from "./Menu.astro";
 <Menu />
 
 <script>
+	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
 	import { setupMenu } from "../scripts/menu";
 
-	drawLogos();
+	drawLogos(document, animation.logo);
 	setupMenu();
 </script>
 
@@ -87,8 +88,8 @@ import Menu from "./Menu.astro";
 		text-transform: uppercase;
 		cursor: pointer;
 		transition:
-			border-color 0.2s var(--ease-out),
-			background-color 0.2s var(--ease-out);
+			border-color var(--hover-duration) var(--ease-out),
+			background-color var(--hover-duration) var(--ease-out);
 	}
 
 	.menu-button:hover {
@@ -106,8 +107,8 @@ import Menu from "./Menu.astro";
 		grid-area: 1 / 1;
 		text-align: right;
 		transition:
-			transform 0.4s var(--ease-out),
-			opacity 0.4s var(--ease-out);
+			transform var(--menu-button-duration) var(--ease-out),
+			opacity var(--menu-button-duration) var(--ease-out);
 	}
 
 	.menu-button__word--close {
@@ -133,7 +134,7 @@ import Menu from "./Menu.astro";
 		border-radius: 50%;
 		background: var(--color-text);
 		color: var(--color-bg);
-		transition: transform 0.3s var(--ease-out);
+		transition: transform calc(var(--hover-duration) * 1.5) var(--ease-out);
 	}
 
 	.menu-button:hover .menu-button__icon {
@@ -144,7 +145,7 @@ import Menu from "./Menu.astro";
 	.menu-button__icon path {
 		transform-box: view-box;
 		transform-origin: 12px 12px;
-		transition: transform 0.4s var(--ease-out);
+		transition: transform var(--menu-button-duration) var(--ease-out);
 	}
 
 	.menu-button[aria-expanded="true"] .menu-button__icon path:first-child {

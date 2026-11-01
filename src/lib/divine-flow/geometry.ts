@@ -12,8 +12,8 @@ export interface FlowLayout {
 	spread?: number;
 	/** Wave height multiplier. Default `1`. */
 	amplitude?: number;
-	/** Hill angle in degrees at the origin (see `DivineFlowOptions.arc`). Default `0`. */
-	arc?: number;
+	/** Slant in degrees, rising to the right (see `DivineFlowOptions.tilt`). Default `0`. */
+	tilt?: number;
 	motion: number;
 	/** When true, time is frozen and filaments hold their resting shape. */
 	still: boolean;
@@ -31,21 +31,9 @@ export function samplesForWidth(width: number): number {
 	return Math.max(44, Math.min(MAX_SAMPLES, Math.round(width / 28)));
 }
 
-/**
- * Height of the hill at `x`: a parabola over the stretch from `startX` to the canvas edge on the
- * filament's side, leaving `startX` at `arcDeg` degrees and landing on the edge at the same angle.
- * Zero beyond the edge.
- */
-export function arcLift(
-	x: number,
-	startX: number,
-	side: -1 | 1,
-	width: number,
-	arcDeg: number,
-): number {
-	const span = Math.abs((side === 1 ? width : 0) - startX) || 1;
-	const t = Math.min(1, Math.max(0, ((x - startX) * side) / span));
-	return Math.tan((arcDeg * Math.PI) / 180) * span * t * (1 - t);
+/** How far a point `x` px along from `startX` is lifted by a `tiltDeg` slant (rising to the right). */
+export function tiltLift(x: number, startX: number, tiltDeg: number): number {
+	return Math.tan((tiltDeg * Math.PI) / 180) * (x - startX);
 }
 
 /** Write the point at `u` (0–1) along `thread` at `time` seconds into `out`. */
@@ -80,7 +68,7 @@ export function writePoint(
 	const nx = -dy / len;
 	const ny = dx / len;
 
-	if (layout.arc) y0 -= arcLift(x0, startX, thread.side, width, layout.arc);
+	if (layout.tilt) y0 -= tiltLift(x0, startX, layout.tilt);
 
 	const t = layout.still ? 0 : time;
 	const envelope = Math.sin(Math.PI * u);

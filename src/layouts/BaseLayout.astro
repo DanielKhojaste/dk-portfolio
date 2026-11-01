@@ -6,6 +6,7 @@ import "../styles/global.css";
 // swapping (and re-laying out) in the middle of the intro animations.
 import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import { animation } from "../site.config";
 
 interface Props {
 	title?: string;
@@ -16,10 +17,22 @@ const {
 	title = "Daniel Khojaste — Software Developer",
 	description = "Portfolio of Daniel Khojaste, software developer.",
 } = Astro.props;
+
+// CSS-driven timings from site.config.ts, available to every component's styles.
+const s = (seconds: number) => `${seconds}s`;
+const timings = {
+	"--hover-duration": s(animation.hover),
+	"--menu-fade": s(animation.menu.fade),
+	"--menu-links": s(animation.menu.links),
+	"--menu-link-stagger": s(animation.menu.linkStagger),
+	"--menu-facts": s(animation.menu.facts),
+	"--menu-facts-delay": s(animation.menu.factsDelay),
+	"--menu-button-duration": s(animation.menu.button),
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" style={timings}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />

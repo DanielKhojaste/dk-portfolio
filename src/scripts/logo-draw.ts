@@ -68,6 +68,8 @@ export function drawLogo(
 	return timeline;
 }
 
-export function drawLogos(root: ParentNode = document) {
-	root.querySelectorAll<SVGSVGElement>("svg[data-logo-draw]").forEach((svg) => drawLogo(svg));
+export function drawLogos(root: ParentNode = document, options: LogoDrawOptions = {}) {
+	root
+		.querySelectorAll<SVGSVGElement>("svg[data-logo-draw]")
+		.forEach((svg) => drawLogo(svg, options));
 }

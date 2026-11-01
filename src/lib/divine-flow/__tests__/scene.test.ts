@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createScene, createThreads, emberPosition } from "../scene";
 import {
-	arcLift,
 	makePointBuffer,
+	tiltLift,
 	sampleThread,
 	samplesForWidth,
 	type FlowLayout,
@@ -163,26 +163,29 @@ describe("geometry", () => {
 		expect(offset(tall)).toBeCloseTo(offset(flat) * 3, 3);
 	});
 
-	it("bends filaments into a hill that leaves and lands at the arc angle", () => {
-		const tan15 = Math.tan((15 * Math.PI) / 180);
-		// From x=0 towards a 400px edge on the right.
-		expect(arcLift(0, 0, 1, 400, 15)).toBe(0);
-		expect(arcLift(400, 0, 1, 400, 15)).toBeCloseTo(0, 9);
-		expect(arcLift(200, 0, 1, 400, 15)).toBeCloseTo((tan15 * 400) / 4, 6);
-		expect(arcLift(1, 0, 1, 400, 15) / 1).toBeCloseTo(tan15, 2);
-		expect(arcLift(500, 0, 1, 400, 15)).toBe(0);
-		// Mirrored for filaments flowing left from the right edge.
-		expect(arcLift(200, 400, -1, 400, 15)).toBeCloseTo((tan15 * 400) / 4, 6);
+	it("slants filaments by the tilt angle, rising to the right either way", () => {
+		const tan5 = Math.tan((5 * Math.PI) / 180);
+		expect(tiltLift(0, 0, 5)).toBe(0);
+		expect(tiltLift(400, 0, 5)).toBeCloseTo(400 * tan5, 6);
+		// Flowing left from the right edge, the line drops as it goes: still bottom left to top right.
+		expect(tiltLift(0, 400, 5)).toBeCloseTo(-400 * tan5, 6);
 
-		const [thread] = createThreads({ ...config, sides: "right" });
-		const strip: FlowLayout = { ...layout, width: 400, height: 60, originX: 0, innerGap: 0 };
-		const flat = makePointBuffer();
-		const hill = makePointBuffer();
-		sampleThread(thread!, 0, { ...strip, still: true }, 44, flat);
-		sampleThread(thread!, 0, { ...strip, still: true, arc: 15 }, 44, hill);
-		const mid = flat.findIndex((p) => p.x >= 200);
-		expect(flat[mid]!.y - hill[mid]!.y).toBeGreaterThan(20);
-		expect(hill[0]).toEqual(flat[0]);
+		const strip: FlowLayout = { ...layout, width: 400, height: 60, originY: 0.5, innerGap: 0 };
+		for (const [sides, originX] of [
+			["right", 0],
+			["left", 1],
+		] as const) {
+			const [thread] = createThreads({ ...config, sides });
+			const flat = makePointBuffer();
+			const slanted = makePointBuffer();
+			const rest = { ...strip, originX, still: true };
+			sampleThread(thread!, 0, rest, 44, flat);
+			sampleThread(thread!, 0, { ...rest, tilt: 5 }, 44, slanted);
+			const lift = (i: number) => flat[i]!.y - slanted[i]!.y;
+			expect(lift(0)).toBeCloseTo(0, 6);
+			const i = 30;
+			expect(lift(i)).toBeCloseTo(tan5 * (flat[i]!.x - flat[0]!.x), 2);
+		}
 	});
 
 	it("scales sample count with width inside fixed bounds", () => {

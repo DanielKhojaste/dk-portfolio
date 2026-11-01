@@ -61,11 +61,10 @@ export interface DivineFlowOptions {
 	 */
 	amplitude?: number;
 	/**
-	 * Bend every filament into a gentle hill: the angle (degrees) it leaves the origin at, levelling
-	 * off in the middle of the canvas and coming back down at the far edge. Negative bends it into a
-	 * valley. Default `0`.
+	 * Slant every filament by this angle in degrees: positive rises from bottom left to top right,
+	 * whichever way the filament flows. Default `0`.
 	 */
-	arc?: number;
+	tilt?: number;
 	/**
 	 * How much of each filament is drawn, 0–1, growing outwards from the origin. Start at `0` and
 	 * animate it with `setReveal()` to draw the flow in. Default `1`.
@@ -127,7 +126,7 @@ export interface ResolvedDivineFlowOptions {
 	sides: DivineFlowSides;
 	spread: number;
 	amplitude: number;
-	arc: number;
+	tilt: number;
 	reveal: number;
 	motion: number;
 	seed: number;

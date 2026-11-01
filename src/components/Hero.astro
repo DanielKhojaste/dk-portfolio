@@ -4,59 +4,57 @@ import throne from "../assets/images/throne.png";
 import DivineFlow from "./DivineFlow.astro";
 import type { DivineFlowOptions } from "../lib/divine-flow";
 
-import { profile } from "../data/site";
+import { animation, backgroundFlow, colors, profile, underlineFlow } from "../site.config";
 
-/**
- * The underline under each claim: a few thin strands of white DivineFlow, drawn out from the outer
- * edge in a low hill (15° at either end) at the same pace as the background (same `motion`).
+/*
+ * Underlines: each claim gets a strip of white DivineFlow under it, slanted by `underlineFlow.angle`
+ * (rising from bottom left to top right) and flowing from the claim's outer edge. The strip is just
+ * tall enough for the slant across the widest claim, and the strands start near its bottom (left
+ * claim) or top (right claim) edge so they stay inside it.
  */
-const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => ({
-	theme: "white",
-	sides: side === "start" ? "right" : "left",
-	originX: side === "start" ? 0 : 1,
-	originY: 0.82,
-	innerGap: 0,
-	arc: 15,
-	lineCount: 4,
-	scatterCount: 0,
-	spread: 0.7,
-	amplitude: 2.5,
-	motion: 1.6,
-	sparkleCount: 2,
-	speckCount: 4,
-	emberCount: 0,
-	maxDpr: 2,
-	seed: side === "start" ? 3107 : 5281,
-});
+const tan = Math.tan((Math.abs(underlineFlow.angle) * Math.PI) / 180);
+const rises = underlineFlow.angle >= 0;
+const PAD = 12;
+const ruleHeight = {
+	desktop: Math.ceil(380 * tan) + PAD * 2,
+	compact: Math.ceil(200 * tan) + PAD * 2,
+};
+
+const underline = (side: "start" | "end", height: number): Omit<DivineFlowOptions, "canvas"> => {
+	// The left strand flows right, so a rising line starts low; the right one flows left and starts high.
+	const startsLow = side === "start" ? rises : !rises;
+	return {
+		theme: colors.underlines,
+		sides: side === "start" ? "right" : "left",
+		originX: side === "start" ? 0 : 1,
+		originY: startsLow ? 1 - PAD / height : PAD / height,
+		tilt: underlineFlow.angle,
+		innerGap: 0,
+		lineCount: underlineFlow.lineCount,
+		scatterCount: 0,
+		spread: underlineFlow.spread,
+		amplitude: underlineFlow.amplitude,
+		motion: underlineFlow.motion,
+		sparkleCount: underlineFlow.sparkleCount,
+		speckCount: underlineFlow.speckCount,
+		emberCount: 0,
+		maxDpr: 2,
+		seed: side === "start" ? 3107 : 5281,
+	};
+};
+
+const ruleFade = `${Math.round((1 - underlineFlow.fade) * 100)}%`;
+const heroVars = `--rule-h: ${ruleHeight.desktop}px; --rule-h-compact: ${ruleHeight.compact}px; --rule-fade: ${ruleFade}`;
 ---
 
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" aria-labelledby="hero-title" style={heroVars}>
 	<div class="hero__glow" aria-hidden="true"></div>
 
 	<DivineFlow
-		reveal={{ delay: 0.2, duration: 2.2 }}
-		options={{
-			theme: "crimson",
-			variance: 0.7,
-			// Shades only drift towards deeper, cooler reds; never towards orange.
-			hueRange: [-9, 0],
-			lightRange: [-0.21, 0.07],
-			maxDpr: 1.5,
-			originY: 0.46,
-			lineCount: 8,
-			scatterCount: 3,
-			innerGap: 130,
-			motion: 1.6,
-			emberCount: 70,
-			emberSpeed: 0.9,
-		}}
-		compactOptions={{
-			originY: 0.46,
-			lineCount: 6,
-			scatterCount: 2,
-			innerGap: 70,
-			emberCount: 36,
-		}}
+		reveal={animation.background}
+		fadeIn={animation.background.fadeIn}
+		options={{ theme: colors.background, ...backgroundFlow.desktop }}
+		compactOptions={backgroundFlow.compact}
 	/>
 
 	<h1 id="hero-title" class="hero__name">
@@ -87,8 +85,10 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 			<p class="hero__headline">{profile.role}</p>
 			<span class="hero__rule" aria-hidden="true">
 				<DivineFlow
-					reveal={{ delay: 0.5, duration: 1.8, ease: "power2.inOut" }}
-					options={underline("start")}
+					reveal={animation.underlines}
+					fadeIn={animation.underlines.fadeIn}
+					options={underline("start", ruleHeight.desktop)}
+					compactOptions={{ originY: underline("start", ruleHeight.compact).originY }}
 				/>
 			</span>
 		</div>
@@ -117,8 +117,10 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 			</a>
 			<span class="hero__rule" aria-hidden="true">
 				<DivineFlow
-					reveal={{ delay: 0.5, duration: 1.8, ease: "power2.inOut" }}
-					options={underline("end")}
+					reveal={animation.underlines}
+					fadeIn={animation.underlines.fadeIn}
+					options={underline("end", ruleHeight.desktop)}
+					compactOptions={{ originY: underline("end", ruleHeight.compact).originY }}
 				/>
 			</span>
 		</div>
@@ -270,8 +272,8 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 		top: 59cqh;
 		z-index: 4;
 		display: flex;
-		/* Bottoms aligned, so the two underlines sit on one line. */
-		align-items: flex-end;
+		/* Tops aligned, so "Based in" and "Currently building" always sit on one line. */
+		align-items: flex-start;
 		justify-content: space-between;
 		translate: 0 -50%;
 		pointer-events: none;
@@ -292,6 +294,7 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 
 	.hero__kicker {
 		margin: 0;
+		white-space: nowrap;
 		font-size: 11px;
 		font-weight: 600;
 		letter-spacing: 0.3em;
@@ -326,7 +329,7 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 		height: 0.62em;
 		flex: none;
 		color: var(--color-accent-soft);
-		transition: translate 0.25s var(--ease-out);
+		transition: translate var(--hover-duration) var(--ease-out);
 	}
 
 	.hero__headline--link:hover .hero__arrow,
@@ -335,22 +338,28 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 	}
 
 	/*
-	 * The underline: a few strands of white DivineFlow arching low under the claim, drawn out from
-	 * the outer edge and fading out before they reach the throne.
+	 * The underline: a slanted strip of white DivineFlow right under the claim, flowing from the outer
+	 * edge and fading out towards the throne. Its height comes from the angle in site.config.ts.
 	 */
 	.hero__rule {
 		position: relative;
 		display: block;
 		width: 100%;
-		height: 52px;
-		margin-top: -2px;
-		-webkit-mask-image: linear-gradient(90deg, #000 72%, transparent);
-		mask-image: linear-gradient(90deg, #000 72%, transparent);
+		height: var(--rule-h);
+		margin-top: -4px;
+		-webkit-mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
+		mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
+	}
+
+	/* The left strand starts at the strip's bottom edge, so tuck the strip up a little to keep the
+	   line close under the text; it still clears the text where it rises. */
+	.hero__claim--start .hero__rule {
+		margin-top: calc((var(--rule-h) - 24px) * -0.45 - 4px);
 	}
 
 	.hero__claim--end .hero__rule {
-		-webkit-mask-image: linear-gradient(-90deg, #000 72%, transparent);
-		mask-image: linear-gradient(-90deg, #000 72%, transparent);
+		-webkit-mask-image: linear-gradient(-90deg, #000 var(--rule-fade), transparent);
+		mask-image: linear-gradient(-90deg, #000 var(--rule-fade), transparent);
 	}
 
 	.hero__actions {
@@ -376,13 +385,13 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 		text-decoration: none;
 		white-space: nowrap;
 		transition:
-			background-color 0.2s var(--ease-out),
-			border-color 0.2s var(--ease-out),
-			transform 0.2s var(--ease-out);
+			background-color var(--hover-duration) var(--ease-out),
+			border-color var(--hover-duration) var(--ease-out),
+			transform var(--hover-duration) var(--ease-out);
 	}
 
 	.button svg {
-		transition: translate 0.2s var(--ease-out);
+		transition: translate var(--hover-duration) var(--ease-out);
 	}
 
 	.button:hover svg {
@@ -467,7 +476,6 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 		.hero__info {
 			top: auto;
 			bottom: calc(var(--actions-bottom) + var(--actions-height) + max(10px, 1.6cqh));
-			align-items: flex-end;
 			gap: 16px;
 			translate: none;
 		}
@@ -489,7 +497,11 @@ const underline = (side: "start" | "end"): Omit<DivineFlowOptions, "canvas"> => 
 		}
 
 		.hero__rule {
-			height: 40px;
+			height: var(--rule-h-compact);
+		}
+
+		.hero__claim--start .hero__rule {
+			margin-top: calc((var(--rule-h-compact) - 24px) * -0.45 - 4px);
 		}
 
 		.hero__actions {
