@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { animation, underlineFlow } from "../../src/site.config";
 
 const hero = (page: Page) => page.locator("section.hero");
 const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
@@ -141,24 +142,39 @@ test.describe("hero", () => {
 			]);
 			expect(based.height).toBeLessThan(20);
 			expect(Math.abs(based.y - building.y)).toBeLessThanOrEqual(0.5);
+
+			// The headlines end on the same line, and the underlines start at the same height.
+			const [developer, lineup, ruleA, ruleB] = await Promise.all([
+				box(page, ".hero__claim--start .hero__headline"),
+				box(page, ".hero__claim--end .hero__headline"),
+				box(page, ".hero__claim--start .hero__rule"),
+				box(page, ".hero__claim--end .hero__rule"),
+			]);
+			expect(Math.abs(developer.y + developer.height - (lineup.y + lineup.height))).toBeLessThan(2);
+			expect(Math.abs(ruleA.y - ruleB.y)).toBeLessThanOrEqual(0.5);
 		}
 	});
 
-	test("underlines each claim with a slanted strand of white DivineFlow that draws in", async ({
+	test("underlines each claim with mirrored white DivineFlow strands, timed with the signature", async ({
 		page,
 	}) => {
 		await page.goto("/");
 		const rules = page.locator(".hero__rule [data-divine-flow]");
 		await expect(rules).toHaveCount(2);
-		for (const [i, side] of [
-			[0, "right"],
-			[1, "left"],
+		// Each rises towards its own side: the left one up to the left, the right one up to the right.
+		for (const [i, side, tilt] of [
+			[0, "right", -underlineFlow.angle],
+			[1, "left", underlineFlow.angle],
 		] as const) {
 			const options = JSON.parse((await rules.nth(i).getAttribute("data-options"))!);
-			expect(options).toMatchObject({ sides: side, tilt: 5, emberCount: 0 });
+			expect(options).toMatchObject({ sides: side, tilt, emberCount: 0 });
 			expect(options.theme.core).toEqual([255, 255, 255]);
-			await expect(rules.nth(i)).toHaveAttribute("data-reveal", /duration/);
+			const reveal = JSON.parse((await rules.nth(i).getAttribute("data-reveal"))!);
+			expect(reveal.delay).toBe(animation.logo.delay);
+			expect(reveal.duration).toBeCloseTo(animation.logo.duration + 3 * animation.logo.penLift);
 			await expect(rules.nth(i)).toHaveAttribute("data-flow-ready", "true");
+			const width = (await rules.nth(i).boundingBox())!.width;
+			expect(width).toBeLessThanOrEqual(underlineFlow.width.desktop + 1);
 		}
 		// Same pace as the background flow.
 		const main = JSON.parse(
@@ -241,7 +257,7 @@ test.describe("menu", () => {
 		await expect(button).toHaveAttribute("aria-expanded", "true");
 		await expect(button).toHaveAccessibleName("Close menu");
 		await expect(menu).toBeVisible();
-		await expect(menu.getByRole("link", { name: /Work/ })).toBeFocused();
+		await expect(menu.getByRole("link", { name: "Work", exact: true })).toBeFocused();
 		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(true);
 
 		await page.keyboard.press("Escape");
@@ -251,21 +267,60 @@ test.describe("menu", () => {
 		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(false);
 	});
 
-	test("lists the sections and quick facts, and a section link closes it", async ({ page }) => {
+	test("lists only the sections, centred, over a blurred page", async ({ page }) => {
 		await page.goto("/");
 		await page.locator("[data-menu-button]").click();
 		const menu = page.locator("#site-menu");
+		const viewport = page.viewportSize()!;
 		for (const label of ["Work", "Skills", "About", "Contact"]) {
-			await expect(menu.getByRole("link", { name: new RegExp(label) })).toBeVisible();
+			const link = menu.getByRole("link", { name: label, exact: true });
+			await expect(link).toBeVisible();
+			const rect = (await link.boundingBox())!;
+			expect(Math.abs(rect.x + rect.width / 2 - viewport.width / 2)).toBeLessThan(2);
 		}
-		await expect(menu).toContainText("Canada");
-		await expect(menu).not.toContainText("relocat");
-		await expect(menu.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
-			"href",
-			"https://github.com/DanielKhojaste",
+		await expect(menu.getByRole("link")).toHaveCount(4);
+		await expect(menu).not.toContainText("Currently");
+		const blur = await menu.evaluate(
+			(el) =>
+				getComputedStyle(el).backdropFilter ||
+				getComputedStyle(el).getPropertyValue("-webkit-backdrop-filter"),
 		);
+		expect(blur).toContain("blur");
+	});
 
-		await menu.getByRole("link", { name: /Contact/ }).click();
+	test("draws a DivineFlow underline under a hovered link, only while hovered", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		await page.goto("/");
+		await page.locator("[data-menu-button]").click();
+		const link = page.locator("#site-menu").getByRole("link", { name: "Skills", exact: true });
+		const flow = link.locator("[data-divine-flow]");
+		await expect(flow).toHaveAttribute("data-manual", "");
+		// Nothing runs until it's needed.
+		await expect(flow.locator("canvas")).toHaveCount(0);
+
+		await link.hover();
+		await expect(flow).toHaveAttribute("data-flow-ready", "true");
+		await expect(flow.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
+		// The menu's own focus on open doesn't light up the first link for mouse users.
+		await expect(
+			page.locator("#site-menu").getByRole("link", { name: "Work", exact: true }).locator("canvas"),
+		).toHaveCount(0);
+	});
+
+	test("closes when the overlay is clicked, and a section link closes it too", async ({ page }) => {
+		await page.goto("/");
+		const button = page.locator("[data-menu-button]");
+		const menu = page.locator("#site-menu");
+		await button.click();
+		await expect(menu).toBeVisible();
+		await page.mouse.click(10, page.viewportSize()!.height - 10);
+		await expect(menu).toBeHidden();
+		await expect(button).toHaveAttribute("aria-expanded", "false");
+
+		await button.click();
+		await menu.getByRole("link", { name: "Contact", exact: true }).click();
 		await expect(menu).toBeHidden();
 		await expect(page).toHaveURL(/#contact$/);
 	});
