@@ -153,17 +153,34 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 
 /**
  * The underline that draws out under a hovered or focused menu link: one strand of the background's
- * DivineFlow (same colours), growing from the middle of the word out to both sides.
+ * DivineFlow (same colours) with a gentle "~" wave.
  */
-export const menuUnderlineFlow = {
+export const menuUnderlineFlow: {
+	from: "center" | "left" | "right";
+	wave: number;
+	waves: number;
+	thickness: number;
+	alpha: number;
+	amplitude: number;
+	motion?: number;
+	sparkleCount: number;
+} = {
+	/**
+	 * Where the strand starts drawing from: "center" (out to both sides), "left" (across to the right)
+	 * or "right" (across to the left).
+	 */
+	from: "center",
+	/** Height of the "~" wave in px (0 for a straight line), and how many waves across the word. */
+	wave: 7,
+	waves: 1,
 	/** Line thickness, as a multiple of the background's filaments. */
-	thickness: 1.2,
+	thickness: 1.6,
 	/** Brightness of the strand, 0–1. */
-	alpha: 0.95,
-	/** Wave height of the strand. */
+	alpha: 1,
+	/** The small DivineFlow wiggle that drifts along the strand. */
 	amplitude: 1.2,
 	/** Animation speed: the same as the background unless you change it. */
 	motion: backgroundFlow.desktop.motion,
 	/** Sparkles sliding along the strand. */
 	sparkleCount: 1,
-} as const;
+};
