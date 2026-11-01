@@ -1,7 +1,7 @@
 ---
 /**
  * Full-screen menu, opened by the header's menu button (scripts/menu.ts). The page behind it is
- * blurred. Hovering or focusing a link draws a white DivineFlow underline out from its centre
+ * blurred. Hovering or focusing a link draws a strand of DivineFlow out from its centre
  * (scripts/menu-underlines.ts). Clicking anywhere but a link closes it.
  *
  * Open/close animations are CSS transitions on opacity/transform only, so the compositor runs them
@@ -11,14 +11,20 @@ import type { DivineFlowOptions } from "../lib/divine-flow";
 import { colors, menuUnderlineFlow, sections } from "../site.config";
 import DivineFlow from "./DivineFlow.astro";
 
+/** One strand of the background's DivineFlow, drawn out from the middle to both sides. */
 const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
-	theme: colors.underlines,
+	theme: colors.background,
 	sides: "both",
 	originX: 0.5,
 	originY: 0.5,
 	innerGap: 0,
+	lineCount: 1,
 	scatterCount: 0,
+	spread: 0,
+	speckCount: 0,
 	emberCount: 0,
+	revealStagger: 0,
+	uniform: true,
 	maxDpr: 2,
 	seed,
 	...menuUnderlineFlow,
@@ -111,8 +117,10 @@ const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
 		list-style: none;
 	}
 
+	/* Clips the links while they slide up into place, but only top and bottom, so the underline can
+	   run out past the ends of the word. */
 	.menu__item {
-		overflow: hidden;
+		clip-path: inset(0 -100vw);
 	}
 
 	.menu__link {
@@ -162,14 +170,16 @@ const underline = (seed: number): Omit<DivineFlowOptions, "canvas"> => ({
 		}
 	}
 
-	/* Strip for the DivineFlow underline, a little wider than the word so the strands can fade out. */
+	/* Strip for the DivineFlow underline: wider than the word, fading out softly at both ends. */
 	.menu__rule {
 		position: relative;
 		display: block;
-		width: calc(100% + 40px);
-		height: 26px;
+		width: calc(100% + 80px);
+		height: 22px;
 		margin-top: -2px;
 		pointer-events: none;
+		-webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
 	}
 
 	@media (max-width: 767px) {

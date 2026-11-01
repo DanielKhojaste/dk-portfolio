@@ -2,55 +2,11 @@
 import { Picture } from "astro:assets";
 import { throne, throneSizes, throneWidths } from "./hero-image";
 import DivineFlow from "./DivineFlow.astro";
-import type { DivineFlowOptions } from "../lib/divine-flow";
 
-import { animation, backgroundFlow, colors, profile, underlineFlow } from "../site.config";
-
-/*
- * Underlines: each claim gets a strip of white DivineFlow under it, flowing from the claim's outer
- * edge and rising by `underlineFlow.angle` towards that edge, so the two mirror each other. The strip
- * is just tall enough for the slant, and the strands start near its top edge (or bottom edge for a
- * negative angle) so they stay inside it.
- */
-const tan = Math.tan((Math.abs(underlineFlow.angle) * Math.PI) / 180);
-const PAD = 12;
-const ruleHeight = {
-	desktop: Math.ceil(underlineFlow.width.desktop * tan) + PAD * 2,
-	compact: Math.ceil(underlineFlow.width.compact * tan) + PAD * 2,
-};
-
-const underline = (side: "start" | "end", height: number): Omit<DivineFlowOptions, "canvas"> => ({
-	theme: colors.underlines,
-	sides: side === "start" ? "right" : "left",
-	originX: side === "start" ? 0 : 1,
-	// Starting at the high end: the outer edge, which is the top for a positive angle.
-	originY: underlineFlow.angle >= 0 ? PAD / height : 1 - PAD / height,
-	// `tilt` rises to the right, so the left underline (flowing right) gets the opposite sign.
-	tilt: side === "start" ? -underlineFlow.angle : underlineFlow.angle,
-	innerGap: 0,
-	lineCount: underlineFlow.lineCount,
-	scatterCount: 0,
-	spread: underlineFlow.spread,
-	amplitude: underlineFlow.amplitude,
-	motion: underlineFlow.motion,
-	sparkleCount: underlineFlow.sparkleCount,
-	speckCount: underlineFlow.speckCount,
-	emberCount: 0,
-	maxDpr: 2,
-	seed: side === "start" ? 3107 : 5281,
-});
-
-const ruleFade = `${Math.round((1 - underlineFlow.fade) * 100)}%`;
-const heroVars = [
-	`--rule-h: ${ruleHeight.desktop}px`,
-	`--rule-h-compact: ${ruleHeight.compact}px`,
-	`--rule-w: ${underlineFlow.width.desktop}px`,
-	`--rule-w-compact: ${underlineFlow.width.compact}px`,
-	`--rule-fade: ${ruleFade}`,
-].join("; ");
+import { animation, backgroundFlow, colors, profile } from "../site.config";
 ---
 
-<section class="hero" aria-labelledby="hero-title" style={heroVars}>
+<section class="hero" aria-labelledby="hero-title">
 	<div class="hero__glow" aria-hidden="true"></div>
 
 	<DivineFlow
@@ -86,14 +42,6 @@ const heroVars = [
 		<div class="hero__claim hero__claim--start">
 			<p class="hero__kicker">Based in {profile.location}</p>
 			<p class="hero__headline">{profile.role}</p>
-			<span class="hero__rule" aria-hidden="true">
-				<DivineFlow
-					reveal={animation.underlines}
-					fadeIn={animation.underlines.fadeIn}
-					options={underline("start", ruleHeight.desktop)}
-					compactOptions={{ originY: underline("start", ruleHeight.compact).originY }}
-				/>
-			</span>
 		</div>
 		<div class="hero__claim hero__claim--end">
 			<p class="hero__kicker">Currently building</p>
@@ -118,14 +66,6 @@ const heroVars = [
 				</svg>
 				<span class="sr-only">(opens in a new tab)</span>
 			</a>
-			<span class="hero__rule" aria-hidden="true">
-				<DivineFlow
-					reveal={animation.underlines}
-					fadeIn={animation.underlines.fadeIn}
-					options={underline("end", ruleHeight.desktop)}
-					compactOptions={{ originY: underline("end", ruleHeight.compact).originY }}
-				/>
-			</span>
 		</div>
 	</div>
 
@@ -270,37 +210,35 @@ const heroVars = [
 	}
 
 	/*
-	 * The claims share one grid of rows (label, headline, underline), so the two labels, the last lines
-	 * of the headlines and the two underlines always line up across the hero, whatever wraps.
+	 * Both claims start on the same line: "Based in" level with "Currently building", and the first
+	 * line of each headline level with the other.
 	 */
 	.hero__info {
 		--claim-w: clamp(240px, 25cqw, 380px);
 
 		position: absolute;
 		inset-inline: var(--gutter);
-		top: 59cqh;
+		top: 64cqh;
 		z-index: 4;
 		display: grid;
 		grid-template-columns: minmax(0, var(--claim-w)) 1fr minmax(0, var(--claim-w));
-		grid-template-rows: auto auto auto;
-		translate: 0 -50%;
+		align-items: start;
 		pointer-events: none;
 	}
 
 	.hero__claim {
-		display: grid;
-		grid-row: 1 / span 3;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 		grid-column: 1;
-		grid-template-rows: subgrid;
-		row-gap: 10px;
-		align-items: end;
+		grid-row: 1;
 		min-width: 0;
 		pointer-events: auto;
 	}
 
 	.hero__claim--end {
 		grid-column: -2;
-		justify-items: end;
+		align-items: flex-end;
 		text-align: right;
 	}
 
@@ -347,27 +285,6 @@ const heroVars = [
 	.hero__headline--link:hover .hero__arrow,
 	.hero__headline--link:focus-visible .hero__arrow {
 		translate: 0.08em -0.08em;
-	}
-
-	/*
-	 * The underline: a slanted strip of white DivineFlow right under the claim, flowing from the outer
-	 * edge and fading out towards the throne. Its height comes from the angle in site.config.ts.
-	 */
-	.hero__rule {
-		position: relative;
-		display: block;
-		align-self: start;
-		width: min(100%, var(--rule-w));
-		height: var(--rule-h);
-		/* The strands start 12px into the strip; this keeps them just under the text. */
-		margin-top: -14px;
-		-webkit-mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
-		mask-image: linear-gradient(90deg, #000 var(--rule-fade), transparent);
-	}
-
-	.hero__claim--end .hero__rule {
-		-webkit-mask-image: linear-gradient(-90deg, #000 var(--rule-fade), transparent);
-		mask-image: linear-gradient(-90deg, #000 var(--rule-fade), transparent);
 	}
 
 	.hero__actions {
@@ -490,7 +407,7 @@ const heroVars = [
 		}
 
 		.hero__claim {
-			row-gap: 6px;
+			gap: 6px;
 		}
 
 		.hero__kicker {
@@ -500,12 +417,6 @@ const heroVars = [
 
 		.hero__headline {
 			font-size: clamp(14px, 4.3cqw, 26px);
-		}
-
-		.hero__rule {
-			width: min(100%, var(--rule-w-compact));
-			height: var(--rule-h-compact);
-			margin-top: -12px;
 		}
 
 		.hero__actions {

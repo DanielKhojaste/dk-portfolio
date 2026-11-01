@@ -4,7 +4,7 @@
  *   1. Copy          what the site says about you
  *   2. Animation     every timing on the site (seconds)
  *   3. Colours       the DivineFlow palettes
- *   4. DivineFlow    the background and the underlines
+ *   4. DivineFlow    the background and the menu underline
  *
  * Save the file and `npm run dev` reloads the page.
  */
@@ -54,9 +54,6 @@ const logo = {
 	penLift: 0.08,
 };
 
-/** How long the signature takes from start to finish (four strokes, three pen lifts). */
-const signature = { delay: logo.delay, duration: logo.duration + 3 * logo.penLift };
-
 export const animation = {
 	logo,
 
@@ -67,18 +64,6 @@ export const animation = {
 		ease: "power1.out",
 		/** Opacity fade-in of the whole canvas, under the draw-in. */
 		fadeIn: 0.0,
-	},
-
-	/**
-	 * The white DivineFlow underlines under the hero claims, drawn out from their outer edge. They
-	 * start and finish with the signature; replace `signature.delay`/`signature.duration` with
-	 * numbers to time them separately.
-	 */
-	underlines: {
-		delay: signature.delay,
-		duration: signature.duration,
-		ease: "power1.inOut",
-		fadeIn: 0,
 	},
 
 	/** The full-screen menu. */
@@ -104,7 +89,7 @@ export const animation = {
  * 3. Colours: [red, green, blue], each 0–255.
  * --------------------------------------------------------------------------------------------- */
 
-export const colors: { background: DivineFlowPalette; underlines: DivineFlowPalette } = {
+export const colors: { background: DivineFlowPalette } = {
 	/** The hero's DivineFlow. */
 	background: {
 		/** Wide soft glow under each filament. */
@@ -127,21 +112,6 @@ export const colors: { background: DivineFlowPalette; underlines: DivineFlowPale
 		originOuter: [100, 8, 18],
 		/** Embers drifting up across the hero. */
 		ember: [230, 80, 86],
-	},
-
-	/** The DivineFlow underlines under the hero claims. */
-	underlines: {
-		bloom: [120, 120, 134],
-		glow: [228, 228, 238],
-		core: [255, 255, 255],
-		shimmer: [255, 255, 255],
-		sparkle: [255, 255, 255],
-		sparkleHalo: [235, 235, 245],
-		flare: [255, 255, 255],
-		speck: [240, 240, 246],
-		originInner: [255, 255, 255],
-		originOuter: [150, 150, 164],
-		ember: [255, 255, 255],
 	},
 };
 
@@ -181,36 +151,19 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 	},
 };
 
-/** The underlines under the hero claims. */
-export const underlineFlow = {
-	/**
-	 * Slant in degrees. Each underline rises towards its own side of the screen (the left one up to
-	 * the left, the right one up to the right); negative tips them down instead.
-	 */
-	angle: 1,
-	/** Length of the underlines in px: on desktop, and on phones/tablets. */
-	width: { desktop: 220, compact: 130 },
-	/** Strands per underline, and how far apart they fan (multiple of the default fan). */
-	lineCount: 4,
-	spread: 0.4,
-	/** Wave height of the strands. */
-	amplitude: 2.5,
+/**
+ * The underline that draws out under a hovered or focused menu link: one strand of the background's
+ * DivineFlow (same colours), growing from the middle of the word out to both sides.
+ */
+export const menuUnderlineFlow = {
+	/** Line thickness, as a multiple of the background's filaments. */
+	thickness: 1.2,
+	/** Brightness of the strand, 0–1. */
+	alpha: 0.95,
+	/** Wave height of the strand. */
+	amplitude: 1.2,
 	/** Animation speed: the same as the background unless you change it. */
 	motion: backgroundFlow.desktop.motion,
-	/** Sparkles sliding along, and dust specks beside, each underline. */
-	sparkleCount: 2,
-	speckCount: 4,
-	/** Share of the underline (from the throne side) that fades out, 0–1. */
-	fade: 0.28,
-} as const;
-
-/** The underline that draws out under a hovered or focused menu link. */
-export const menuUnderlineFlow = {
-	/** Strands drawn out from the centre to each side, and how far apart they fan. */
-	lineCount: 3,
-	spread: 0.35,
-	amplitude: 2,
-	motion: backgroundFlow.desktop.motion,
-	sparkleCount: 2,
-	speckCount: 2,
+	/** Sparkles sliding along the strand. */
+	sparkleCount: 1,
 } as const;

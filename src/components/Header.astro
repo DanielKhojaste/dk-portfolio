@@ -49,19 +49,22 @@ import Menu from "./Menu.astro";
 </script>
 
 <style>
+	/* Fixed, so the menu button stays reachable however far down the page you are. The bar itself
+	   lets clicks through; only the logo and the button take them. */
 	.site-header {
-		position: absolute;
+		position: fixed;
 		inset: 0 0 auto;
 		z-index: 10;
+		pointer-events: none;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		padding: clamp(14px, 3.5vh, 32px) var(--gutter) 0;
 	}
 
-	/* Keep the close button on screen when the menu is opened from further down the page. */
-	:global(html[data-menu-open]) .site-header {
-		position: fixed;
+	.site-header__home,
+	.menu-button {
+		pointer-events: auto;
 	}
 
 	.site-header__home {
