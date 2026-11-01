@@ -94,6 +94,11 @@ export interface DivineFlowOptions {
 	/** How many waves fit across the canvas. Default `1`. */
 	wavePeriods?: number;
 	/**
+	 * Let the two tail ends sway slowly up and down by up to this many px, while the middle stays put.
+	 * The bend grows smoothly from the middle, so the line stays one smooth curve. Default `0`.
+	 */
+	tailSway?: number;
+	/**
 	 * Fade each filament in near its origin (the usual look). Turn off for strands drawn out from the
 	 * middle, so the two halves join without a gap. Default `true`.
 	 */
@@ -168,6 +173,7 @@ export interface ResolvedDivineFlowOptions {
 	tilt: number;
 	wave: number;
 	wavePeriods: number;
+	tailSway: number;
 	fadeFromOrigin: boolean;
 	reveal: number;
 	thickness: number;

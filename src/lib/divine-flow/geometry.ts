@@ -17,6 +17,8 @@ export interface FlowLayout {
 	/** Wave height in px and number of waves across the canvas (see `DivineFlowOptions.wave`). */
 	wave?: number;
 	wavePeriods?: number;
+	/** See `DivineFlowOptions.tailSway`. Default `0`. */
+	tailSway?: number;
 	/** See `DivineFlowOptions.fadeFromOrigin`. Default `true`. */
 	fadeFromOrigin?: boolean;
 	motion: number;
@@ -48,6 +50,27 @@ export function tiltLift(x: number, startX: number, tiltDeg: number): number {
 export function waveLift(x: number, width: number, height: number, periods = 1): number {
 	if (width <= 0) return 0;
 	return height * Math.sin(Math.PI * periods * ((2 * x) / width - 1));
+}
+
+/**
+ * How far the line at `x` is lifted by the tail sway at `time` seconds: nothing in the middle of the
+ * canvas, growing smoothly (with the square of the distance) to `height` px at the edges. Each tail
+ * sways on its own slow rhythm. `speed` scales how fast.
+ */
+export function tailSwayLift(
+	x: number,
+	width: number,
+	height: number,
+	time: number,
+	speed = 1,
+): number {
+	if (width <= 0 || height === 0) return 0;
+	const s = (2 * x) / width - 1;
+	const phase = s < 0 ? 0 : 2.3;
+	const sway =
+		Math.sin(time * 0.9 * speed + phase) * 0.65 +
+		Math.sin(time * 0.53 * speed + phase * 1.7 + 1) * 0.35;
+	return height * sway * Math.min(1, s * s);
 }
 
 /** Write the point at `u` (0–1) along `thread` at `time` seconds into `out`. */
@@ -86,6 +109,7 @@ export function writePoint(
 	if (layout.wave) y0 -= waveLift(x0, width, layout.wave, layout.wavePeriods ?? 1);
 
 	const t = layout.still ? 0 : time;
+	if (layout.tailSway) y0 -= tailSwayLift(x0, width, layout.tailSway, t, layout.motion);
 	const envelope = Math.sin(Math.PI * u);
 	const n1 = smoothNoise(u * 2.1 + t * thread.speed + thread.phase, thread.seed);
 	const n2 = smoothNoise(u * 5.4 - t * thread.speed * 0.4 + thread.phase * 1.4, thread.seed + 11);

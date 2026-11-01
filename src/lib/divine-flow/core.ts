@@ -71,6 +71,7 @@ export function createFlowCore(
 		tilt: resolved.tilt,
 		wave: resolved.wave,
 		wavePeriods: resolved.wavePeriods,
+		tailSway: resolved.tailSway,
 		fadeFromOrigin: resolved.fadeFromOrigin,
 		motion: resolved.motion,
 		still,

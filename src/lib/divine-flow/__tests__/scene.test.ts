@@ -4,6 +4,7 @@ import {
 	makePointBuffer,
 	tiltLift,
 	waveLift,
+	tailSwayLift,
 	sampleThread,
 	samplesForWidth,
 	type FlowLayout,
@@ -230,6 +231,27 @@ describe("geometry", () => {
 				expect(flat[i]!.y - wavy[i]!.y).toBeCloseTo(waveLift(flat[i]!.x, 400, 7), 2);
 			}
 		}
+	});
+
+	it("sways only the tail ends, keeping one smooth curve through the middle", () => {
+		const width = 400;
+		for (const time of [0, 1.3, 2.7, 5.1]) {
+			// The middle never moves.
+			expect(tailSwayLift(200, width, 4, time)).toBeCloseTo(0, 9);
+			// Never more than the sway height, at the very ends.
+			for (let x = 0; x <= width; x += 20) {
+				expect(Math.abs(tailSwayLift(x, width, 4, time))).toBeLessThanOrEqual(4 + 1e-9);
+			}
+			// Flat through the middle: tiny steps either side of it barely lift the line.
+			expect(Math.abs(tailSwayLift(204, width, 4, time))).toBeLessThan(0.01);
+			expect(Math.abs(tailSwayLift(196, width, 4, time))).toBeLessThan(0.01);
+		}
+		// The tails move over time, each on its own rhythm.
+		const left = [0, 1, 2, 3].map((t) => tailSwayLift(0, width, 4, t));
+		const right = [0, 1, 2, 3].map((t) => tailSwayLift(width, width, 4, t));
+		expect(new Set(left.map((v) => v.toFixed(3))).size).toBeGreaterThan(2);
+		expect(left).not.toEqual(right);
+		expect(tailSwayLift(0, width, 0, 1)).toBe(0);
 	});
 
 	it("scales sample count with width inside fixed bounds", () => {

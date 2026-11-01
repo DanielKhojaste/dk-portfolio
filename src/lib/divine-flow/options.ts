@@ -67,6 +67,7 @@ export function resolveOptions(options: DivineFlowOptions = {}): ResolvedDivineF
 		tilt: clamp(finite(options.tilt, DEFAULTS.tilt), -45, 45),
 		wave: clamp(finite(options.wave, DEFAULTS.wave), -500, 500),
 		wavePeriods: clamp(finite(options.wavePeriods, DEFAULTS.wavePeriods), 0, 20),
+		tailSway: clamp(finite(options.tailSway, 0), 0, 500),
 		fadeFromOrigin: options.fadeFromOrigin ?? true,
 		thickness: clamp(finite(options.thickness, DEFAULTS.thickness), 0.05, 10),
 		uniform: options.uniform ?? false,
