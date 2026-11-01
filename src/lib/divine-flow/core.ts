@@ -69,6 +69,10 @@ export function createFlowCore(
 		spread: resolved.spread,
 		amplitude: resolved.amplitude,
 		tilt: resolved.tilt,
+		wave: resolved.wave,
+		wavePeriods: resolved.wavePeriods,
+		tailSway: resolved.tailSway,
+		fadeFromOrigin: resolved.fadeFromOrigin,
 		motion: resolved.motion,
 		still,
 	});
@@ -85,6 +89,7 @@ export function createFlowCore(
 		composeBloom: !layered,
 		reveal,
 		revealStagger: resolved.revealStagger,
+		travelSpeed: resolved.travelSpeed,
 	});
 
 	/** Gradients and sprites depend on size, DPR, palette and scene, so rebuild them only then. */

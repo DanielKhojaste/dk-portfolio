@@ -12,6 +12,8 @@ export interface UnderlineTiming {
 	in: number;
 	/** Seconds to draw back in. */
 	out: number;
+	/** GSAP ease for both directions. Default "power2.inOut". */
+	ease?: string;
 }
 
 type Flow = Pick<DivineFlowInstance, "start" | "stop" | "setReveal">;
@@ -50,7 +52,7 @@ export function underlineController(
 			tween = gsap.to(state, {
 				progress: 1,
 				duration: timing.in * (1 - state.progress),
-				ease: "power2.out",
+				ease: timing.ease ?? "power2.inOut",
 				onUpdate: apply,
 			});
 		},
@@ -66,7 +68,7 @@ export function underlineController(
 			tween = gsap.to(state, {
 				progress: 0,
 				duration: timing.out * state.progress,
-				ease: "power2.in",
+				ease: timing.ease ?? "power2.inOut",
 				onUpdate: apply,
 				onComplete: () => flow?.stop(),
 			});

@@ -77,8 +77,10 @@ export const animation = {
 		/** The menu button's bars folding into an X, and its label swapping. */
 		button: 0.4,
 		/** The DivineFlow underline drawing out under a hovered or focused menu link, and back in. */
-		underlineIn: 0.6,
-		underlineOut: 0.35,
+		underlineIn: 1.1,
+		underlineOut: 0.7,
+		/** GSAP ease for both: "inOut" starts and settles gently. */
+		underlineEase: "power2.inOut",
 	},
 
 	/** Hover and focus feedback: buttons, links, arrows, the menu button's spin. */
@@ -89,30 +91,38 @@ export const animation = {
  * 3. Colours: [red, green, blue], each 0–255.
  * --------------------------------------------------------------------------------------------- */
 
-export const colors: { background: DivineFlowPalette } = {
+/** The site's red: the hero's DivineFlow filaments, glows, sparkles and embers. */
+const crimson: DivineFlowPalette = {
+	/** Wide soft glow under each filament. */
+	bloom: [150, 14, 26],
+	/** Halo around each filament. */
+	glow: [186, 24, 38],
+	/** Thin bright core of each filament. */
+	core: [255, 200, 200],
+	/** Pulse of light travelling along the brighter filaments. */
+	shimmer: [230, 96, 104],
+	/** Sparkles sliding along filaments: centre and halo. */
+	sparkle: [255, 236, 236],
+	sparkleHalo: [214, 60, 72],
+	/** Edges of the lens flare on bigger sparkles. */
+	flare: [250, 160, 164],
+	/** Dust specks beside the filaments. */
+	speck: [196, 44, 56],
+	/** Glow where the filaments start: centre and edge. */
+	originInner: [214, 44, 56],
+	originOuter: [100, 8, 18],
+	/** Embers drifting up across the hero. */
+	ember: [230, 80, 86],
+};
+
+export const colors: { background: DivineFlowPalette; menuUnderline: DivineFlowPalette } = {
 	/** The hero's DivineFlow. */
-	background: {
-		/** Wide soft glow under each filament. */
-		bloom: [150, 14, 26],
-		/** Halo around each filament. */
-		glow: [186, 24, 38],
-		/** Thin bright core of each filament. */
-		core: [255, 200, 200],
-		/** Pulse of light travelling along the brighter filaments. */
-		shimmer: [230, 96, 104],
-		/** Sparkles sliding along filaments: centre and halo. */
-		sparkle: [255, 236, 236],
-		sparkleHalo: [214, 60, 72],
-		/** Edges of the lens flare on bigger sparkles. */
-		flare: [250, 160, 164],
-		/** Dust specks beside the filaments. */
-		speck: [196, 44, 56],
-		/** Glow where the filaments start: centre and edge. */
-		originInner: [214, 44, 56],
-		originOuter: [100, 8, 18],
-		/** Embers drifting up across the hero. */
-		ember: [230, 80, 86],
-	},
+	background: crimson,
+	/**
+	 * The underline under hovered menu links: the same red as the background, so it always matches.
+	 * Replace `crimson` with your own palette (same shape as above) to give it a colour of its own.
+	 */
+	menuUnderline: crimson,
 };
 
 /* ------------------------------------------------------------------------------------------------
@@ -153,17 +163,40 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 
 /**
  * The underline that draws out under a hovered or focused menu link: one strand of the background's
- * DivineFlow (same colours), growing from the middle of the word out to both sides.
+ * DivineFlow (same colours) with a gentle "~" wave.
  */
-export const menuUnderlineFlow = {
+export const menuUnderlineFlow: {
+	from: "center" | "left" | "right";
+	wave: number;
+	waves: number;
+	thickness: number;
+	alpha: number;
+	sway: number;
+	travelSpeed: number;
+	motion?: number;
+	sparkleCount: number;
+} = {
+	/**
+	 * Where the strand starts drawing from: "center" (out to both sides), "left" (across to the right)
+	 * or "right" (across to the left).
+	 */
+	from: "center",
+	/** Height of the "~" wave in px (0 for a straight line), and how many waves across the word. */
+	wave: 7,
+	waves: 1,
 	/** Line thickness, as a multiple of the background's filaments. */
-	thickness: 1.2,
+	thickness: 1.6,
 	/** Brightness of the strand, 0–1. */
-	alpha: 0.95,
-	/** Wave height of the strand. */
-	amplitude: 1.2,
+	alpha: 1,
+	/**
+	 * How far (px) the two tail ends slowly sway up and down, like the background's filaments. The
+	 * middle stays put and the line stays one smooth curve. 0 keeps it still.
+	 */
+	sway: 4,
+	/** Speed of the sparkle and light pulse gliding along the strand. */
+	travelSpeed: 2.5,
 	/** Animation speed: the same as the background unless you change it. */
 	motion: backgroundFlow.desktop.motion,
 	/** Sparkles sliding along the strand. */
 	sparkleCount: 1,
-} as const;
+};

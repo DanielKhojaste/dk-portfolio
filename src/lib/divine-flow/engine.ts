@@ -51,6 +51,12 @@ function mainThreadBackend(
 	let lastFrame = -Infinity;
 	let animate = false;
 	let isStill = false;
+	/** A change the loop hasn't drawn yet (e.g. the last step of a draw-out right before a stop). */
+	let dirty = false;
+	const draw = (timeMs: number) => {
+		dirty = false;
+		core.render(timeMs);
+	};
 
 	const tick = (now: number) => {
 		raf = 0;
@@ -58,7 +64,7 @@ function mainThreadBackend(
 		// Frame-rate cap with a 1ms tolerance so a 60Hz display never skips frames at maxFps 60.
 		if (now - lastFrame >= 1000 / core.options.maxFps - 1) {
 			lastFrame = now;
-			core.render(now);
+			draw(now);
 		}
 		raf = requestAnimationFrame(tick);
 	};
@@ -68,7 +74,8 @@ function mainThreadBackend(
 	};
 	// The running loop picks changes up on its next frame; a still canvas needs a redraw.
 	const redrawIfIdle = () => {
-		if (!animate) core.render(performance.now());
+		if (animate) dirty = true;
+		else draw(performance.now());
 	};
 
 	return {
@@ -94,11 +101,12 @@ function mainThreadBackend(
 				return;
 			}
 			cancel();
-			// Switching to reduced motion settles the flow into its still shape.
-			if (stillChanged) core.render(performance.now());
+			// Switching to reduced motion settles the flow into its still shape, and anything set
+			// since the last frame (like a reveal of 0 just before stopping) must not be left undrawn.
+			if (stillChanged || dirty) draw(performance.now());
 		},
 		render(timeMs = performance.now()) {
-			core.render(timeMs);
+			draw(timeMs);
 		},
 		destroy: cancel,
 	};

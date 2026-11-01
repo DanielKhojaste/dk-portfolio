@@ -3,6 +3,8 @@ import { createScene, createThreads, emberPosition } from "../scene";
 import {
 	makePointBuffer,
 	tiltLift,
+	waveLift,
+	tailSwayLift,
 	sampleThread,
 	samplesForWidth,
 	type FlowLayout,
@@ -206,10 +208,67 @@ describe("geometry", () => {
 		}
 	});
 
+	it("waves filaments into a ~ across the canvas, whichever way they flow", () => {
+		// One wave: level at the edges and middle, dips (down = +y) on the left, rises on the right.
+		expect(waveLift(0, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(200, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(400, 400, 7)).toBeCloseTo(0, 9);
+		expect(waveLift(100, 400, 7)).toBeCloseTo(-7, 9);
+		expect(waveLift(300, 400, 7)).toBeCloseTo(7, 9);
+		expect(waveLift(100, 400, 7, 2)).toBeCloseTo(0, 9);
+
+		const strip: FlowLayout = { ...layout, width: 400, height: 40, originY: 0.5, innerGap: 0 };
+		for (const [sides, originX] of [
+			["right", 0],
+			["left", 1],
+		] as const) {
+			const [thread] = createThreads({ ...config, sides });
+			const flat = makePointBuffer();
+			const wavy = makePointBuffer();
+			sampleThread(thread!, 0, { ...strip, originX, still: true }, 44, flat);
+			sampleThread(thread!, 0, { ...strip, originX, still: true, wave: 7 }, 44, wavy);
+			for (let i = 0; i <= 44; i += 11) {
+				expect(flat[i]!.y - wavy[i]!.y).toBeCloseTo(waveLift(flat[i]!.x, 400, 7), 2);
+			}
+		}
+	});
+
+	it("sways only the tail ends, keeping one smooth curve through the middle", () => {
+		const width = 400;
+		for (const time of [0, 1.3, 2.7, 5.1]) {
+			// The middle never moves.
+			expect(tailSwayLift(200, width, 4, time)).toBeCloseTo(0, 9);
+			// Never more than the sway height, at the very ends.
+			for (let x = 0; x <= width; x += 20) {
+				expect(Math.abs(tailSwayLift(x, width, 4, time))).toBeLessThanOrEqual(4 + 1e-9);
+			}
+			// Flat through the middle: tiny steps either side of it barely lift the line.
+			expect(Math.abs(tailSwayLift(204, width, 4, time))).toBeLessThan(0.01);
+			expect(Math.abs(tailSwayLift(196, width, 4, time))).toBeLessThan(0.01);
+		}
+		// The tails move over time, each on its own rhythm.
+		const left = [0, 1, 2, 3].map((t) => tailSwayLift(0, width, 4, t));
+		const right = [0, 1, 2, 3].map((t) => tailSwayLift(width, width, 4, t));
+		expect(new Set(left.map((v) => v.toFixed(3))).size).toBeGreaterThan(2);
+		expect(left).not.toEqual(right);
+		expect(tailSwayLift(0, width, 0, 1)).toBe(0);
+	});
+
 	it("scales sample count with width inside fixed bounds", () => {
 		expect(samplesForWidth(100)).toBe(44);
 		expect(samplesForWidth(1600)).toBe(57);
 		expect(samplesForWidth(10_000)).toBe(72);
+	});
+});
+
+describe("travelFade", () => {
+	it("fades sparkles and pulses in and out over their travel instead of popping", async () => {
+		const { travelFade } = await import("../renderer");
+		expect(travelFade(0.12, 0.12, 0.62)).toBe(0);
+		expect(travelFade(0.74, 0.12, 0.62)).toBe(0);
+		expect(travelFade(0.43, 0.12, 0.62)).toBeCloseTo(1, 6);
+		expect(travelFade(0.15, 0.12, 0.62)).toBeLessThan(0.2);
+		expect(travelFade(0.9, 0.12, 0.62)).toBe(0);
 	});
 });
 
