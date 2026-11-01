@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { colors } from "../../src/site.config";
+import { colors, menuUnderlineFlow } from "../../src/site.config";
 
 const hero = (page: Page) => page.locator("section.hero");
 const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
@@ -278,9 +278,20 @@ test.describe("menu", () => {
 		const link = page.locator("#site-menu").getByRole("link", { name: "Skills", exact: true });
 		const flow = link.locator("[data-divine-flow]");
 		await expect(flow).toHaveAttribute("data-manual", "");
-		// One strand of the background's DivineFlow, drawn out from the middle of the word together.
+		// One wavy strand of the background's DivineFlow, drawn out from where the settings say.
 		const options = JSON.parse((await flow.getAttribute("data-options"))!);
-		expect(options).toMatchObject({ sides: "both", originX: 0.5, lineCount: 1, revealStagger: 0 });
+		const start = { center: [0.5, "both"], left: [0, "right"], right: [1, "left"] }[
+			menuUnderlineFlow.from
+		];
+		expect(options).toMatchObject({
+			originX: start[0],
+			sides: start[1],
+			lineCount: 1,
+			revealStagger: 0,
+			wave: menuUnderlineFlow.wave,
+			wavePeriods: menuUnderlineFlow.waves,
+			fadeFromOrigin: false,
+		});
 		expect(options.theme).toEqual(colors.background);
 		// Nothing runs until it's needed.
 		await expect(flow.locator("canvas")).toHaveCount(0);
