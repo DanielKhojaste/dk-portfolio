@@ -11,9 +11,13 @@ export const profile = {
 	name: "Daniel Khojaste",
 	role: "Software Developer",
 	slogan: "temporary slogan",
-	location: "Ottawa, Canada",
+	location: "Canada",
+	/** Shown next to the location. */
+	relocation: "Open to relocating",
 	coaching: "Coaching soccer",
 	currently: {
+		/** Project name, shown as "Currently building <name>" in the hero. */
+		name: "Lineup",
 		label: "Building Lineup",
 		description: "A tactical board for coaches",
 		href: "https://github.com/DanielKhojaste/lineup",

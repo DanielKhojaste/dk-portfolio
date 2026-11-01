@@ -39,7 +39,10 @@ import InfoValue from "./InfoValue.astro";
 			</div>
 			<div class="menu__fact">
 				<dt>Based in</dt>
-				<dd>{profile.location}</dd>
+				<dd>
+					{profile.location}
+					<span class="menu__note">{profile.relocation}</span>
+				</dd>
 			</div>
 			<div class="menu__fact">
 				<dt>Off the keyboard</dt>
