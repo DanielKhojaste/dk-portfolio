@@ -23,25 +23,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ("DANIEL" in white, "KHOJASTE" as a deep red shape behind the throne so the photo leads), the throne
   photo at 90% of the hero height and centred calls to action.
 - Two hero claims on either side of the throne: "Software Developer" (based in Canada) and the
-  current project (Lineup, linked), in white expanded caps with a red glow, with their labels always on
-  one line. Each is underlined by a few strands of white DivineFlow slanting gently from bottom left to
-  top right (5° by default), at the same pace as the background.
+  current project (Lineup, linked), in white expanded caps with a red glow. Their labels, the last lines
+  of their headlines and their underlines always line up. Each underline is a few strands of white
+  DivineFlow rising gently towards its own side of the screen, drawn in alongside the signature.
 - DivineFlow draws in on load, at the same time as the logo: filaments grow out from the origin towards
   the sides (GSAP-driven, skipped for reduced motion), with a bright tip leading each one.
 - Tablet and mobile share the desktop composition (large throne, info and buttons over a bottom scrim),
   and the whole hero fits on portrait phones without scrolling.
 - `src/site.config.ts`: one file for everything tweakable: the copy, every animation timing (logo,
-  DivineFlow draw-ins, menu, hovers), the DivineFlow colours and options, and the underline angle.
-- Real copy: based in Canada, coaching soccer, and Lineup (linked) as the current project.
-- Full-screen menu with numbered section links and quick facts; Esc and link clicks close it, the rest of
-  the page is inert while it is open, and DivineFlow pauses behind it.
+  DivineFlow draw-ins, menu, hovers), the DivineFlow colours and options, and the underlines' angle
+  and length.
+- Real copy: based in Canada, and Lineup (linked) as the current project.
+- Full-screen menu with the section links centred over a blurred page. Hovering, focusing or pressing a
+  link draws a white DivineFlow underline out from its centre. Esc, a section link or a click anywhere
+  else closes it; the rest of the page is inert while it is open, and DivineFlow pauses behind it.
 - Crimson DivineFlow background in varying shades of deep red (never drifting towards orange) with
   drifting embers behind the hero, with separate settings for compact screens.
 - Header with the DK logo, written stroke by stroke on page load like handwriting (GSAP DrawSVG; skipped
   for reduced motion), and a hamburger menu button on every screen size. The K's stem writes as a clean
   italic I before its arm and leg.
 - Smooth intro: the DivineFlow bloom layer composites without a blend mode and the hero caps its pixel
-  density at 1.5, so the logo, the draw-in and hovers stay smooth together. The fonts are preloaded.
+  density at 1.5, so the logo, the draw-in and hovers stay smooth together. The fonts and the hero
+  photo are preloaded.
 - Placeholder Work, Skills, About and Contact sections (lorem ipsum) and a footer, so the page scrolls
   and the hero links have targets.
 - SVG favicon from the DK logo.
