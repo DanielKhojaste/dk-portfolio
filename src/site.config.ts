@@ -77,8 +77,10 @@ export const animation = {
 		/** The menu button's bars folding into an X, and its label swapping. */
 		button: 0.4,
 		/** The DivineFlow underline drawing out under a hovered or focused menu link, and back in. */
-		underlineIn: 0.6,
-		underlineOut: 0.35,
+		underlineIn: 1.1,
+		underlineOut: 0.7,
+		/** GSAP ease for both: "inOut" starts and settles gently. */
+		underlineEase: "power2.inOut",
 	},
 
 	/** Hover and focus feedback: buttons, links, arrows, the menu button's spin. */
@@ -162,6 +164,7 @@ export const menuUnderlineFlow: {
 	thickness: number;
 	alpha: number;
 	amplitude: number;
+	travelSpeed: number;
 	motion?: number;
 	sparkleCount: number;
 } = {
@@ -177,8 +180,13 @@ export const menuUnderlineFlow: {
 	thickness: 1.6,
 	/** Brightness of the strand, 0–1. */
 	alpha: 1,
-	/** The small DivineFlow wiggle that drifts along the strand. */
-	amplitude: 1.2,
+	/**
+	 * How much the strand drifts up and down over time, like the background's filaments (px are
+	 * roughly this × 0.3, since the drift scales with the strip's height).
+	 */
+	amplitude: 9,
+	/** Speed of the sparkle and light pulse gliding along the strand. */
+	travelSpeed: 2.5,
 	/** Animation speed: the same as the background unless you change it. */
 	motion: backgroundFlow.desktop.motion,
 	/** Sparkles sliding along the strand. */
