@@ -6,7 +6,7 @@ import "../styles/global.css";
 // swapping (and re-laying out) in the middle of the intro animations.
 import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
-import { animation } from "../site.config";
+import { animation, colors } from "../site.config";
 
 interface Props {
 	title?: string;
@@ -26,6 +26,8 @@ const timings = {
 	"--menu-links": s(animation.menu.links),
 	"--menu-link-stagger": s(animation.menu.linkStagger),
 	"--menu-button-duration": s(animation.menu.button),
+	"--side-nav-fill": s(animation.sideNav.fill),
+	"--section-glow": colors.sectionGlow,
 };
 ---
 
@@ -48,6 +50,7 @@ const timings = {
 		<slot name="head" />
 	</head>
 	<body>
+		<div class="page-glow" aria-hidden="true"></div>
 		<slot />
 	</body>
 </html>

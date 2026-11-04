@@ -42,10 +42,13 @@ import Menu from "./Menu.astro";
 <script>
 	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
+	import { setupLogoHover } from "../scripts/logo-hover";
 	import { setupMenu } from "../scripts/menu";
 
 	drawLogos(document, animation.logo);
 	setupMenu();
+	const home = document.querySelector<HTMLElement>(".site-header__home");
+	if (home) setupLogoHover(home, animation.logoHover);
 </script>
 
 <style>
@@ -93,6 +96,13 @@ import Menu from "./Menu.astro";
 		transition:
 			border-color var(--hover-duration) var(--ease-out),
 			background-color var(--hover-duration) var(--ease-out);
+	}
+
+	/* Desktop has the side nav instead (same breakpoint as components/SideNav.astro). */
+	@media (min-width: 1024px) and (min-height: 600px) {
+		.menu-button {
+			display: none;
+		}
 	}
 
 	.menu-button:hover {

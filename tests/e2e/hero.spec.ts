@@ -1,8 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
-import { colors, menuUnderlineFlow } from "../../src/site.config";
+import { colors, menuUnderlineFlow, sections } from "../../src/site.config";
 
 const hero = (page: Page) => page.locator("section.hero");
 const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
+/** Below this the header has the menu button; at and above it, the side nav (desktop). */
+const SIDE_NAV = "(min-width: 1024px) and (min-height: 600px)";
+
+/** The desktop project gets the side nav, so menu tests use a tablet-sized window there. */
+async function useMenuLayout(page: Page) {
+	if (await page.evaluate((q) => matchMedia(q).matches, SIDE_NAV)) {
+		await page.setViewportSize({ width: 1000, height: 800 });
+	}
+}
 
 async function box(page: Page, selector: string) {
 	const rect = await page.locator(selector).first().boundingBox();
@@ -226,6 +235,11 @@ test.describe("hero", () => {
 });
 
 test.describe("menu", () => {
+	test.beforeEach(async ({ page }) => {
+		await page.goto("/");
+		await useMenuLayout(page);
+	});
+
 	test("opens and closes from the keyboard, trapping focus and returning it", async ({ page }) => {
 		await page.goto("/");
 		const button = page.locator("[data-menu-button]");
@@ -238,7 +252,7 @@ test.describe("menu", () => {
 		await expect(button).toHaveAttribute("aria-expanded", "true");
 		await expect(button).toHaveAccessibleName("Close menu");
 		await expect(menu).toBeVisible();
-		await expect(menu.getByRole("link", { name: "Work", exact: true })).toBeFocused();
+		await expect(menu.getByRole("link", { name: "Intro", exact: true })).toBeFocused();
 		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(true);
 
 		await page.keyboard.press("Escape");
@@ -253,13 +267,13 @@ test.describe("menu", () => {
 		await page.locator("[data-menu-button]").click();
 		const menu = page.locator("#site-menu");
 		const viewport = page.viewportSize()!;
-		for (const label of ["Work", "Skills", "About", "Contact"]) {
+		for (const { label } of sections) {
 			const link = menu.getByRole("link", { name: label, exact: true });
 			await expect(link).toBeVisible();
 			const rect = (await link.boundingBox())!;
 			expect(Math.abs(rect.x + rect.width / 2 - viewport.width / 2)).toBeLessThan(2);
 		}
-		await expect(menu.getByRole("link")).toHaveCount(4);
+		await expect(menu.getByRole("link")).toHaveCount(sections.length);
 		await expect(menu).not.toContainText("Currently");
 		const blur = await menu.evaluate(
 			(el) =>
@@ -308,7 +322,10 @@ test.describe("menu", () => {
 		await expect(flow.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 		// The menu's own focus on open doesn't light up the first link for mouse users.
 		await expect(
-			page.locator("#site-menu").getByRole("link", { name: "Work", exact: true }).locator("canvas"),
+			page
+				.locator("#site-menu")
+				.getByRole("link", { name: "Intro", exact: true })
+				.locator("canvas"),
 		).toHaveCount(0);
 	});
 
@@ -330,9 +347,14 @@ test.describe("menu", () => {
 });
 
 test.describe("header", () => {
-	test("shows the logo and a hamburger menu button on every screen size", async ({ page }) => {
+	test("shows the logo everywhere, and the menu button on phones and tablets", async ({ page }) => {
 		await page.goto("/");
 		await expect(page.getByRole("link", { name: "Daniel Khojaste, home" })).toBeVisible();
+		if (await page.evaluate((q) => matchMedia(q).matches, SIDE_NAV)) {
+			// Desktop has the side nav instead.
+			await expect(page.locator("[data-menu-button]")).toBeHidden();
+			await page.setViewportSize({ width: 1000, height: 800 });
+		}
 		const menu = page.getByRole("button", { name: "Open menu" });
 		await expect(menu).toBeVisible();
 		await expect(menu).toHaveAttribute("aria-expanded", "false");
@@ -343,6 +365,7 @@ test.describe("header", () => {
 
 	test("keeps the menu button on screen after scrolling down", async ({ page }) => {
 		await page.goto("/");
+		await useMenuLayout(page);
 		await page.locator("#contact").scrollIntoViewIfNeeded();
 		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
 		const button = page.getByRole("button", { name: "Open menu" });
@@ -379,7 +402,7 @@ test.describe("header", () => {
 test.describe("placeholder sections", () => {
 	test("give the page room to scroll and the hero links somewhere to go", async ({ page }) => {
 		await page.goto("/");
-		for (const id of ["work", "skills", "about", "contact"]) {
+		for (const id of ["work", "skills", "contact"]) {
 			await expect(page.locator(`main section#${id} h2`)).toBeVisible();
 		}
 		const height = await page.evaluate(() => document.documentElement.scrollHeight);
@@ -392,5 +415,11 @@ test.describe("placeholder sections", () => {
 		await page.locator(".hero").getByRole("link", { name: "View my work" }).click();
 		await expect(page).toHaveURL(/#work$/);
 		await expect(page.locator("#work-title")).toBeInViewport();
+		// It glides there and settles with the section at the top of the screen.
+		await expect
+			.poll(() =>
+				page.evaluate(() => Math.abs(scrollY - document.getElementById("work")!.offsetTop)),
+			)
+			.toBeLessThan(3);
 	});
 });

@@ -11,6 +11,10 @@
 	--menu-links: 0.75s;
 	--menu-link-stagger: 0.06s;
 	--menu-button-duration: 0.4s;
+	--side-nav-fill: 0.5s;
+
+	/* The sections' dark red glow. BaseLayout sets it from site.config.ts. */
+	--section-glow: rgb(72 8 16 / 0.62);
 
 	/* Colour */
 	--color-bg: #080405;
@@ -28,6 +32,10 @@
 
 	/* Layout */
 	--gutter: clamp(20px, 4.4vw, 64px);
+	/* Width the side nav takes up on desktop (0 where the menu button is used instead). Sections start
+	   their content at --content-left so it never runs under the nav. */
+	--side-nav-w: 0px;
+	--content-left: calc(var(--gutter) + var(--side-nav-w));
 	--radius-pill: 999px;
 
 	/* Motion */
@@ -53,6 +61,28 @@ html {
 body {
 	margin: 0;
 	min-height: 100svh;
+}
+
+/* Same breakpoint as the side nav (components/SideNav.astro). */
+@media (min-width: 1024px) and (min-height: 600px) {
+	:root {
+		--side-nav-w: 220px;
+	}
+}
+
+/*
+ * A dark red glow behind every section after the hero (the hero paints its own background over it).
+ * It's fixed, so it stays put while the page moves; a fixed layer instead of background-attachment,
+ * which mobile browsers ignore or repaint on every scroll.
+ */
+.page-glow {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse 85% 65% at 50% -8%, var(--section-glow), transparent 72%),
+		radial-gradient(ellipse 60% 45% at 50% 108%, rgb(40 4 9 / 0.35), transparent 70%);
 }
 
 img,

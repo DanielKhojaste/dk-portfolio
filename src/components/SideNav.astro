@@ -1,0 +1,195 @@
+---
+/**
+ * Desktop: the list of sections down the left, in place of the menu button. Labels are outlined like
+ * the hero's last name; hovering fills one with red, left to right. The section you're on is filled
+ * white, its marker glows, and a strand of DivineFlow draws out under it (sideNavUnderlineFlow in
+ * site.config.ts). Phones and tablets get the menu button instead.
+ *
+ * It stays out of the way on the hero (the first section) and fades in from About onwards.
+ */
+import { colors, sections, sideNav, sideNavUnderlineFlow } from "../site.config";
+import { underlineHeight, underlineOptions } from "../scripts/underline-options";
+import DivineFlow from "./DivineFlow.astro";
+
+const ruleHeight = underlineHeight(sideNavUnderlineFlow);
+const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline);
+---
+
+<nav
+	class="side-nav"
+	aria-label="Sections"
+	style={`--rule-h: ${ruleHeight}px`}
+	data-side-nav
+	data-on-hero
+>
+	<ol class="side-nav__list">
+		{
+			sections.map((section) => (
+				<li>
+					<a class="side-nav__link" href={section.href} data-side-nav-link={section.href.slice(1)}>
+						{sideNav.marker && (
+							<span class="side-nav__marker" aria-hidden="true">
+								{sideNav.marker}
+							</span>
+						)}
+						<span class="side-nav__text">
+							<span class="side-nav__label">{section.label}</span>
+							<span class="side-nav__rule" aria-hidden="true">
+								<DivineFlow manual fadeIn={0} options={underline} />
+							</span>
+						</span>
+					</a>
+				</li>
+			))
+		}
+	</ol>
+</nav>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupSideNav } from "../scripts/side-nav";
+
+	setupSideNav(document, {
+		in: animation.sideNav.underlineIn,
+		out: animation.sideNav.underlineOut,
+		ease: animation.sideNav.underlineEase,
+	});
+</script>
+
+<style>
+	.side-nav {
+		position: fixed;
+		left: var(--gutter);
+		/* Centred, between the hero's last name and its "Based in" claim (which starts at 64% down). */
+		top: 50%;
+		translate: 0 -50%;
+		z-index: 10;
+		display: none;
+		transition:
+			opacity 0.5s var(--ease-out),
+			translate 0.5s var(--ease-out),
+			visibility 0s;
+	}
+
+	/* Hidden (and out of the tab order) on the hero; slides in once you leave it. */
+	.side-nav[data-on-hero] {
+		visibility: hidden;
+		opacity: 0;
+		translate: -12px -50%;
+		pointer-events: none;
+		transition:
+			opacity 0.35s var(--ease-out),
+			translate 0.35s var(--ease-out),
+			visibility 0s linear 0.35s;
+	}
+
+	/* Same breakpoint as --side-nav-w in global.css. */
+	@media (min-width: 1024px) and (min-height: 600px) {
+		.side-nav {
+			display: block;
+		}
+	}
+
+	.side-nav__list {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.side-nav__link {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		border-radius: 4px;
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	.side-nav__marker {
+		width: 14px;
+		font-size: 13px;
+		line-height: 1;
+		text-align: center;
+		color: rgb(245 236 236 / 0.3);
+		transition:
+			color calc(var(--hover-duration) * 2) var(--ease-out),
+			scale calc(var(--hover-duration) * 3) var(--ease-out),
+			text-shadow calc(var(--hover-duration) * 2) var(--ease-out);
+	}
+
+	.side-nav__link:hover .side-nav__marker {
+		color: rgb(255 77 88 / 0.8);
+	}
+
+	.side-nav__link[aria-current] .side-nav__marker {
+		color: #ff4d58;
+		scale: 1.35;
+		text-shadow: 0 0 10px rgb(230 40 55 / 0.9);
+	}
+
+	.side-nav__text {
+		position: relative;
+		display: block;
+	}
+
+	/* Outlined like the hero's last name. The fill is a background clipped to the letters, so it can
+	   sweep in from the left. */
+	.side-nav__label {
+		display: block;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: 17px;
+		line-height: 1.1;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1px rgb(245 236 236 / 0.55);
+		background-image: linear-gradient(#ff4d58, #ff4d58);
+		background-repeat: no-repeat;
+		background-size: 0% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		transition:
+			background-size var(--side-nav-fill, 0.5s) var(--ease-out),
+			-webkit-text-stroke-color var(--side-nav-fill, 0.5s) var(--ease-out);
+	}
+
+	.side-nav__link:hover .side-nav__label,
+	.side-nav__link:focus-visible .side-nav__label {
+		background-size: 100% 100%;
+		-webkit-text-stroke-color: #ff4d58;
+	}
+
+	.side-nav__link[aria-current] .side-nav__label {
+		background-image: linear-gradient(var(--color-text), var(--color-text));
+		background-size: 100% 100%;
+		-webkit-text-stroke-color: var(--color-text);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.side-nav__label {
+			color: var(--color-text-muted);
+		}
+		.side-nav__link[aria-current] .side-nav__label {
+			color: var(--color-text);
+		}
+	}
+
+	/* Strip for the underline: a little wider than the word, fading out at both ends. Absolutely
+	   placed, so it never pushes the labels apart. */
+	.side-nav__rule {
+		position: absolute;
+		left: -18px;
+		right: -18px;
+		top: 100%;
+		height: var(--rule-h, 30px);
+		margin-top: calc(var(--rule-h, 30px) / -2 + 3px);
+		pointer-events: none;
+		-webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+	}
+</style>

@@ -1,0 +1,203 @@
+---
+/**
+ * About: one short headline, a line of text and three facts, in a single screen. When it comes into
+ * view the headline's words light up one after another, then the red words fill in (GSAP;
+ * scripts/about.ts). Copy lives in site.config.ts.
+ */
+import { about } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+
+const words = splitHighlights(about.headline);
+---
+
+<section class="about" id="about" aria-labelledby="about-title" data-about>
+	<div class="about__inner">
+		<p class="about__eyebrow">{about.eyebrow}</p>
+		<h2 class="about__headline" id="about-title">
+			{
+				words.map((word) => (
+					<>
+						<span class="about__word">
+							{word.highlight ? (
+								<span class="about__highlight" data-highlight>
+									{word.text}
+								</span>
+							) : (
+								word.text
+							)}
+							{word.tail}
+						</span>{" "}
+					</>
+				))
+			}
+		</h2>
+		<p class="about__text" data-about-rest>{about.text}</p>
+		<dl class="about__facts" data-about-rest>
+			{
+				about.facts.map((fact) => (
+					<div class="about__fact">
+						<dt>{fact.label}</dt>
+						<dd>
+							{fact.href ? (
+								<a href={fact.href} target="_blank" rel="noopener noreferrer">
+									{fact.value}
+									<span aria-hidden="true"> ↗</span>
+									<span class="sr-only">(opens in a new tab)</span>
+								</a>
+							) : (
+								fact.value
+							)}
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>
+
+<script>
+	import { animation } from "../site.config";
+	import { revealAbout } from "../scripts/about";
+
+	const section = document.querySelector<HTMLElement>("[data-about]");
+	if (section) revealAbout(section, animation.about);
+</script>
+
+<style>
+	/* One screen tall, content centred, starting right of the side nav on desktop. */
+	.about {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.about__inner {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(22px, 4vh, 40px);
+		width: 100%;
+		max-width: 1120px;
+	}
+
+	.about__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.about__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(30px, 4.3vw, 72px);
+		line-height: 1.06;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* Each word lights up on its own (scripts/about.ts sets the start state). */
+	.about__word {
+		display: inline-block;
+	}
+
+	/* Red words: outlined, then filled with red from the left. The fill is a background clipped to the
+	   letters, so GSAP can sweep it in. Without JS they're simply filled. */
+	.about__highlight {
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) #ff4d58;
+		background-image: linear-gradient(#ff4d58, #ff4d58);
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		text-shadow: none;
+		filter: drop-shadow(0 0 22px rgb(230 40 55 / 0.45));
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.about__highlight {
+			color: #ff4d58;
+			background: none;
+		}
+	}
+
+	.about__text {
+		max-width: 56ch;
+		margin: 0;
+		font-size: clamp(16px, 1.25vw, 19px);
+		line-height: 1.7;
+		color: var(--color-text-soft);
+	}
+
+	.about__facts {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+		margin: 0;
+	}
+
+	.about__fact {
+		padding-top: 14px;
+		border-top: 1px solid var(--color-line);
+	}
+
+	.about__fact dt {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.about__fact dd {
+		margin: 8px 0 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: 15px;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.about__fact a {
+		border-radius: 3px;
+		text-decoration: none;
+		transition: color var(--hover-duration) var(--ease-out);
+	}
+
+	.about__fact a:hover {
+		color: #ff4d58;
+	}
+
+	@media (max-width: 767px) {
+		.about__headline {
+			font-size: clamp(26px, 8vw, 34px);
+		}
+
+		.about__text {
+			font-size: 15px;
+		}
+
+		.about__facts {
+			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		.about__fact {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			padding-top: 10px;
+		}
+
+		.about__fact dd {
+			margin: 0;
+			font-size: 13px;
+		}
+	}
+</style>

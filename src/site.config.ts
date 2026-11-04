@@ -1,10 +1,10 @@
 /**
  * Site settings: everything you might want to tweak lives here, so components never need editing for it.
  *
- *   1. Copy          what the site says about you
+ *   1. Copy          what the site says about you, and the page's sections
  *   2. Animation     every timing on the site (seconds)
- *   3. Colours       the DivineFlow palettes
- *   4. DivineFlow    the background and the menu underline
+ *   3. Colours       the DivineFlow palettes and the sections' background glow
+ *   4. DivineFlow    the hero background and the underlines (menu and side nav)
  *
  * Save the file and `npm run dev` reloads the page.
  */
@@ -32,13 +32,34 @@ export const profile = {
 	},
 } as const;
 
-/** Page sections, in order. Used by the menu. */
+/** Page sections, top to bottom. Used by the side nav (desktop) and the menu (phones and tablets). */
 export const sections: readonly LinkItem[] = [
+	{ label: "Intro", href: "#intro" },
+	{ label: "About", href: "#about" },
 	{ label: "Work", href: "#work" },
 	{ label: "Skills", href: "#skills" },
-	{ label: "About", href: "#about" },
 	{ label: "Contact", href: "#contact" },
 ];
+
+/** The section list down the left on desktop. */
+export const sideNav = {
+	/** Shown before each label; the current section's glows. Set to "" to drop it. */
+	marker: "✦",
+};
+
+/** The About section, right under the hero. */
+export const about = {
+	/** Small label above the headline. */
+	eyebrow: "About",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "I build web apps that are [fast], look [sharp] and hold up.",
+	text: "I'm Daniel, a software developer in Ottawa, Canada. I work across the stack, from the interface you touch to the systems behind it.",
+	facts: [
+		{ label: "Based in", value: "Ottawa, Canada" },
+		{ label: "Focus", value: "Web apps, end to end" },
+		{ label: "Building", value: profile.currently.name, href: profile.currently.href },
+	] as readonly { label: string; value: string; href?: string }[],
+};
 
 /* ------------------------------------------------------------------------------------------------
  * 2. Animation (seconds). Eases are GSAP ease names: https://gsap.com/docs/v3/Eases
@@ -83,6 +104,43 @@ export const animation = {
 		underlineEase: "power2.inOut",
 	},
 
+	/** The side nav's DivineFlow underline under the current section (desktop). */
+	sideNav: {
+		underlineIn: 1.1,
+		underlineOut: 0.7,
+		underlineEase: "power2.inOut",
+		/** Hovering a label fills it with red, left to right. */
+		fill: 0.5,
+	},
+
+	/** Moving one section up or down (wheel, swipe, keys, links). */
+	paging: {
+		duration: 1.05,
+		ease: "power3.inOut",
+	},
+
+	/** Hovering the logo writes the signature over it again in red. */
+	logoHover: {
+		/** Total writing time. */
+		duration: 0.9,
+		penLift: 0.04,
+		/** Fade of the red when the pointer leaves. */
+		fadeOut: 0.45,
+	},
+
+	/** The About section, once it comes into view. */
+	about: {
+		delay: 0.25,
+		/** The headline's words lighting up, one after another. */
+		wordStagger: 0.05,
+		word: 0.6,
+		/** Each red word filling in, after the headline has lit up. */
+		highlight: 0.9,
+		highlightStagger: 0.3,
+		/** The text and facts sliding in last. */
+		rest: 0.8,
+	},
+
 	/** Hover and focus feedback: buttons, links, arrows, the menu button's spin. */
 	hover: 0.2,
 } as const;
@@ -115,7 +173,12 @@ const crimson: DivineFlowPalette = {
 	ember: [230, 80, 86],
 };
 
-export const colors: { background: DivineFlowPalette; menuUnderline: DivineFlowPalette } = {
+export const colors: {
+	background: DivineFlowPalette;
+	menuUnderline: DivineFlowPalette;
+	sideNavUnderline: DivineFlowPalette;
+	sectionGlow: string;
+} = {
 	/** The hero's DivineFlow. */
 	background: crimson,
 	/**
@@ -123,6 +186,13 @@ export const colors: { background: DivineFlowPalette; menuUnderline: DivineFlowP
 	 * Replace `crimson` with your own palette (same shape as above) to give it a colour of its own.
 	 */
 	menuUnderline: crimson,
+	/** The underline under the current section in the side nav. */
+	sideNavUnderline: crimson,
+	/**
+	 * The dark red glow behind every section after the hero. It stays put while the page scrolls.
+	 * Any CSS colour; the alpha sets how strong it is.
+	 */
+	sectionGlow: "rgb(72 8 16 / 0.62)",
 };
 
 /* ------------------------------------------------------------------------------------------------
@@ -161,22 +231,36 @@ export const backgroundFlow: { desktop: FlowOptions; compact: FlowOptions } = {
 	},
 };
 
-// TODO: The middle of the wave looks like the two gradients are overlapping.
-/**
- * The underline that draws out under a hovered or focused menu link: one strand of the background's
- * DivineFlow (same colours) with a gentle "~" wave.
- */
-export const menuUnderlineFlow: {
+/** Settings for a DivineFlow underline. */
+export interface UnderlineFlow {
+	/**
+	 * Where the strand starts drawing from: "center" (out to both sides), "left" (across to the right)
+	 * or "right" (across to the left).
+	 */
 	from: "center" | "left" | "right";
+	/** Height of the "~" wave in px (0 for a straight line), and how many waves across the word. */
 	wave: number;
 	waves: number;
+	/** Line thickness, as a multiple of the background's filaments. */
 	thickness: number;
+	/** Brightness of the strand, 0–1. */
 	alpha: number;
+	/** How far (px) the two tail ends slowly sway up and down. 0 keeps it still. */
 	sway: number;
+	/** Speed of the sparkle and light pulse gliding along the strand. */
 	travelSpeed: number;
+	/** Animation speed. */
 	motion?: number;
+	/** Sparkles sliding along the strand. */
 	sparkleCount: number;
-} = {
+}
+
+// TODO: The middle of the wave looks like the two gradients are overlapping.
+/**
+ * The underline that draws out under a hovered or focused menu link (phones and tablets): one strand
+ * of the background's DivineFlow (same colours) with a gentle "~" wave.
+ */
+export const menuUnderlineFlow: UnderlineFlow = {
 	/**
 	 * Where the strand starts drawing from: "center" (out to both sides), "left" (across to the right)
 	 * or "right" (across to the left).
@@ -202,4 +286,20 @@ export const menuUnderlineFlow: {
 	// TODO: Measure performance on different devices and adjust the number of particles.
 	// PENDING: Use different options based on device type and connection speed.
 	sparkleCount: 30,
+};
+
+/**
+ * The underline under the current section in the side nav (desktop). The labels are small and close
+ * together, so the wave is much flatter than the menu's and stays clear of the labels above and below.
+ */
+export const sideNavUnderlineFlow: UnderlineFlow = {
+	from: "center",
+	wave: 1.5,
+	waves: 1,
+	thickness: 1.2,
+	alpha: 1,
+	sway: 0,
+	travelSpeed: 6.0,
+	motion: backgroundFlow.desktop.motion,
+	sparkleCount: 14,
 };

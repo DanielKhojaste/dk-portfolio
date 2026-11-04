@@ -4,6 +4,9 @@
  * With `draw`, the ink sits behind an SVG mask made of hand-traced pen strokes; the client script
  * (scripts/logo-draw.ts) draws those strokes in writing order, so the logo appears as if written.
  * Without JavaScript the pens are fully drawn, so the logo simply shows.
+ *
+ * With `draw`, a second copy of the ink sits on top in red, behind its own set of pens: hovering the
+ * logo writes the signature over it again in red (scripts/logo-hover.ts).
  */
 import logoSvg from "../assets/brand/dk-logo.svg?raw";
 import { dkLogoPens } from "../assets/brand/dk-logo-pens";
@@ -42,6 +45,16 @@ const maskId = `logo-pen-${++instance}`;
 						/>
 					))}
 				</mask>
+				<mask id={`${maskId}-red`} maskUnits="userSpaceOnUse" x="-4" y="-4" width="70" height="61">
+					{dkLogoPens.map((pen, i) => (
+						<path
+							class="logo__red-pen"
+							d={pen.d}
+							stroke-width={pen.width}
+							clip-path={pen.clip ? `url(#${maskId}-clip-${i})` : undefined}
+						/>
+					))}
+				</mask>
 				{dkLogoPens.map(
 					(pen, i) =>
 						pen.clip && (
@@ -56,6 +69,15 @@ const maskId = `logo-pen-${++instance}`;
 	<g class="logo__ink" mask={draw ? `url(#${maskId})` : undefined}>
 		{paths.map((d) => <path d={d} />)}
 	</g>
+	{
+		draw && (
+			<g class="logo__red" mask={`url(#${maskId}-red)`}>
+				{paths.map((d) => (
+					<path d={d} />
+				))}
+			</g>
+		)
+	}
 </svg>
 
 <style>
@@ -71,6 +93,21 @@ const maskId = `logo-pen-${++instance}`;
 		stroke: #fff;
 		stroke-linecap: round;
 		stroke-linejoin: round;
+	}
+
+	/* The red signature written over the logo on hover. Hidden until then. */
+	.logo :global(.logo__red-pen) {
+		fill: none;
+		stroke: #fff;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-dasharray: 0 999;
+	}
+
+	.logo :global(.logo__red) {
+		fill: #ff3b47;
+		opacity: 0;
+		filter: drop-shadow(0 0 3px rgb(230 40 55 / 0.9));
 	}
 
 	/* With JS, start with nothing written. If the script never runs, a delayed CSS animation reveals
