@@ -81,7 +81,7 @@ test.describe("about", () => {
 		await expect.poll(() => opacity("#about .about__facts")).toBe("1");
 	});
 
-	test("lights the Lineup link up with a glow on hover, at the shared hover pace", async ({
+	test("nudges the Lineup arrow on hover, like the hero link, without a glow", async ({
 		page,
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
@@ -97,17 +97,14 @@ test.describe("about", () => {
 				}),
 			)
 			.toBe("1 0");
-		const link = page.locator("#about .text-link");
-		const style = () =>
-			link.evaluate((el) => {
-				const cs = getComputedStyle(el);
-				return { glow: cs.textShadow, duration: cs.transitionDuration };
-			});
-		expect(await style()).toEqual({ glow: "none", duration: `${motion.hover}s, ${motion.hover}s` });
+		const link = page.locator("#about .about__link");
+		const arrow = link.locator(".about__arrow");
+		const shift = () => arrow.evaluate((el) => getComputedStyle(el).translate);
+		expect(await shift()).toBe("none");
 		await link.hover();
-		await expect.poll(async () => (await style()).glow).toContain("14px");
-		// No movement: it lights up in place.
-		expect(await link.evaluate((el) => getComputedStyle(el).translate)).toBe("none");
+		// The arrow nudges up and right, like the hero's Lineup link, and nothing glows.
+		await expect.poll(shift).not.toBe("none");
+		expect(await link.evaluate((el) => getComputedStyle(el).textShadow)).toBe("none");
 	});
 
 	test("shows everything straight away for reduced motion", async ({ page }) => {

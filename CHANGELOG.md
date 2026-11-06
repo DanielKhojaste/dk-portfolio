@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`): the page glides to a stop, and section
   links glide to their section. Off for reduced motion and, by default, on touch screens.
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
+- The Lineup link in About nudges its arrow on hover like the hero's, with no glow; the scroll
+  prompt brightens on hover without a glow, so it keeps its weight.
 - One extra DivineFlow strand through the middle of the hero, with the menu underline's thickness,
   brightness, sparkles and speed (`heroStrand`, which follows `menuUnderlineFlow`). It draws in with
   the background.
