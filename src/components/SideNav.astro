@@ -1,9 +1,9 @@
 ---
 /**
- * Desktop: the list of sections down the left, in place of the menu button. Labels are outlined like
- * the hero's last name; hovering fills one with red, left to right. The section you're on is filled
- * white, its marker glows, and a strand of DivineFlow draws out under it (sideNavUnderlineFlow in
- * site.config.ts). Phones and tablets get the menu button instead.
+ * Desktop: the list of sections down the left, in place of the menu button. Labels are outlined;
+ * hovering fills one with soft white (colors.sideNavHover), left to right. The section you're on is
+ * filled white, its marker glows, and a strand of DivineFlow draws out under it (sideNavUnderlineFlow
+ * in site.config.ts). Phones and tablets get the menu button instead.
  *
  * It stays out of the way on the hero (the first section) and fades in from About onwards.
  */
@@ -33,7 +33,12 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 							</span>
 						)}
 						<span class="side-nav__text">
-							<span class="side-nav__label">{section.label}</span>
+							<span class="side-nav__label">
+								{section.label}
+								<span class="side-nav__fill" aria-hidden="true">
+									{section.label}
+								</span>
+							</span>
 							<span class="side-nav__rule" aria-hidden="true">
 								<DivineFlow manual fadeIn={0} options={underline} />
 							</span>
@@ -121,7 +126,7 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	}
 
 	.side-nav__link:hover .side-nav__marker {
-		color: rgb(255 77 88 / 0.8);
+		color: var(--side-nav-hover);
 	}
 
 	.side-nav__link[aria-current] .side-nav__marker {
@@ -135,44 +140,53 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		display: block;
 	}
 
-	/* Outlined like the hero's last name. The fill is a background clipped to the letters, so it can
-	   sweep in from the left. */
+	/* Outlined, in a lighter cut of the display font than the hero's name so small labels stay easy to
+	   read. On top sits a filled copy, wiped in from the left with a clip-path on hover; the clip reaches
+	   past the word on every side so no letter is left half filled. */
 	.side-nav__label {
+		position: relative;
 		display: block;
 		font-family: var(--font-display);
-		font-stretch: 125%;
-		font-weight: 900;
-		font-size: 17px;
-		line-height: 1.1;
-		letter-spacing: 0.02em;
+		font-stretch: 110%;
+		font-weight: 700;
+		font-size: 15px;
+		line-height: 1.2;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: transparent;
-		-webkit-text-stroke: 1px rgb(245 236 236 / 0.55);
-		background-image: linear-gradient(#ff4d58, #ff4d58);
-		background-repeat: no-repeat;
-		background-size: 0% 100%;
-		-webkit-background-clip: text;
-		background-clip: text;
-		transition:
-			background-size var(--side-nav-fill, 0.5s) var(--ease-out),
-			-webkit-text-stroke-color var(--side-nav-fill, 0.5s) var(--ease-out);
+		-webkit-text-stroke: 0.8px rgb(245 236 236 / 0.7);
 	}
 
-	.side-nav__link:hover .side-nav__label,
-	.side-nav__link:focus-visible .side-nav__label {
-		background-size: 100% 100%;
-		-webkit-text-stroke-color: #ff4d58;
+	.side-nav__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: var(--side-nav-hover);
+		-webkit-text-stroke: 0.8px transparent;
+		clip-path: inset(-30% 130% -30% -30%);
+		transition: clip-path var(--side-nav-fill) var(--side-nav-fill-ease);
+	}
+
+	.side-nav__link:hover .side-nav__fill,
+	.side-nav__link:focus-visible .side-nav__fill,
+	.side-nav__link[aria-current] .side-nav__fill {
+		clip-path: inset(-30% -30% -30% -30%);
 	}
 
 	.side-nav__link[aria-current] .side-nav__label {
-		background-image: linear-gradient(var(--color-text), var(--color-text));
-		background-size: 100% 100%;
 		-webkit-text-stroke-color: var(--color-text);
+	}
+
+	.side-nav__link[aria-current] .side-nav__fill {
+		color: var(--color-text);
 	}
 
 	@supports not (-webkit-text-stroke: 1px) {
 		.side-nav__label {
 			color: var(--color-text-muted);
+		}
+		.side-nav__fill {
+			display: none;
 		}
 		.side-nav__link[aria-current] .side-nav__label {
 			color: var(--color-text);

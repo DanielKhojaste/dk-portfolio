@@ -7,7 +7,7 @@ import {
 	sideNavUnderlineFlow,
 } from "../../site.config";
 import { splitHighlights } from "../highlights";
-import { nearestStop, pageStops, sectionAt } from "../sections";
+import { sectionAt } from "../sections";
 import { underlineHeight, underlineOptions } from "../underline-options";
 
 describe("splitHighlights", () => {
@@ -33,6 +33,11 @@ describe("splitHighlights", () => {
 			tail: "",
 		});
 		expect(splitHighlights("a [] b").map((w) => w.text)).toEqual(["a", "b"]);
+	});
+
+	it("says Canada, not a city", () => {
+		expect(`${about.text} ${about.facts.map((f) => f.value).join(" ")}`).not.toMatch(/Ottawa/);
+		expect(about.facts[0]).toEqual({ label: "Based in", value: "Canada" });
 	});
 
 	it("reads the About headline from the settings, with its red words", () => {
@@ -90,20 +95,5 @@ describe("sections", () => {
 		expect(sectionAt(tops, 449, 900)).toBe(0);
 		expect(sectionAt(tops, 450, 900)).toBe(1);
 		expect(sectionAt(tops, 2700, 900)).toBe(3);
-	});
-
-	it("stops at every section, plus the bottom of the page when there's a footer below", () => {
-		expect(pageStops([0, 900, 1800], 1800)).toEqual([0, 900, 1800]);
-		expect(pageStops([0, 900, 1800], 2100)).toEqual([0, 900, 1800, 2100]);
-		// A last section shorter than the screen can't scroll all the way to its top.
-		expect(pageStops([0, 900, 1800], 1500)).toEqual([0, 900, 1500]);
-	});
-
-	it("picks the nearest stop", () => {
-		const stops = [0, 900, 1800];
-		expect(nearestStop(stops, 0)).toBe(0);
-		expect(nearestStop(stops, 440)).toBe(0);
-		expect(nearestStop(stops, 460)).toBe(1);
-		expect(nearestStop(stops, 5000)).toBe(2);
 	});
 });

@@ -8,12 +8,14 @@ import { about } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
 
 const words = splitHighlights(about.headline);
+/** The headline as plain text, for screen readers: the words are split into spans for the animation. */
+const headline = about.headline.replace(/[[\]]/g, "");
 ---
 
 <section class="about" id="about" aria-labelledby="about-title" data-about>
 	<div class="about__inner">
 		<p class="about__eyebrow">{about.eyebrow}</p>
-		<h2 class="about__headline" id="about-title">
+		<h2 class="about__headline" id="about-title" aria-label={headline}>
 			{
 				words.map((word) => (
 					<>
@@ -21,6 +23,9 @@ const words = splitHighlights(about.headline);
 							{word.highlight ? (
 								<span class="about__highlight" data-highlight>
 									{word.text}
+									<span class="about__fill" aria-hidden="true" data-fill>
+										{word.text}
+									</span>
 								</span>
 							) : (
 								word.text
@@ -105,24 +110,30 @@ const words = splitHighlights(about.headline);
 		display: inline-block;
 	}
 
-	/* Red words: outlined, then filled with red from the left. The fill is a background clipped to the
-	   letters, so GSAP can sweep it in. Without JS they're simply filled. */
+	/* Red words: the word outlined, with a solid red copy on top that GSAP wipes in from the left with
+	   a clip-path (scripts/about.ts). The clip reaches past the word's box on every side, so letters
+	   that overhang it (the F's stem, the glow) are covered too. Without JS the copy simply shows. */
 	.about__highlight {
+		position: relative;
 		color: transparent;
 		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) #ff4d58;
-		background-image: linear-gradient(#ff4d58, #ff4d58);
-		background-repeat: no-repeat;
-		background-size: 100% 100%;
-		-webkit-background-clip: text;
-		background-clip: text;
-		text-shadow: none;
-		filter: drop-shadow(0 0 22px rgb(230 40 55 / 0.45));
+	}
+
+	.about__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: #ff4d58;
+		-webkit-text-stroke: inherit;
+		text-shadow:
+			0 0 22px rgb(230 40 55 / 0.55),
+			0 0 4px rgb(255 77 88 / 0.35);
+		clip-path: inset(-30% -30% -30% -30%);
 	}
 
 	@supports not (-webkit-text-stroke: 1px) {
 		.about__highlight {
 			color: #ff4d58;
-			background: none;
 		}
 	}
 

@@ -25,18 +25,22 @@ const throneSrcset = await throneAvifSrcset();
 	/>
 	<Header />
 	<SideNav />
-	<main>
-		<Hero />
-		<About />
-		<PlaceholderSections />
-	</main>
-	<Footer />
+	<!-- ScrollSmoother moves everything in here; fixed things (header, side nav) stay outside. -->
+	<div id="smooth-wrapper">
+		<div id="smooth-content">
+			<main>
+				<Hero />
+				<About />
+				<PlaceholderSections />
+			</main>
+			<Footer />
+		</div>
+	</div>
 </BaseLayout>
 
 <script>
 	import { animation } from "../site.config";
-	import { setupPaging } from "../scripts/sections";
+	import { setupSmoothScroll } from "../scripts/smooth-scroll";
 
-	// One section per screen, with a smooth glide between them.
-	setupPaging(animation.paging);
+	setupSmoothScroll(animation.scroll);
 </script>

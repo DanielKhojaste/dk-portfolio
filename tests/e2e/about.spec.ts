@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { FILL_EMPTY, FILL_FULL } from "../../src/scripts/about";
 import { about, colors, sections, sideNavUnderlineFlow } from "../../src/site.config";
 
 const SIDE_NAV = "(min-width: 1024px) and (min-height: 600px)";
@@ -20,29 +21,31 @@ test.describe("about", () => {
 
 		await expect(section.locator(".about__eyebrow")).toHaveText(about.eyebrow);
 		await expect(section.locator(".about__eyebrow")).not.toContainText(/\d/);
-		await expect(section.getByRole("heading", { level: 2 })).toHaveText(
-			about.headline.replace(/[[\]]/g, ""),
-		);
-		await expect(section.locator("[data-highlight]")).toHaveText(["fast", "sharp"]);
+		// Read once: the red words' filled copies are hidden from screen readers.
+		await expect(
+			section.getByRole("heading", { level: 2, name: about.headline.replace(/[[\]]/g, "") }),
+		).toBeVisible();
+		await expect(section.locator("[data-fill]")).toHaveText(["fast", "sharp"]);
+		await expect(section.locator("[data-fill]").first()).toHaveAttribute("aria-hidden", "true");
+		await expect(section).toContainText("Canada");
+		await expect(section).not.toContainText("Ottawa");
 		// No call-to-action buttons: the only link is the project in the facts.
 		await expect(section.getByRole("link")).toHaveCount(1);
 		await expect(section.getByRole("link")).toHaveAttribute("href", about.facts[2]!.href!);
 	});
 
-	test("lights the headline up and fills the red words in when it comes into view", async ({
+	test("lights the headline up and wipes the red words in when it comes into view", async ({
 		page,
 	}) => {
 		await page.goto("/");
-		const highlight = page.locator("#about [data-highlight]").first();
-		// Waiting below the fold: dim, red words still empty.
-		expect(await highlight.evaluate((el) => getComputedStyle(el).backgroundSize)).toBe("0% 100%");
+		const fill = page.locator("#about [data-fill]").first();
+		const clip = () => fill.evaluate((el) => getComputedStyle(el).clipPath);
+		// Waiting below the fold: the red copy is clipped away to nothing.
+		expect(await clip()).toBe(FILL_EMPTY);
 
 		await page.locator("#about").scrollIntoViewIfNeeded();
-		await expect
-			.poll(() => highlight.evaluate((el) => getComputedStyle(el).backgroundSize), {
-				timeout: 6_000,
-			})
-			.toBe("100% 100%");
+		// Then wiped in, reaching past the word on every side so no letter is left half filled.
+		await expect.poll(clip, { timeout: 6_000 }).toBe("inset(-30%)");
 		await expect
 			.poll(() =>
 				page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
@@ -53,8 +56,8 @@ test.describe("about", () => {
 	test("shows everything straight away for reduced motion", async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await page.goto("/");
-		const highlight = page.locator("#about [data-highlight]").first();
-		expect(await highlight.evaluate((el) => getComputedStyle(el).backgroundSize)).toBe("100% 100%");
+		const fill = page.locator("#about [data-fill]").first();
+		expect(await fill.evaluate((el) => getComputedStyle(el).clipPath)).toBe("inset(-30%)");
 		expect(
 			await page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
 		).toBe("1");
@@ -101,8 +104,8 @@ test.describe("side nav", () => {
 		await expect(current).toHaveCount(1);
 		await expect(current).toHaveAttribute("href", "#about");
 		// Its underline is mounted and drawing; the others haven't been needed yet.
-		await expect(current.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 		await expect(nav.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
+		await expect(current.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 
 		await page.locator("#skills").scrollIntoViewIfNeeded();
 		await expect(nav.locator("[aria-current]")).toHaveAttribute("href", "#skills");
@@ -111,7 +114,9 @@ test.describe("side nav", () => {
 		await expect(nav).toBeHidden();
 	});
 
-	test("uses its own, flatter underline settings and fills labels on hover", async ({ page }) => {
+	test("uses its own, flatter underline and fills labels with soft white on hover", async ({
+		page,
+	}) => {
 		await page.goto("/");
 		test.skip(!(await hasSideNav(page)), "desktop only");
 		const flow = page.locator('[data-side-nav-link="work"] [data-divine-flow]');
@@ -125,53 +130,97 @@ test.describe("side nav", () => {
 		expect(options.theme).toEqual(colors.sideNavUnderline);
 
 		await page.locator("#about").scrollIntoViewIfNeeded();
-		const label = page.locator('[data-side-nav-link="work"] .side-nav__label');
-		expect(await label.evaluate((el) => getComputedStyle(el).backgroundSize)).toBe("0% 100%");
-		await label.hover();
-		await expect
-			.poll(() => label.evaluate((el) => getComputedStyle(el).backgroundSize))
-			.toBe("100% 100%");
+		const link = page.locator('[data-side-nav-link="work"]');
+		const fill = link.locator(".side-nav__fill");
+		const clip = () => fill.evaluate((el) => getComputedStyle(el).clipPath);
+		expect(await clip()).toBe(FILL_EMPTY);
+		expect(await fill.evaluate((el) => getComputedStyle(el).color)).toBe(
+			"rgba(245, 236, 236, 0.4)",
+		);
+		// Slow enough to see it sweep: still going just after the pointer arrives.
+		await link.hover();
+		await page.waitForTimeout(150);
+		expect(await clip()).not.toBe("inset(-30%)");
+		await expect.poll(clip).toBe("inset(-30%)");
 	});
 });
 
-test.describe("paging", () => {
-	test("moves exactly one section per key press or wheel flick on desktop", async ({ page }) => {
+test.describe("smooth scrolling", () => {
+	test("glides to a stop instead of stopping dead, with no snapping to sections", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "phones keep their own scrolling");
 		await page.goto("/");
-		test.skip(!(await hasSideNav(page)), "the placeholder sections don't fit one phone screen yet");
-		const top = (id: string) => page.evaluate((i) => document.getElementById(i)!.offsetTop, id);
-		const settledAt = async (y: number) =>
-			expect.poll(() => page.evaluate(() => Math.round(scrollY)), { timeout: 4_000 }).toBe(y);
+		expect(
+			await page.locator("#smooth-wrapper").evaluate((el) => getComputedStyle(el).position),
+		).toBe("fixed");
 
-		await page.keyboard.press("ArrowDown");
-		await settledAt(await top("about"));
+		// Scroll and watch the content follow, frame by frame.
+		const frames = await page.evaluate(async () => {
+			const content = document.getElementById("smooth-content")!;
+			const offset = () => -new DOMMatrix(getComputedStyle(content).transform).m42;
+			scrollTo(0, 600);
+			const seen: number[] = [];
+			for (let i = 0; i < 8; i++) {
+				await new Promise(requestAnimationFrame);
+				seen.push(offset());
+			}
+			return seen;
+		});
+		// It's still catching up a few frames in, and only moving forward...
+		expect(frames.at(-1)!).toBeGreaterThan(0);
+		expect(frames.at(-1)!).toBeLessThan(590);
+		expect([...frames].sort((a, b) => a - b)).toEqual(frames);
+		// ...then settles exactly where the page scrolled to, not on a section.
+		await expect
+			.poll(() =>
+				page
+					.locator("#smooth-content")
+					.evaluate((el) => Math.round(-new DOMMatrix(getComputedStyle(el).transform).m42)),
+			)
+			.toBe(600);
+		expect(await page.evaluate(() => document.getElementById("about")!.offsetTop)).not.toBe(600);
+	});
 
-		await page.waitForTimeout(400);
-		await page.mouse.move(700, 450);
-		await page.mouse.wheel(0, 2000);
-		await settledAt(await top("work"));
+	test("keeps the content in line when something scrolls into view (tabbing, find-in-page)", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "phones keep their own scrolling");
+		await page.goto("/");
+		await page.locator("#skills").scrollIntoViewIfNeeded();
+		await expect.poll(() => page.locator("#smooth-wrapper").evaluate((el) => el.scrollTop)).toBe(0);
+		await expect(page.locator("#skills-title")).toBeInViewport();
+	});
 
-		await page.waitForTimeout(400);
-		await page.keyboard.press("ArrowUp");
-		await settledAt(await top("about"));
+	test("is off for reduced motion", async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		await page.goto("/");
+		expect(
+			await page.locator("#smooth-wrapper").evaluate((el) => getComputedStyle(el).position),
+		).not.toBe("fixed");
 	});
 });
 
 test.describe("logo hover", () => {
-	test("writes the signature over the logo in red, and fades it on leave", async ({
-		page,
-	}, info) => {
+	test("turns the logo DivineFlow red with a glow, and back on leave", async ({ page }, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
-		const logo = page.locator("svg[data-logo-draw]");
-		await expect(logo).toHaveAttribute("data-drawn", "true", { timeout: 6_000 });
-		const red = logo.locator(".logo__red");
-		await expect(logo.locator(".logo__red-pen")).toHaveCount(4);
-		expect(await red.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+		const home = page.getByRole("link", { name: "Daniel Khojaste, home" });
+		const style = () =>
+			home.evaluate((el) => {
+				const cs = getComputedStyle(el);
+				return { color: cs.color, filter: cs.filter };
+			});
+		expect(await style()).toEqual({ color: "rgb(245, 236, 236)", filter: "none" });
+		// The signature effect is gone.
+		await expect(page.locator(".logo__red")).toHaveCount(0);
 
-		await page.getByRole("link", { name: "Daniel Khojaste, home" }).hover();
-		await expect.poll(() => red.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+		await home.hover();
+		const [r, g, b] = colors.logoHover.color.match(/\d+/g)!;
+		await expect.poll(async () => (await style()).color).toBe(`rgb(${r}, ${g}, ${b})`);
+		expect((await style()).filter).toContain("drop-shadow");
 
 		await page.mouse.move(700, 600);
-		await expect.poll(() => red.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
+		await expect.poll(async () => (await style()).color).toBe("rgb(245, 236, 236)");
 	});
 });

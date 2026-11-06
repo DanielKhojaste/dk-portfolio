@@ -11,7 +11,14 @@
 	--menu-links: 0.75s;
 	--menu-link-stagger: 0.06s;
 	--menu-button-duration: 0.4s;
-	--side-nav-fill: 0.5s;
+	--side-nav-fill: 0.9s;
+	--side-nav-fill-ease: cubic-bezier(0.65, 0, 0.35, 1);
+	--side-nav-hover: rgb(245 236 236 / 0.4);
+	--logo-hover-duration: 0.5s;
+	--logo-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--logo-hover-color: rgb(255 200 200);
+	--logo-hover-glow: rgb(186 24 38 / 0.9);
+	--logo-hover-glow-size: 8px;
 
 	/* The sections' dark red glow. BaseLayout sets it from site.config.ts. */
 	--section-glow: rgb(72 8 16 / 0.62);

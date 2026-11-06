@@ -42,13 +42,10 @@ import Menu from "./Menu.astro";
 <script>
 	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
-	import { setupLogoHover } from "../scripts/logo-hover";
 	import { setupMenu } from "../scripts/menu";
 
 	drawLogos(document, animation.logo);
 	setupMenu();
-	const home = document.querySelector<HTMLElement>(".site-header__home");
-	if (home) setupLogoHover(home, animation.logoHover);
 </script>
 
 <style>
@@ -70,12 +67,23 @@ import Menu from "./Menu.astro";
 		pointer-events: auto;
 	}
 
+	/* Hover: the logo takes on DivineFlow's colours, a light red with a red glow. Colour and timing
+	   come from site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
 	.site-header__home {
 		display: flex;
 		align-items: center;
 		height: 48px;
 		padding-block: 5px;
 		color: var(--color-text);
+		transition:
+			color var(--logo-hover-duration) var(--logo-hover-ease),
+			filter var(--logo-hover-duration) var(--logo-hover-ease);
+	}
+
+	.site-header__home:hover,
+	.site-header__home:focus-visible {
+		color: var(--logo-hover-color);
+		filter: drop-shadow(0 0 var(--logo-hover-glow-size) var(--logo-hover-glow));
 	}
 
 	.menu-button {

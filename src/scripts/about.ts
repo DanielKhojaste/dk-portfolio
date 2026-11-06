@@ -1,7 +1,7 @@
 /**
  * About's entrance (GSAP): when the section comes into view, the headline's words light up one after
- * another, then each red word fills in from the left with a glow, then the text and facts slide in.
- * Runs once. Reduced motion shows everything straight away.
+ * another, then each red word fills in from the left (its solid copy is wiped in with a clip-path),
+ * then the text and facts slide in. Runs once. Reduced motion shows everything straight away.
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,9 +19,16 @@ export interface AboutTiming {
 
 const DIM = "rgb(245 236 236 / 0.14)";
 
+/**
+ * The red copy's clip: empty (its right edge pulled all the way past its left), then the whole word.
+ * Both reach 30% past the word's box, so overhanging letters and the glow are never cut off.
+ */
+export const FILL_EMPTY = "inset(-30% 130% -30% -30%)";
+export const FILL_FULL = "inset(-30% -30% -30% -30%)";
+
 export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.Timeline {
 	const words = section.querySelectorAll<HTMLElement>(".about__word");
-	const highlights = section.querySelectorAll<HTMLElement>("[data-highlight]");
+	const fills = section.querySelectorAll<HTMLElement>("[data-fill]");
 	const rest = section.querySelectorAll<HTMLElement>("[data-about-rest]");
 
 	const tl = gsap.timeline({ paused: true, delay: t.delay });
@@ -31,11 +38,10 @@ export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.T
 		{ color: "#ffffff", opacity: 1, duration: t.word, stagger: t.wordStagger, ease: "power2.out" },
 	)
 		.fromTo(
-			highlights,
-			{ backgroundSize: "0% 100%", filter: "drop-shadow(0 0 0px rgb(230 40 55 / 0))" },
+			fills,
+			{ clipPath: FILL_EMPTY },
 			{
-				backgroundSize: "100% 100%",
-				filter: "drop-shadow(0 0 22px rgb(230 40 55 / 0.45))",
+				clipPath: FILL_FULL,
 				duration: t.highlight,
 				stagger: t.highlightStagger,
 				ease: "power3.inOut",

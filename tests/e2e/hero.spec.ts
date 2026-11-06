@@ -253,13 +253,17 @@ test.describe("menu", () => {
 		await expect(button).toHaveAccessibleName("Close menu");
 		await expect(menu).toBeVisible();
 		await expect(menu.getByRole("link", { name: "Intro", exact: true })).toBeFocused();
-		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+		expect(await page.locator("#smooth-wrapper").evaluate((el) => (el as HTMLElement).inert)).toBe(
+			true,
+		);
 
 		await page.keyboard.press("Escape");
 		await expect(button).toHaveAttribute("aria-expanded", "false");
 		await expect(button).toBeFocused();
 		await expect(menu).toBeHidden();
-		expect(await page.locator("main").evaluate((el) => (el as HTMLElement).inert)).toBe(false);
+		expect(await page.locator("#smooth-wrapper").evaluate((el) => (el as HTMLElement).inert)).toBe(
+			false,
+		);
 	});
 
 	test("lists only the sections, centred, over a blurred page", async ({ page }) => {
@@ -407,7 +411,7 @@ test.describe("placeholder sections", () => {
 		}
 		const height = await page.evaluate(() => document.documentElement.scrollHeight);
 		expect(height).toBeGreaterThan(page.viewportSize()!.height * 2);
-		await expect(page.locator("body > footer")).toContainText("Daniel Khojaste");
+		await expect(page.locator("footer")).toContainText("Daniel Khojaste");
 	});
 
 	test("View my work scrolls to the Work section", async ({ page }) => {

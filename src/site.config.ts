@@ -53,9 +53,9 @@ export const about = {
 	eyebrow: "About",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "I build web apps that are [fast], look [sharp] and hold up.",
-	text: "I'm Daniel, a software developer in Ottawa, Canada. I work across the stack, from the interface you touch to the systems behind it.",
+	text: "I'm Daniel, a software developer based in Canada. I work across the stack, from the interface you touch to the systems behind it.",
 	facts: [
-		{ label: "Based in", value: "Ottawa, Canada" },
+		{ label: "Based in", value: profile.location },
 		{ label: "Focus", value: "Web apps, end to end" },
 		{ label: "Building", value: profile.currently.name, href: profile.currently.href },
 	] as readonly { label: string; value: string; href?: string }[],
@@ -109,23 +109,28 @@ export const animation = {
 		underlineIn: 1.1,
 		underlineOut: 0.7,
 		underlineEase: "power2.inOut",
-		/** Hovering a label fills it with red, left to right. */
-		fill: 0.5,
+		/** Hovering a label fills it (colors.sideNavHover), left to right, and empties it on leave. */
+		fill: 0.9,
+		/** CSS easing for the fill. */
+		fillEase: "cubic-bezier(0.65, 0, 0.35, 1)",
 	},
 
-	/** Moving one section up or down (wheel, swipe, keys, links). */
-	paging: {
-		duration: 1.05,
-		ease: "power3.inOut",
+	/**
+	 * Smooth scrolling (GSAP ScrollSmoother). The page still scrolls freely; it just glides to a stop
+	 * instead of stopping dead. Off for reduced motion.
+	 */
+	scroll: {
+		/** Seconds the page takes to catch up with the wheel or scrollbar. 0 turns it off. */
+		smooth: 1.1,
+		/** The same on touch screens. 0 keeps the phone's own scrolling, which already feels smooth. */
+		smoothTouch: 0,
 	},
 
-	/** Hovering the logo writes the signature over it again in red. */
+	/** Hovering the logo: it changes colour and glows (colors.logoHover). */
 	logoHover: {
-		/** Total writing time. */
-		duration: 0.9,
-		penLift: 0.04,
-		/** Fade of the red when the pointer leaves. */
-		fadeOut: 0.45,
+		duration: 0.5,
+		/** CSS easing. */
+		ease: "cubic-bezier(0.22, 1, 0.36, 1)",
 	},
 
 	/** The About section, once it comes into view. */
@@ -173,10 +178,16 @@ const crimson: DivineFlowPalette = {
 	ember: [230, 80, 86],
 };
 
+/** A palette colour as CSS, optionally see-through. */
+const rgb = ([r, g, b]: readonly [number, number, number], alpha = 1) =>
+	alpha === 1 ? `rgb(${r} ${g} ${b})` : `rgb(${r} ${g} ${b} / ${alpha})`;
+
 export const colors: {
 	background: DivineFlowPalette;
 	menuUnderline: DivineFlowPalette;
 	sideNavUnderline: DivineFlowPalette;
+	sideNavHover: string;
+	logoHover: { color: string; glow: string; glowSize: number };
 	sectionGlow: string;
 } = {
 	/** The hero's DivineFlow. */
@@ -188,6 +199,17 @@ export const colors: {
 	menuUnderline: crimson,
 	/** The underline under the current section in the side nav. */
 	sideNavUnderline: crimson,
+	/** A side nav label's fill while hovered. Any CSS colour. */
+	sideNavHover: "rgb(245 236 236 / 0.4)",
+	/**
+	 * The logo while hovered: DivineFlow's colours by default, a filament's light red core with the
+	 * red glow around it. `glowSize` is the glow's blur in px.
+	 */
+	logoHover: {
+		color: rgb(crimson.core),
+		glow: rgb(crimson.glow, 0.9),
+		glowSize: 8,
+	},
 	/**
 	 * The dark red glow behind every section after the hero. It stays put while the page scrolls.
 	 * Any CSS colour; the alpha sets how strong it is.
