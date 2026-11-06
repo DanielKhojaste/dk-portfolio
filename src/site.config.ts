@@ -33,6 +33,12 @@ export const profile = {
 	},
 } as const;
 
+/** The hero. */
+export const hero = {
+	/** The prompt that fades in at the bottom of the hero after a few seconds. */
+	scrollHint: "Scroll to see more",
+};
+
 /** Page sections, top to bottom. Used by the side nav (desktop) and the menu (phones and tablets). */
 export const sections: readonly LinkItem[] = [
 	{ label: "Intro", href: "#intro" },
@@ -181,6 +187,16 @@ export const animation = {
 		ease: motion.ease.out.css,
 		/** How much it grows: 1 for not at all. */
 		scale: 1.04,
+	},
+
+	/** The hero's scroll prompt. */
+	scrollHint: {
+		/** Seconds on the hero before it fades in. */
+		delay: 4,
+		/** Its fade in and out. */
+		fade: 0.8,
+		/** One trip of the glowing dot down its line. */
+		loop: 1.8,
 	},
 
 	/** The About section, once it comes into view. */

@@ -1,5 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
-import { colors, menuUnderlineFlow, sections } from "../../src/site.config";
+import {
+	animation,
+	colors,
+	hero as heroCopy,
+	menuUnderlineFlow,
+	sections,
+} from "../../src/site.config";
 
 const hero = (page: Page) => page.locator("section.hero");
 const COMPACT = "(max-width: 1023px), (max-aspect-ratio: 115/100)";
@@ -171,26 +177,35 @@ test.describe("hero", () => {
 		]) {
 			await page.setViewportSize(size);
 			await page.goto("/");
-			const actions = await box(page, ".hero__actions");
+			const hint = await box(page, ".hero__hint");
 			const claims = await box(page, ".hero__info");
-			expect(actions.y + actions.height).toBeLessThanOrEqual(size.height);
-			expect(claims.y + claims.height).toBeLessThanOrEqual(actions.y);
+			expect(hint.y + hint.height).toBeLessThanOrEqual(size.height);
+			expect(claims.y + claims.height).toBeLessThanOrEqual(hint.y);
 			expect(claims.x).toBeGreaterThanOrEqual(0);
 			expect(claims.x + claims.width).toBeLessThanOrEqual(size.width);
 		}
 	});
 
-	test("calls to action are centred and link to their sections", async ({ page }) => {
+	test("has no buttons, but a scroll prompt that fades in after a few seconds", async ({
+		page,
+	}) => {
 		await page.goto("/");
-		const work = hero(page).getByRole("link", { name: "View my work" });
-		const contact = hero(page).getByRole("link", { name: "Get in touch" });
-		await expect(work).toHaveAttribute("href", "#work");
-		await expect(contact).toHaveAttribute("href", "#contact");
+		await expect(hero(page).locator(".button, .hero__actions")).toHaveCount(0);
 
-		const actions = await box(page, ".hero__actions");
-		const [w, c] = await Promise.all([work.boundingBox(), contact.boundingBox()]);
-		const centre = (w!.x + c!.x + c!.width) / 2;
-		expect(Math.abs(centre - (actions.x + actions.width / 2))).toBeLessThanOrEqual(2);
+		const hint = hero(page).locator("[data-scroll-hint]");
+		await expect(hint).toHaveText(heroCopy.scrollHint);
+		await expect(hint).toHaveAttribute("href", "#about");
+		await expect(hint).toBeHidden();
+		await expect(hint).toBeVisible({ timeout: animation.scrollHint.delay * 1000 + 3000 });
+		// Centred under the throne.
+		const rect = (await hint.boundingBox())!;
+		expect(Math.abs(rect.x + rect.width / 2 - page.viewportSize()!.width / 2)).toBeLessThanOrEqual(
+			2,
+		);
+
+		// Gone once you scroll.
+		await page.evaluate(() => window.scrollTo(0, 400));
+		await expect(hint).toBeHidden();
 	});
 
 	test("draws DivineFlow in on load, alongside the logo rather than after it", async ({ page }) => {
@@ -414,15 +429,16 @@ test.describe("placeholder sections", () => {
 		await expect(page.locator("footer")).toContainText("Daniel Khojaste");
 	});
 
-	test("View my work scrolls to the Work section", async ({ page }) => {
+	test("the scroll prompt takes you to About", async ({ page }) => {
 		await page.goto("/");
-		await page.locator(".hero").getByRole("link", { name: "View my work" }).click();
-		await expect(page).toHaveURL(/#work$/);
-		await expect(page.locator("#work-title")).toBeInViewport();
-		// It glides there and settles with the section at the top of the screen.
+		const hint = page.locator("[data-scroll-hint]");
+		await expect(hint).toBeVisible({ timeout: animation.scrollHint.delay * 1000 + 3000 });
+		await hint.click();
+		await expect(page).toHaveURL(/#about$/);
+		await expect(page.locator("#about-title")).toBeInViewport();
 		await expect
 			.poll(() =>
-				page.evaluate(() => Math.abs(scrollY - document.getElementById("work")!.offsetTop)),
+				page.evaluate(() => Math.abs(scrollY - document.getElementById("about")!.offsetTop)),
 			)
 			.toBeLessThan(3);
 	});

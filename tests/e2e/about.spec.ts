@@ -7,6 +7,7 @@ import {
 	colors,
 	motion,
 	sections,
+	shades,
 	sideNavUnderlineFlow,
 } from "../../src/site.config";
 
@@ -335,10 +336,9 @@ test.describe("main colour", () => {
 		expect(
 			await page.locator(".hero__figure img").evaluate((el) => getComputedStyle(el).filter),
 		).toBe("none");
-		// Buttons use it.
-		const button = page.locator(".hero").getByRole("link", { name: "View my work" });
-		expect(await button.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-			`rgb(${brand.join(", ")})`,
-		);
+		// The scroll prompt's dot uses the bright shade worked out from it.
+		expect(
+			await page.locator(".hero__hint-dot").evaluate((el) => getComputedStyle(el).backgroundColor),
+		).toBe(`rgb(${shades.bright.join(", ")})`);
 	});
 });
