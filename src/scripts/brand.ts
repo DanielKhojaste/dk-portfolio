@@ -11,8 +11,11 @@
 import { hslToRgb, rgbToHsl } from "../lib/divine-flow/palette";
 import type { DivineFlowPalette, RGB } from "../lib/divine-flow";
 
-/** The main colour the site was designed with. */
-export const DESIGN_BRAND: RGB = [200, 32, 43];
+/**
+ * Not a setting: the red the site was designed in, which every shade below is measured against.
+ * Changing it breaks the colours. To recolour the site, change `brand` in site.config.ts.
+ */
+export const ORIGINAL_RED: RGB = [200, 32, 43];
 
 /** The design's shades, in the original red. */
 const DESIGN = {
@@ -31,7 +34,7 @@ const DESIGN = {
 
 	/* Page. */
 	/** Buttons, focus rings, link underlines: the main colour itself. */
-	accent: DESIGN_BRAND,
+	accent: ORIGINAL_RED,
 	/** A button's hover. */
 	accentHover: [176, 26, 36],
 	/** Small labels (eyebrows, kickers). */
@@ -74,9 +77,11 @@ export function follow(color: RGB, from: RGB, to: RGB): RGB {
 
 /** Every shade on the site for this main colour. */
 export function brandShades(brand: RGB): Shades {
+	// The original red gets the original shades exactly, with no rounding from the colour maths.
+	if (brand.every((c, i) => c === ORIGINAL_RED[i])) return { ...DESIGN };
 	const out = {} as Shades;
 	for (const [name, color] of Object.entries(DESIGN) as [Shade, RGB][]) {
-		out[name] = follow(color, DESIGN_BRAND, brand);
+		out[name] = follow(color, ORIGINAL_RED, brand);
 	}
 	out.accent = brand;
 	return out;
@@ -118,7 +123,7 @@ export function brandFlow(shades: Shades): DivineFlowPalette {
  * original red, so the photo is untouched.
  */
 export function photoFilter(brand: RGB): string {
-	const [h0, s0] = rgbToHsl(DESIGN_BRAND);
+	const [h0, s0] = rgbToHsl(ORIGINAL_RED);
 	const [h1, s1] = rgbToHsl(brand);
 	const turn = Math.round((((h1 - h0 + 540) % 360) - 180) * 10) / 10;
 	const saturate = Math.round((s0 === 0 ? 1 : s1 / s0) * 100) / 100;

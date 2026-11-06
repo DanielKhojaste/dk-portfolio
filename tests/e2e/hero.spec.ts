@@ -203,6 +203,11 @@ test.describe("hero", () => {
 			2,
 		);
 
+		// A DivineFlow strand under it, mounted once it shows and drawing downwards.
+		await expect(hint.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
+		// Low on the hero.
+		expect(rect.y + rect.height).toBeGreaterThan(page.viewportSize()!.height * 0.9);
+
 		// Gone once you scroll.
 		await page.evaluate(() => window.scrollTo(0, 400));
 		await expect(hint).toBeHidden();

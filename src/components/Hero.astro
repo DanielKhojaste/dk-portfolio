@@ -3,7 +3,11 @@ import { Picture } from "astro:assets";
 import { throne, throneSizes, throneWidths } from "./hero-image";
 import DivineFlow from "./DivineFlow.astro";
 
-import { animation, backgroundFlow, colors, hero, profile } from "../site.config";
+import { animation, backgroundFlow, colors, hero, profile, scrollHintFlow } from "../site.config";
+import { underlineOptions } from "../scripts/underline-options";
+
+/** The prompt's strand: drawn sideways like an underline, in a box turned upright (see CSS). */
+const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 ---
 
 <section class="hero" id="intro" aria-labelledby="hero-title">
@@ -74,19 +78,30 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		class="hero__hint"
 		href="#about"
 		data-scroll-hint
-		style={`--hint-fade: ${animation.scrollHint.fade}s; --hint-loop: ${animation.scrollHint.loop}s`}
+		style={`--hint-fade: ${animation.scrollHint.fade}s`}
 	>
 		<span class="hero__hint-label">{hero.scrollHint}</span>
-		<span class="hero__hint-line" aria-hidden="true"><span class="hero__hint-dot"></span></span>
+		<span class="hero__hint-strand" aria-hidden="true">
+			<span class="hero__hint-turn" data-hint-strand>
+				<DivineFlow manual fadeIn={0} options={hintStrand} />
+			</span>
+		</span>
 	</a>
 </section>
 
 <script>
 	import { animation } from "../site.config";
-	import { setupScrollHint } from "../scripts/scroll-hint";
+	import { setupScrollHint, strandLoop } from "../scripts/scroll-hint";
 
 	const hint = document.querySelector<HTMLElement>("[data-scroll-hint]");
-	if (hint) setupScrollHint(hint, animation.scrollHint);
+	const strand = hint?.querySelector<HTMLElement>("[data-hint-strand] [data-divine-flow]");
+	if (hint)
+		setupScrollHint(
+			hint,
+			animation.scrollHint,
+			window,
+			strand ? strandLoop(strand, animation.scrollHint.loop) : undefined,
+		);
 </script>
 
 <style>
@@ -299,7 +314,7 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 
 		position: absolute;
 		left: 50%;
-		bottom: 5.4cqh;
+		bottom: 2.4cqh;
 		z-index: 4;
 		display: flex;
 		flex-direction: column;
@@ -342,48 +357,27 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		margin-right: -0.3em;
 	}
 
-	.hero__hint-line {
+	/* The strand: DivineFlow draws across, so it sits in a box turned upright, its start at the top.
+	   Both ends fade out. scripts/scroll-hint.ts loops it. */
+	.hero__hint-strand {
+		--strand-length: 64px;
+		--strand-width: 36px;
+
 		position: relative;
-		width: 1px;
-		height: 44px;
-		overflow: hidden;
-		background: linear-gradient(rgb(var(--shade-text) / 0.28), rgb(var(--shade-text) / 0));
+		width: var(--strand-width);
+		height: var(--strand-length);
+		-webkit-mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
+		mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
 	}
 
-	.hero__hint-dot {
+	.hero__hint-turn {
 		position: absolute;
-		left: -2px;
-		top: -6px;
-		width: 5px;
-		height: 12px;
-		border-radius: 3px;
-		background: rgb(var(--shade-bright));
-		box-shadow: 0 0 10px rgb(var(--shade-halo) / 0.9);
-		animation: hero-hint-drop var(--hint-loop, 1.8s) var(--ease-in-out) infinite;
-	}
-
-	@keyframes hero-hint-drop {
-		0% {
-			translate: 0 0;
-			opacity: 0;
-		}
-		20% {
-			opacity: 1;
-		}
-		80% {
-			opacity: 1;
-		}
-		100% {
-			translate: 0 50px;
-			opacity: 0;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.hero__hint-dot {
-			animation: none;
-			top: 10px;
-		}
+		top: 0;
+		left: 0;
+		width: var(--strand-length);
+		height: var(--strand-width);
+		transform-origin: 0 0;
+		transform: translateX(var(--strand-width)) rotate(90deg);
 	}
 
 	/* ---------- Compact: phones, tablets and portrait screens ---------- */
@@ -396,7 +390,7 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 	 */
 	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
 		.hero {
-			--hint-bottom: max(16px, 2.6cqh);
+			--hint-bottom: max(10px, 1.4cqh);
 			--hint-height: 74px;
 
 			min-height: 480px;
@@ -473,8 +467,8 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 			letter-spacing: 0.24em;
 		}
 
-		.hero__hint-line {
-			height: 30px;
+		.hero__hint-strand {
+			--strand-length: 48px;
 		}
 	}
 

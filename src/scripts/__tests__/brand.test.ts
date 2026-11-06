@@ -5,7 +5,7 @@ import {
 	brandFlow,
 	brandShades,
 	channels,
-	DESIGN_BRAND,
+	ORIGINAL_RED,
 	follow,
 	hex,
 	photoFilter,
@@ -16,9 +16,18 @@ const close = (a: readonly number[], b: readonly number[], by = 2) =>
 	a.every((v, i) => Math.abs(v - b[i]!) <= by);
 
 describe("brand colours", () => {
+	it("gives back exactly the original colours for the original red", () => {
+		const s = brandShades([200, 32, 43]);
+		expect(s.bright).toEqual([255, 77, 88]);
+		expect(s.glow).toEqual([186, 24, 38]);
+		expect(s.core).toEqual([255, 200, 200]);
+		expect(s.bg).toEqual([8, 4, 5]);
+		expect(photoFilter([200, 32, 43])).toBe("none");
+	});
+
 	it("gives back the original design with the original red", () => {
-		const s = brandShades(DESIGN_BRAND);
-		expect(s.accent).toEqual(DESIGN_BRAND);
+		const s = brandShades(ORIGINAL_RED);
+		expect(s.accent).toEqual(ORIGINAL_RED);
 		expect(close(s.bright, [255, 77, 88])).toBe(true);
 		expect(close(s.glow, [186, 24, 38])).toBe(true);
 		expect(close(s.core, [255, 200, 200])).toBe(true);
@@ -39,7 +48,7 @@ describe("brand colours", () => {
 
 	it("follows saturation too, but keeps each shade's own lightness", () => {
 		// A grey main colour gives greys, each as light or dark as the design's shade.
-		expect(follow([200, 32, 43], DESIGN_BRAND, [128, 128, 128])).toEqual([116, 116, 116]);
+		expect(follow([200, 32, 43], ORIGINAL_RED, [128, 128, 128])).toEqual([116, 116, 116]);
 		const grey = brandShades([128, 128, 128]);
 		for (const c of Object.values(grey)) expect(new Set(c).size).toBe(1);
 		for (const c of Object.values(brandShades([255, 255, 255]))) {
@@ -61,7 +70,7 @@ describe("brand colours", () => {
 	});
 
 	it("regrades the hero photo to the main colour, and leaves it alone for the original red", () => {
-		expect(photoFilter(DESIGN_BRAND)).toBe("none");
+		expect(photoFilter(ORIGINAL_RED)).toBe("none");
 		const blue = photoFilter([37, 99, 235]);
 		expect(blue).toMatch(/^hue-rotate\(-?\d+(\.\d)?deg\) saturate\([\d.]+\)$/);
 		// The shortest way round the colour wheel.

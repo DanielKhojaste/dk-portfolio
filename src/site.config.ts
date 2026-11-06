@@ -9,7 +9,7 @@
  * Save the file and `npm run dev` reloads the page.
  */
 import type { DivineFlowOptions, DivineFlowPalette, RGB } from "./lib/divine-flow";
-import { brandFlow, brandShades, DESIGN_BRAND, type Shades } from "./scripts/brand";
+import { brandFlow, brandShades, type Shades } from "./scripts/brand";
 
 /* ------------------------------------------------------------------------------------------------
  * 1. Copy
@@ -195,8 +195,11 @@ export const animation = {
 		delay: 4,
 		/** Its fade in and out. */
 		fade: 0.8,
-		/** One trip of the glowing dot down its line. */
-		loop: 1.8,
+		/**
+		 * One loop of the DivineFlow strand under it: it draws down, fades, and starts again. The
+		 * strand's look is scrollHintFlow below.
+		 */
+		loop: 2.4,
 	},
 
 	/** The About section, once it comes into view. */
@@ -228,9 +231,10 @@ export const animation = {
  * off-white text carry a faint tint of it. Change it and the whole site follows; the hero photo is
  * the one thing that doesn't, as its red is in the picture.
  *
- * Try [37, 99, 235] (blue), [124, 58, 237] (violet), [5, 150, 105] (green) or [217, 119, 6] (amber).
+ * This is the only colour setting: [200, 32, 43] is the original red. Try [37, 99, 235] (blue),
+ * [124, 58, 237] (violet), [5, 150, 105] (green) or [217, 119, 6] (amber).
  */
-export const brand: RGB = DESIGN_BRAND;
+export const brand: RGB = [200, 32, 43];
 
 /** Every shade, worked out from `brand`. */
 export const shades: Shades = brandShades(brand);
@@ -246,6 +250,7 @@ export const colors: {
 	background: DivineFlowPalette;
 	menuUnderline: DivineFlowPalette;
 	sideNavUnderline: DivineFlowPalette;
+	scrollHint: DivineFlowPalette;
 	textHover: { color: string; glow: string };
 	logoHover: { color: string; glow: string; glowSize: number; core: string };
 	sectionGlow: string;
@@ -259,6 +264,8 @@ export const colors: {
 	menuUnderline: flow,
 	/** The underline under the current section in the side nav. */
 	sideNavUnderline: flow,
+	/** The strand under the hero's scroll prompt. */
+	scrollHint: flow,
 	/**
 	 * Hovered text (side nav labels, text links): its colour, and the glow around it as a CSS
 	 * text-shadow, in the main colour.
@@ -391,4 +398,20 @@ export const sideNavUnderlineFlow: UnderlineFlow = {
 	travelSpeed: 6.0,
 	motion: backgroundFlow.desktop.motion,
 	sparkleCount: 14,
+};
+
+/**
+ * The short strand under the hero's "Scroll to see more" prompt, drawing itself downwards on a loop
+ * (animation.scrollHint). Same settings as an underline; "left" here means it starts at the top.
+ */
+export const scrollHintFlow: UnderlineFlow = {
+	from: "left",
+	wave: 2,
+	waves: 1,
+	thickness: 2.2,
+	alpha: 1,
+	sway: 0,
+	travelSpeed: 6.0,
+	motion: backgroundFlow.desktop.motion,
+	sparkleCount: 10,
 };
