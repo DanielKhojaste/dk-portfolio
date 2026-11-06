@@ -45,8 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the movement. The Lineup link in About uses it.
 
 - Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
-  4 seconds on the hero (`animation.scrollHint.delay`), with a glowing dot sliding down a short
-  line; it hides once you scroll and takes you to About when clicked.
+  4 seconds on the hero (`animation.scrollHint.delay`), low on the screen, with a short DivineFlow
+  strand under it that draws itself downwards on a loop (`scrollHintFlow`,
+  `animation.scrollHint.loop`). It hides once you scroll and takes you to About when clicked.
 
 ### Changed
 
