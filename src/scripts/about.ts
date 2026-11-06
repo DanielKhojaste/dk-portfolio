@@ -20,11 +20,12 @@ export interface AboutTiming {
 const DIM = "rgb(245 236 236 / 0.14)";
 
 /**
- * The red copy's clip: empty (its right edge pulled all the way past its left), then the whole word.
- * Both reach 30% past the word's box, so overhanging letters and the glow are never cut off.
+ * The red copy's clip: empty (its right edge pulled back to its left edge), then the whole word. The
+ * sides reach just past the word's box so overhanging letters are covered, but no further: anything
+ * more is time spent wiping across empty space, which reads as a delay before the fill starts.
  */
-export const FILL_EMPTY = "inset(-30% 130% -30% -30%)";
-export const FILL_FULL = "inset(-30% -30% -30% -30%)";
+export const FILL_EMPTY = "inset(-30% 108% -30% -8%)";
+export const FILL_FULL = "inset(-30% -8% -30% -8%)";
 
 export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.Timeline {
 	const words = section.querySelectorAll<HTMLElement>(".about__word");

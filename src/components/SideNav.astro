@@ -118,11 +118,11 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		font-size: 13px;
 		line-height: 1;
 		text-align: center;
-		color: rgb(245 236 236 / 0.3);
+		color: rgb(var(--shade-text) / 0.3);
 		transition:
-			color calc(var(--hover-duration) * 2) var(--ease-out),
-			scale calc(var(--hover-duration) * 3) var(--ease-out),
-			text-shadow calc(var(--hover-duration) * 2) var(--ease-out);
+			color var(--motion-hover) var(--ease-out),
+			scale var(--motion-hover) var(--ease-out),
+			text-shadow var(--motion-hover) var(--ease-out);
 	}
 
 	.side-nav__link:hover .side-nav__marker {
@@ -130,9 +130,9 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	}
 
 	.side-nav__link[aria-current] .side-nav__marker {
-		color: #ff4d58;
+		color: rgb(var(--shade-bright));
 		scale: 1.35;
-		text-shadow: 0 0 10px rgb(230 40 55 / 0.9);
+		text-shadow: 0 0 10px rgb(var(--shade-halo) / 0.9);
 	}
 
 	.side-nav__text {
@@ -154,7 +154,7 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: transparent;
-		-webkit-text-stroke: 0.8px rgb(245 236 236 / 0.7);
+		-webkit-text-stroke: 0.8px rgb(var(--shade-text) / 0.7);
 	}
 
 	.side-nav__fill {
@@ -163,14 +163,15 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		white-space: nowrap;
 		color: var(--side-nav-hover);
 		-webkit-text-stroke: 0.8px transparent;
-		clip-path: inset(-30% 130% -30% -30%);
+		/* Same wipe as About's red words (scripts/about.ts: FILL_EMPTY, FILL_FULL). */
+		clip-path: inset(-30% 108% -30% -8%);
 		transition: clip-path var(--side-nav-fill) var(--side-nav-fill-ease);
 	}
 
 	.side-nav__link:hover .side-nav__fill,
 	.side-nav__link:focus-visible .side-nav__fill,
 	.side-nav__link[aria-current] .side-nav__fill {
-		clip-path: inset(-30% -30% -30% -30%);
+		clip-path: inset(-30% -8% -30% -8%);
 	}
 
 	.side-nav__link[aria-current] .side-nav__label {

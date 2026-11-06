@@ -2,13 +2,14 @@
  * Site settings: everything you might want to tweak lives here, so components never need editing for it.
  *
  *   1. Copy          what the site says about you, and the page's sections
- *   2. Animation     every timing on the site (seconds)
- *   3. Colours       the DivineFlow palettes and the sections' background glow
+ *   2. Animation     the site's shared pace (motion), then every timing that uses it (seconds)
+ *   3. Colours       the main colour, and every colour worked out from it
  *   4. DivineFlow    the hero background and the underlines (menu and side nav)
  *
  * Save the file and `npm run dev` reloads the page.
  */
-import type { DivineFlowOptions, DivineFlowPalette } from "./lib/divine-flow";
+import type { DivineFlowOptions, DivineFlowPalette, RGB } from "./lib/divine-flow";
+import { brandFlow, brandShades, DESIGN_BRAND, type Shades } from "./scripts/brand";
 
 /* ------------------------------------------------------------------------------------------------
  * 1. Copy
@@ -66,6 +67,30 @@ export const about = {
  *    Everything is skipped for visitors who prefer reduced motion.
  * --------------------------------------------------------------------------------------------- */
 
+/**
+ * The site's pace. Timings below pick from these, so hovers, fills and glides move as one system:
+ * change one here and everything that uses it follows. Things that need their own timing still set
+ * a number directly.
+ */
+export const motion = {
+	/** Small, immediate feedback: buttons, icons, borders. */
+	quick: 0.2,
+	/** Hovering text and links: colour changes, fills, underlines, arrows. */
+	hover: 0.45,
+	/** Things that draw or fill in by themselves: the red words in About. */
+	draw: 0.9,
+	/** Big, slow moves: DivineFlow underlines drawing out, the page catching up as you scroll. */
+	glide: 1.1,
+	/**
+	 * Eases, as CSS (for transitions) and GSAP (for tweens) pairs that match. "out" starts at full
+	 * speed and settles, which suits anything answering the pointer; "inOut" eases in and out.
+	 */
+	ease: {
+		out: { css: "cubic-bezier(0.22, 1, 0.36, 1)", gsap: "power3.out" },
+		inOut: { css: "cubic-bezier(0.65, 0, 0.35, 1)", gsap: "power2.inOut" },
+	},
+} as const;
+
 /** The DK signature in the header, written stroke by stroke. */
 const logo = {
 	delay: 0.2,
@@ -98,21 +123,21 @@ export const animation = {
 		/** The menu button's bars folding into an X, and its label swapping. */
 		button: 0.4,
 		/** The DivineFlow underline drawing out under a hovered or focused menu link, and back in. */
-		underlineIn: 1.1,
+		underlineIn: motion.glide,
 		underlineOut: 0.7,
-		/** GSAP ease for both: "inOut" starts and settles gently. */
-		underlineEase: "power2.inOut",
+		/** GSAP ease for both. */
+		underlineEase: motion.ease.inOut.gsap,
 	},
 
 	/** The side nav's DivineFlow underline under the current section (desktop). */
 	sideNav: {
-		underlineIn: 1.1,
+		underlineIn: motion.glide,
 		underlineOut: 0.7,
-		underlineEase: "power2.inOut",
+		underlineEase: motion.ease.inOut.gsap,
 		/** Hovering a label fills it (colors.sideNavHover), left to right, and empties it on leave. */
-		fill: 0.9,
+		fill: motion.hover,
 		/** CSS easing for the fill. */
-		fillEase: "cubic-bezier(0.65, 0, 0.35, 1)",
+		fillEase: motion.ease.out.css,
 	},
 
 	/**
@@ -121,16 +146,16 @@ export const animation = {
 	 */
 	scroll: {
 		/** Seconds the page takes to catch up with the wheel or scrollbar. 0 turns it off. */
-		smooth: 1.1,
+		smooth: motion.glide,
 		/** The same on touch screens. 0 keeps the phone's own scrolling, which already feels smooth. */
 		smoothTouch: 0,
 	},
 
 	/** Hovering the logo: it changes colour and glows (colors.logoHover). */
 	logoHover: {
-		duration: 0.5,
+		duration: motion.hover,
 		/** CSS easing. */
-		ease: "cubic-bezier(0.22, 1, 0.36, 1)",
+		ease: motion.ease.out.css,
 	},
 
 	/** The About section, once it comes into view. */
@@ -140,46 +165,39 @@ export const animation = {
 		wordStagger: 0.05,
 		word: 0.6,
 		/** Each red word filling in, after the headline has lit up. */
-		highlight: 0.9,
+		highlight: motion.draw,
 		highlightStagger: 0.3,
 		/** The text and facts sliding in last. */
 		rest: 0.8,
 	},
 
-	/** Hover and focus feedback: buttons, links, arrows, the menu button's spin. */
-	hover: 0.2,
+	/** Hover and focus feedback on buttons and icons: the hero buttons, the menu button's spin. */
+	hover: motion.quick,
 } as const;
 
 /* ------------------------------------------------------------------------------------------------
- * 3. Colours: [red, green, blue], each 0–255.
+ * 3. Colours
  * --------------------------------------------------------------------------------------------- */
 
-/** The site's red: the hero's DivineFlow filaments, glows, sparkles and embers. */
-const crimson: DivineFlowPalette = {
-	/** Wide soft glow under each filament. */
-	bloom: [150, 14, 26],
-	/** Halo around each filament. */
-	glow: [186, 24, 38],
-	/** Thin bright core of each filament. */
-	core: [255, 200, 200],
-	/** Pulse of light travelling along the brighter filaments. */
-	shimmer: [230, 96, 104],
-	/** Sparkles sliding along filaments: centre and halo. */
-	sparkle: [255, 236, 236],
-	sparkleHalo: [214, 60, 72],
-	/** Edges of the lens flare on bigger sparkles. */
-	flare: [250, 160, 164],
-	/** Dust specks beside the filaments. */
-	speck: [196, 44, 56],
-	/** Glow where the filaments start: centre and edge. */
-	originInner: [214, 44, 56],
-	originOuter: [100, 8, 18],
-	/** Embers drifting up across the hero. */
-	ember: [230, 80, 86],
-};
+/**
+ * The site's main colour, as [red, green, blue] (each 0–255). Everything coloured is worked out from
+ * it: buttons, highlighted words, glows, the hero's last name, the background glow and every
+ * DivineFlow filament, sparkle and ember (scripts/brand.ts). Even the near-black background and the
+ * off-white text carry a faint tint of it. Change it and the whole site follows; the hero photo is
+ * the one thing that doesn't, as its red is in the picture.
+ *
+ * Try [37, 99, 235] (blue), [124, 58, 237] (violet), [5, 150, 105] (green) or [217, 119, 6] (amber).
+ */
+export const brand: RGB = DESIGN_BRAND;
 
-/** A palette colour as CSS, optionally see-through. */
-const rgb = ([r, g, b]: readonly [number, number, number], alpha = 1) =>
+/** Every shade, worked out from `brand`. */
+export const shades: Shades = brandShades(brand);
+
+/** The DivineFlow palette, worked out from `brand`. */
+const flow: DivineFlowPalette = brandFlow(shades);
+
+/** A shade as CSS, optionally see-through. */
+const rgb = ([r, g, b]: RGB, alpha = 1) =>
 	alpha === 1 ? `rgb(${r} ${g} ${b})` : `rgb(${r} ${g} ${b} / ${alpha})`;
 
 export const colors: {
@@ -190,31 +208,31 @@ export const colors: {
 	logoHover: { color: string; glow: string; glowSize: number };
 	sectionGlow: string;
 } = {
-	/** The hero's DivineFlow. */
-	background: crimson,
 	/**
-	 * The underline under hovered menu links: the same red as the background, so it always matches.
-	 * Replace `crimson` with your own palette (same shape as above) to give it a colour of its own.
+	 * The hero's DivineFlow. Each of these can also be your own palette (see DivineFlowPalette), or
+	 * one of DivineFlow's themes, if you want it to differ from the main colour.
 	 */
-	menuUnderline: crimson,
+	background: flow,
+	/** The underline under hovered menu links. */
+	menuUnderline: flow,
 	/** The underline under the current section in the side nav. */
-	sideNavUnderline: crimson,
+	sideNavUnderline: flow,
 	/** A side nav label's fill while hovered. Any CSS colour. */
-	sideNavHover: "rgb(245 236 236 / 0.4)",
+	sideNavHover: rgb(shades.text, 0.4),
 	/**
-	 * The logo while hovered: DivineFlow's colours by default, a filament's light red core with the
-	 * red glow around it. `glowSize` is the glow's blur in px.
+	 * The logo while hovered: a DivineFlow filament's light core with its glow around it. `glowSize`
+	 * is the glow's blur in px.
 	 */
 	logoHover: {
-		color: rgb(crimson.core),
-		glow: rgb(crimson.glow, 0.9),
+		color: rgb(shades.core),
+		glow: rgb(shades.glow, 0.9),
 		glowSize: 8,
 	},
 	/**
-	 * The dark red glow behind every section after the hero. It stays put while the page scrolls.
-	 * Any CSS colour; the alpha sets how strong it is.
+	 * The glow behind every section after the hero. It stays put while the page scrolls. Any CSS
+	 * colour; the alpha sets how strong it is.
 	 */
-	sectionGlow: "rgb(72 8 16 / 0.62)",
+	sectionGlow: rgb(shades.sectionGlow, 0.62),
 };
 
 /* ------------------------------------------------------------------------------------------------

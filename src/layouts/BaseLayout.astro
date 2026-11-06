@@ -6,7 +6,8 @@ import "../styles/global.css";
 // swapping (and re-laying out) in the middle of the intro animations.
 import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
-import { animation, colors } from "../site.config";
+import { animation, colors, motion, shades } from "../site.config";
+import { hex, shadeVariables } from "../scripts/brand";
 
 interface Props {
 	title?: string;
@@ -26,6 +27,12 @@ const timings = {
 	"--menu-links": s(animation.menu.links),
 	"--menu-link-stagger": s(animation.menu.linkStagger),
 	"--menu-button-duration": s(animation.menu.button),
+	"--motion-quick": s(motion.quick),
+	"--motion-hover": s(motion.hover),
+	"--motion-draw": s(motion.draw),
+	"--motion-glide": s(motion.glide),
+	"--ease-out": motion.ease.out.css,
+	"--ease-in-out": motion.ease.inOut.css,
 	"--side-nav-fill": s(animation.sideNav.fill),
 	"--side-nav-fill-ease": animation.sideNav.fillEase,
 	"--side-nav-hover": colors.sideNavHover,
@@ -39,12 +46,12 @@ const timings = {
 ---
 
 <!doctype html>
-<html lang="en" style={timings}>
+<html lang="en" style={{ ...shadeVariables(shades), ...timings }}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
-		<meta name="theme-color" content="#080405" />
+		<meta name="theme-color" content={hex(shades.bg)} />
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />

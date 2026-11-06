@@ -5,33 +5,65 @@
 :root {
 	color-scheme: dark;
 
+	/* Every colour, as "r g b", worked out from the main colour (brand in site.config.ts; BaseLayout
+	   sets these from it). These defaults are the original red. Use them as rgb(var(--shade-x)) or,
+	   see-through, rgb(var(--shade-x) / 0.5). */
+	--shade-bloom: 150 14 26;
+	--shade-glow: 186 24 38;
+	--shade-core: 255 200 200;
+	--shade-shimmer: 230 96 104;
+	--shade-sparkle: 255 236 236;
+	--shade-sparkle-halo: 214 60 72;
+	--shade-flare: 250 160 164;
+	--shade-speck: 196 44 56;
+	--shade-origin-inner: 214 44 56;
+	--shade-origin-outer: 100 8 18;
+	--shade-ember: 230 80 86;
+	--shade-accent: 200 32 43;
+	--shade-accent-hover: 176 26 36;
+	--shade-accent-soft: 240 122 130;
+	--shade-bright: 255 77 88;
+	--shade-halo: 230 40 55;
+	--shade-name-top: 130 16 28;
+	--shade-name-bottom: 60 6 12;
+	--shade-name-fill: 110 14 24;
+	--shade-name-stroke: 255 70 82;
+	--shade-hero-glow: 190 28 40;
+	--shade-hero-glow-edge: 120 14 22;
+	--shade-section-glow: 72 8 16;
+	--shade-section-shadow: 40 4 9;
+	--shade-bg: 8 4 5;
+	--shade-text: 245 236 236;
+	--shade-text-soft: 217 201 202;
+	--shade-text-muted: 168 151 154;
+
 	/* Timings. BaseLayout overrides these from src/site.config.ts; these are only fallbacks. */
 	--hover-duration: 0.2s;
 	--menu-fade: 0.45s;
 	--menu-links: 0.75s;
 	--menu-link-stagger: 0.06s;
 	--menu-button-duration: 0.4s;
-	--side-nav-fill: 0.9s;
-	--side-nav-fill-ease: cubic-bezier(0.65, 0, 0.35, 1);
-	--side-nav-hover: rgb(245 236 236 / 0.4);
-	--logo-hover-duration: 0.5s;
+	--side-nav-fill: 0.45s;
+	--side-nav-fill-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--side-nav-hover: rgb(var(--shade-text) / 0.4);
+	--logo-hover-duration: 0.45s;
 	--logo-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
-	--logo-hover-color: rgb(255 200 200);
-	--logo-hover-glow: rgb(186 24 38 / 0.9);
+	--logo-hover-color: rgb(var(--shade-core));
+	--logo-hover-glow: rgb(var(--shade-glow) / 0.9);
 	--logo-hover-glow-size: 8px;
 
 	/* The sections' dark red glow. BaseLayout sets it from site.config.ts. */
-	--section-glow: rgb(72 8 16 / 0.62);
+	--section-glow: rgb(var(--shade-section-glow) / 0.62);
 
 	/* Colour */
-	--color-bg: #080405;
-	--color-text: #f5ecec;
-	--color-text-soft: #d9c9ca;
-	--color-text-muted: #a8979a;
-	--color-accent: #c8202b;
-	--color-accent-soft: #f07a82;
-	--color-line: rgb(245 236 236 / 0.22);
-	--color-line-strong: rgb(245 236 236 / 0.35);
+	--color-bg: rgb(var(--shade-bg));
+	--color-text: rgb(var(--shade-text));
+	--color-text-soft: rgb(var(--shade-text-soft));
+	--color-text-muted: rgb(var(--shade-text-muted));
+	--color-accent: rgb(var(--shade-accent));
+	--color-accent-soft: rgb(var(--shade-accent-soft));
+	--color-line: rgb(var(--shade-text) / 0.22);
+	--color-line-strong: rgb(var(--shade-text) / 0.35);
 
 	/* Type */
 	--font-display: "Archivo Variable", "Archivo", system-ui, sans-serif;
@@ -47,6 +79,13 @@
 
 	/* Motion */
 	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+	/* The site's shared pace (motion in site.config.ts; BaseLayout sets these from it). */
+	--motion-quick: 0.2s;
+	--motion-hover: 0.45s;
+	--motion-draw: 0.9s;
+	--motion-glide: 1.1s;
 }
 
 *,
@@ -89,7 +128,11 @@ body {
 	pointer-events: none;
 	background:
 		radial-gradient(ellipse 85% 65% at 50% -8%, var(--section-glow), transparent 72%),
-		radial-gradient(ellipse 60% 45% at 50% 108%, rgb(40 4 9 / 0.35), transparent 70%);
+		radial-gradient(
+			ellipse 60% 45% at 50% 108%,
+			rgb(var(--shade-section-shadow) / 0.35),
+			transparent 70%
+		);
 }
 
 img,
@@ -134,5 +177,45 @@ button {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+}
+
+/*
+ * Text links (like "Lineup ↗" in About): a red underline draws in from the left and the arrow nudges
+ * up and to the right, at the shared hover pace.
+ */
+.text-link {
+	background-image: linear-gradient(var(--color-accent), var(--color-accent));
+	background-repeat: no-repeat;
+	background-position: 0 100%;
+	background-size: 0% 1px;
+	padding-bottom: 3px;
+	color: inherit;
+	text-decoration: none;
+	transition:
+		background-size var(--motion-hover) var(--ease-out),
+		color var(--motion-hover) var(--ease-out);
+}
+
+.text-link:hover,
+.text-link:focus-visible {
+	background-size: 100% 1px;
+	color: #fff;
+}
+
+.text-link__arrow {
+	display: inline-block;
+	transition: translate var(--motion-hover) var(--ease-out);
+}
+
+.text-link:hover .text-link__arrow,
+.text-link:focus-visible .text-link__arrow {
+	translate: 2px -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.text-link,
+	.text-link__arrow {
+		transition: none;
 	}
 }

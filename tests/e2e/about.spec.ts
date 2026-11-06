@@ -1,6 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
-import { FILL_EMPTY, FILL_FULL } from "../../src/scripts/about";
-import { about, colors, sections, sideNavUnderlineFlow } from "../../src/site.config";
+import { FILL_EMPTY } from "../../src/scripts/about";
+
+/** FILL_FULL as the browser reports it back. */
+const FILL_FULL_COMPUTED = "inset(-30% -8%)";
+import {
+	about,
+	brand,
+	colors,
+	motion,
+	sections,
+	sideNavUnderlineFlow,
+} from "../../src/site.config";
 
 const SIDE_NAV = "(min-width: 1024px) and (min-height: 600px)";
 const hasSideNav = (page: Page) => page.evaluate((q) => matchMedia(q).matches, SIDE_NAV);
@@ -45,7 +55,7 @@ test.describe("about", () => {
 
 		await page.locator("#about").scrollIntoViewIfNeeded();
 		// Then wiped in, reaching past the word on every side so no letter is left half filled.
-		await expect.poll(clip, { timeout: 6_000 }).toBe("inset(-30%)");
+		await expect.poll(clip, { timeout: 6_000 }).toBe(FILL_FULL_COMPUTED);
 		await expect
 			.poll(() =>
 				page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
@@ -53,11 +63,32 @@ test.describe("about", () => {
 			.toBe("1");
 	});
 
+	test("animates the Lineup link on hover at the shared hover pace", async ({ page }, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		await page.goto("/");
+		await page.locator("#about").scrollIntoViewIfNeeded();
+		const link = page.locator("#about .text-link");
+		const style = () =>
+			link.evaluate((el) => {
+				const cs = getComputedStyle(el);
+				return { underline: cs.backgroundSize, duration: cs.transitionDuration };
+			});
+		expect(await style()).toEqual({
+			underline: "0% 1px",
+			duration: `${motion.hover}s, ${motion.hover}s`,
+		});
+		await link.hover();
+		// Not instant: partway a moment after the pointer arrives, then fully drawn.
+		await page.waitForTimeout(60);
+		expect((await style()).underline).not.toBe("100% 1px");
+		await expect.poll(async () => (await style()).underline).toBe("100% 1px");
+	});
+
 	test("shows everything straight away for reduced motion", async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: "reduce" });
 		await page.goto("/");
 		const fill = page.locator("#about [data-fill]").first();
-		expect(await fill.evaluate((el) => getComputedStyle(el).clipPath)).toBe("inset(-30%)");
+		expect(await fill.evaluate((el) => getComputedStyle(el).clipPath)).toBe(FILL_FULL_COMPUTED);
 		expect(
 			await page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
 		).toBe("1");
@@ -140,8 +171,8 @@ test.describe("side nav", () => {
 		// Slow enough to see it sweep: still going just after the pointer arrives.
 		await link.hover();
 		await page.waitForTimeout(150);
-		expect(await clip()).not.toBe("inset(-30%)");
-		await expect.poll(clip).toBe("inset(-30%)");
+		expect(await clip()).not.toBe(FILL_FULL_COMPUTED);
+		await expect.poll(clip).toBe(FILL_FULL_COMPUTED);
 	});
 });
 
@@ -222,5 +253,20 @@ test.describe("logo hover", () => {
 
 		await page.mouse.move(700, 600);
 		await expect.poll(async () => (await style()).color).toBe("rgb(245, 236, 236)");
+	});
+});
+
+test.describe("main colour", () => {
+	test("sets every colour on the page from the one in site.config.ts", async ({ page }) => {
+		await page.goto("/");
+		const accent = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue("--shade-accent").trim(),
+		);
+		expect(accent).toBe(brand.join(" "));
+		// Buttons use it.
+		const button = page.locator(".hero").getByRole("link", { name: "View my work" });
+		expect(await button.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+			`rgb(${brand.join(", ")})`,
+		);
 	});
 });

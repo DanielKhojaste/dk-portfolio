@@ -44,9 +44,11 @@ const headline = about.headline.replace(/[[\]]/g, "");
 						<dt>{fact.label}</dt>
 						<dd>
 							{fact.href ? (
-								<a href={fact.href} target="_blank" rel="noopener noreferrer">
-									{fact.value}
-									<span aria-hidden="true"> ↗</span>
+								<a class="text-link" href={fact.href} target="_blank" rel="noopener noreferrer">
+									{fact.value}{" "}
+									<span class="text-link__arrow" aria-hidden="true">
+										↗
+									</span>
 									<span class="sr-only">(opens in a new tab)</span>
 								</a>
 							) : (
@@ -111,29 +113,29 @@ const headline = about.headline.replace(/[[\]]/g, "");
 	}
 
 	/* Red words: the word outlined, with a solid red copy on top that GSAP wipes in from the left with
-	   a clip-path (scripts/about.ts). The clip reaches past the word's box on every side, so letters
-	   that overhang it (the F's stem, the glow) are covered too. Without JS the copy simply shows. */
+	   a clip-path (scripts/about.ts). The clip reaches a little past the word's box, so letters that
+	   overhang it (the F's stem) are covered too. Without JS the copy simply shows. */
 	.about__highlight {
 		position: relative;
 		color: transparent;
-		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) #ff4d58;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
 	}
 
 	.about__fill {
 		position: absolute;
 		inset: 0;
 		white-space: nowrap;
-		color: #ff4d58;
+		color: rgb(var(--shade-bright));
 		-webkit-text-stroke: inherit;
 		text-shadow:
-			0 0 22px rgb(230 40 55 / 0.55),
-			0 0 4px rgb(255 77 88 / 0.35);
-		clip-path: inset(-30% -30% -30% -30%);
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
 	}
 
 	@supports not (-webkit-text-stroke: 1px) {
 		.about__highlight {
-			color: #ff4d58;
+			color: rgb(var(--shade-bright));
 		}
 	}
 
@@ -173,16 +175,6 @@ const headline = about.headline.replace(/[[\]]/g, "");
 		font-size: 15px;
 		text-transform: uppercase;
 		color: var(--color-text);
-	}
-
-	.about__fact a {
-		border-radius: 3px;
-		text-decoration: none;
-		transition: color var(--hover-duration) var(--ease-out);
-	}
-
-	.about__fact a:hover {
-		color: #ff4d58;
 	}
 
 	@media (max-width: 767px) {

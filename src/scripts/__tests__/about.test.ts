@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
 	about,
+	animation,
 	colors,
 	menuUnderlineFlow,
+	motion,
 	sections,
 	sideNavUnderlineFlow,
 } from "../../site.config";
+import { FILL_EMPTY, FILL_FULL } from "../about";
 import { splitHighlights } from "../highlights";
 import { sectionAt } from "../sections";
 import { underlineHeight, underlineOptions } from "../underline-options";
@@ -95,5 +98,31 @@ describe("sections", () => {
 		expect(sectionAt(tops, 449, 900)).toBe(0);
 		expect(sectionAt(tops, 450, 900)).toBe(1);
 		expect(sectionAt(tops, 2700, 900)).toBe(3);
+	});
+});
+
+describe("motion", () => {
+	it("goes quick, hover, draw, glide: each step slower than the last", () => {
+		expect(motion.quick).toBeLessThan(motion.hover);
+		expect(motion.hover).toBeLessThan(motion.draw);
+		expect(motion.draw).toBeLessThan(motion.glide);
+	});
+
+	it("drives the hovers, fills and glides from the shared pace", () => {
+		expect(animation.sideNav.fill).toBe(motion.hover);
+		expect(animation.logoHover.duration).toBe(motion.hover);
+		expect(animation.about.highlight).toBe(motion.draw);
+		expect(animation.scroll.smooth).toBe(motion.glide);
+		expect(animation.hover).toBe(motion.quick);
+		// Hovers answer the pointer straight away: an "out" ease, never one that starts slowly.
+		expect(animation.sideNav.fillEase).toBe(motion.ease.out.css);
+		expect(animation.logoHover.ease).toBe(motion.ease.out.css);
+	});
+
+	it("wipes the red words across the word itself, not empty space", () => {
+		const right = (inset: string) => Number(inset.split(" ")[1]!.replace("%", ""));
+		// Starts at the word's left edge (plus a little overhang) and ends just past its right edge.
+		expect(right(FILL_EMPTY)).toBeLessThanOrEqual(110);
+		expect(right(FILL_FULL)).toBeGreaterThanOrEqual(-10);
 	});
 });
