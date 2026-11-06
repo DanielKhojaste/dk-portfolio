@@ -14,24 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   own npm package; copyright Daniel Khojaste).
 - About section, right under the hero and one screen tall: a short headline ("I build web apps that
   are fast, look sharp and hold up."), one line of text and three facts (based in, focus, building).
-  When it comes into view the headline lights up word by word and the red words fill in (GSAP). Copy
-  lives in `site.config.ts`; `[brackets]` mark the red words.
-- Side nav on desktop, in place of the menu button: the sections down the left, outlined in the hero's
-  font, filling with red on hover. The current section is filled white with a glowing marker and a
-  DivineFlow underline with its own, flatter settings (`sideNavUnderlineFlow`). Hidden on the hero;
-  phones and tablets keep the menu button.
-- Paging: a wheel flick, swipe, arrow key, Page Up/Down or space moves one section with a smooth GSAP
-  scroll, and section links glide there. Only on while every section fits on the screen.
+  When it comes into view the headline lights up word by word and the red words are wiped in from the
+  left (GSAP, a clip-path over a solid copy, so every letter fills completely). Copy lives in
+  `site.config.ts`; `[brackets]` mark the red words.
+- Side nav on desktop, in place of the menu button: the sections down the left in outlined caps, which
+  fill slowly with soft white on hover (`colors.sideNavHover`, `animation.sideNav.fill`). The current
+  section is filled white with a glowing marker and a DivineFlow underline with its own, flatter
+  settings (`sideNavUnderlineFlow`). Hidden on the hero; phones and tablets keep the menu button.
+- Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`): the page glides to a stop, and section
+  links glide to their section. Off for reduced motion and, by default, on touch screens.
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
-- Hovering the DK logo writes the signature over it again in red.
+- Hovering the DK logo turns it DivineFlow's light red with a red glow (`colors.logoHover`,
+  `animation.logoHover`).
 - Settings for all of the above in `site.config.ts` (timings, side nav marker, underline settings per
   device).
 
 ### Changed
 
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
-- Sections run Intro, About, Work, Skills, Contact; every section is one screen tall and section
-  headings no longer have numbers.
+- Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
+  section headings no longer have numbers.
 - The temporary Work section is shorter so it fits on one desktop screen.
 
 ## [0.1.0-alpha.1] - 2026-10-31
