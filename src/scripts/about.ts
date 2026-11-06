@@ -1,7 +1,7 @@
 /**
  * About's entrance (GSAP): when the section comes into view, the headline's words light up one after
  * another, then each red word fills in from the left (its solid copy is wiped in with a clip-path),
- * then the text and facts slide in. Runs once. Reduced motion shows everything straight away.
+ * then the facts slide in. The text under the headline is there from the start. Runs once. Reduced motion shows everything straight away.
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";

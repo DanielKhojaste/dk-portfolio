@@ -1,8 +1,8 @@
 ---
 /**
  * About: one short headline, a line of text and three facts, in a single screen. When it comes into
- * view the headline's words light up one after another, then the red words fill in (GSAP;
- * scripts/about.ts). Copy lives in site.config.ts.
+ * view the headline's words light up one after another, then the red words fill in, then the facts
+ * slide in (GSAP; scripts/about.ts). The text under the headline is there from the start. Copy lives in site.config.ts.
  */
 import { about } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
@@ -36,7 +36,7 @@ const headline = about.headline.replace(/[[\]]/g, "");
 				))
 			}
 		</h2>
-		<p class="about__text" data-about-rest>{about.text}</p>
+		<p class="about__text">{about.text}</p>
 		<dl class="about__facts" data-about-rest>
 			{
 				about.facts.map((fact) => (
