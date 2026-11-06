@@ -44,8 +44,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text link hover (`.text-link`): the same glow as the side nav's labels, at the same pace, without
   the movement. The Lineup link in About uses it.
 
+- Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
+  4 seconds on the hero (`animation.scrollHint.delay`), with a glowing dot sliding down a short
+  line; it hides once you scroll and takes you to About when clicked.
+
 ### Changed
 
+- The hero's "View my work" and "Get in touch" buttons are gone; the scroll prompt takes their place.
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
 - Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
   section headings no longer have numbers.
