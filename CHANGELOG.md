@@ -28,6 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `animation.logoHover`).
 - Settings for all of the above in `site.config.ts` (timings, side nav marker, underline settings per
   device).
+- One main colour (`brand` in `site.config.ts`) that every colour is worked out from
+  (`scripts/brand.ts`): buttons, highlights, glows, the hero's last name, the section glow, the
+  logo hover, every DivineFlow palette, and a faint tint in the background and text. Each shade
+  turns and saturates with the main colour but keeps its designed lightness. In CSS they're
+  `--shade-*` variables.
+- Shared timings (`motion` in `site.config.ts`: quick, hover, draw, glide, plus matching CSS and
+  GSAP eases), which the hovers, fills, underlines and smooth scrolling now use. In CSS:
+  `--motion-*`, `--ease-out` and `--ease-in-out`.
+- Text link hover (`.text-link`): a red underline draws in from the left and the arrow nudges up and
+  to the right. The Lineup link in About uses it.
 
 ### Changed
 
@@ -35,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
   section headings no longer have numbers.
 - The temporary Work section is shorter so it fits on one desktop screen.
+- The side nav fill and About's red-word wipe start on the first letter: the wipe no longer crosses
+  empty space first, and hover fills use an ease that starts at full speed.
 
 ## [0.1.0-alpha.1] - 2026-10-31
 
