@@ -14,9 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   own npm package; copyright Daniel Khojaste).
 - About section, right under the hero and one screen tall: a short headline ("I build web apps that
   are fast, look sharp and hold up."), one line of text and three facts (based in, focus, building).
-  When it comes into view the headline lights up word by word and the red words are wiped in from the
-  left (GSAP, a clip-path over a solid copy, so every letter fills completely), 0.9s each with a
-  0.2s pause between them (`animation.about.highlight`, `highlightGap`). Copy lives in
+  The text under the headline is there from the start. When it comes into view the headline lights
+  up word by word, the red words are wiped in from the left (GSAP, a clip-path over a solid copy, so
+  every letter fills completely), 0.9s each with a 0.2s pause between them
+  (`animation.about.highlight`, `highlightGap`), and then the facts slide in. Copy lives in
   `site.config.ts`; `[brackets]` mark the red words.
 - Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
@@ -28,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`): the page glides to a stop, and section
   links glide to their section. Off for reduced motion and, by default, on touch screens.
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
+- One extra DivineFlow strand through the middle of the hero, with the menu underline's thickness,
+  brightness, sparkles and speed (`heroStrand`, which follows `menuUnderlineFlow`). It draws in with
+  the background.
 - Hovering the DK logo makes it glow in the main colour and grow a touch (`colors.logoHover`,
   `animation.logoHover`).
 - Settings for all of the above in `site.config.ts` (timings, side nav marker, underline settings per
@@ -45,9 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the movement. The Lineup link in About uses it.
 
 - Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
-  4 seconds on the hero (`animation.scrollHint.delay`), low on the screen, with a short DivineFlow
-  strand under it that draws itself downwards on a loop (`scrollHintFlow`,
-  `animation.scrollHint.loop`). It hides once you scroll and takes you to About when clicked.
+  4 seconds on the hero (`animation.scrollHint.delay`), one line of small caps near the bottom edge.
+  It hides once you scroll and takes you to About when clicked.
 
 ### Changed
 

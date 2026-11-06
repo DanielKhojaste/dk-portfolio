@@ -3,11 +3,7 @@ import { Picture } from "astro:assets";
 import { throne, throneSizes, throneWidths } from "./hero-image";
 import DivineFlow from "./DivineFlow.astro";
 
-import { animation, backgroundFlow, colors, hero, profile, scrollHintFlow } from "../site.config";
-import { underlineOptions } from "../scripts/underline-options";
-
-/** The prompt's strand: drawn sideways like an underline, in a box turned upright (see CSS). */
-const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
+import { animation, backgroundFlow, colors, hero, heroStrand, profile } from "../site.config";
 ---
 
 <section class="hero" id="intro" aria-labelledby="hero-title">
@@ -19,6 +15,16 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 		options={{ theme: colors.background, ...backgroundFlow.desktop }}
 		compactOptions={backgroundFlow.compact}
 	/>
+
+	<!-- One strand through the middle with the menu underline's sparkles (heroStrand). -->
+	<div class="hero__strand" aria-hidden="true">
+		<DivineFlow
+			reveal={animation.background}
+			fadeIn={animation.background.fadeIn}
+			options={{ theme: colors.background, ...backgroundFlow.desktop, ...heroStrand }}
+			compactOptions={{ ...backgroundFlow.compact, ...heroStrand }}
+		/>
+	</div>
 
 	<h1 id="hero-title" class="hero__name">
 		<span class="hero__first">Daniel</span>
@@ -80,28 +86,16 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 		data-scroll-hint
 		style={`--hint-fade: ${animation.scrollHint.fade}s`}
 	>
-		<span class="hero__hint-label">{hero.scrollHint}</span>
-		<span class="hero__hint-strand" aria-hidden="true">
-			<span class="hero__hint-turn" data-hint-strand>
-				<DivineFlow manual fadeIn={0} options={hintStrand} />
-			</span>
-		</span>
+		{hero.scrollHint}
 	</a>
 </section>
 
 <script>
 	import { animation } from "../site.config";
-	import { setupScrollHint, strandLoop } from "../scripts/scroll-hint";
+	import { setupScrollHint } from "../scripts/scroll-hint";
 
 	const hint = document.querySelector<HTMLElement>("[data-scroll-hint]");
-	const strand = hint?.querySelector<HTMLElement>("[data-hint-strand] [data-divine-flow]");
-	if (hint)
-		setupScrollHint(
-			hint,
-			animation.scrollHint,
-			window,
-			strand ? strandLoop(strand, animation.scrollHint.loop) : undefined,
-		);
+	if (hint) setupScrollHint(hint, animation.scrollHint);
 </script>
 
 <style>
@@ -217,6 +211,14 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 		user-select: none;
 	}
 
+	/* Same layer as the background DivineFlow, just above it. */
+	.hero__strand {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
 	.hero__vignette {
 		position: absolute;
 		inset: 0;
@@ -307,23 +309,26 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 		translate: 0.08em -0.08em;
 	}
 
-	/* Scroll prompt, where the buttons used to be: a label over a short line with a glowing dot
-	   sliding down it. Hidden until scripts/scroll-hint.ts shows it. */
+	/* Scroll prompt, where the buttons used to be: one line of small caps near the bottom edge.
+	   Hidden until scripts/scroll-hint.ts shows it. */
 	.hero__hint {
 		--hint-fade: 0.8s;
 
 		position: absolute;
 		left: 50%;
-		bottom: 2.4cqh;
+		bottom: max(14px, 2.2cqh);
 		z-index: 4;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 12px;
-		padding: 6px 12px;
-		translate: -50% 10px;
+		padding: 8px 12px;
+		translate: -50% 8px;
 		opacity: 0;
 		visibility: hidden;
+		white-space: nowrap;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		/* Letter spacing adds a gap after the last letter; this evens it out so it sits centred. */
+		text-indent: 0.3em;
+		text-transform: uppercase;
 		color: var(--color-text-muted);
 		text-decoration: none;
 		transition:
@@ -347,39 +352,6 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 		text-shadow: var(--text-hover-glow);
 	}
 
-	.hero__hint-label {
-		white-space: nowrap;
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.3em;
-		text-transform: uppercase;
-		/* Letter spacing adds a gap after the last letter; even it out so the label sits centred. */
-		margin-right: -0.3em;
-	}
-
-	/* The strand: DivineFlow draws across, so it sits in a box turned upright, its start at the top.
-	   Both ends fade out. scripts/scroll-hint.ts loops it. */
-	.hero__hint-strand {
-		--strand-length: 64px;
-		--strand-width: 36px;
-
-		position: relative;
-		width: var(--strand-width);
-		height: var(--strand-length);
-		-webkit-mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
-		mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
-	}
-
-	.hero__hint-turn {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: var(--strand-length);
-		height: var(--strand-width);
-		transform-origin: 0 0;
-		transform: translateX(var(--strand-width)) rotate(90deg);
-	}
-
 	/* ---------- Compact: phones, tablets and portrait screens ---------- */
 	/*
 	 * Compact: phones, tablets and portrait screens. Same composition as desktop: name at the top,
@@ -391,7 +363,7 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
 		.hero {
 			--hint-bottom: max(10px, 1.4cqh);
-			--hint-height: 74px;
+			--hint-height: 30px;
 
 			min-height: 480px;
 		}
@@ -459,16 +431,9 @@ const hintStrand = underlineOptions(scrollHintFlow, colors.scrollHint);
 
 		.hero__hint {
 			bottom: var(--hint-bottom);
-			gap: 8px;
-		}
-
-		.hero__hint-label {
 			font-size: 10px;
 			letter-spacing: 0.24em;
-		}
-
-		.hero__hint-strand {
-			--strand-length: 48px;
+			text-indent: 0.24em;
 		}
 	}
 

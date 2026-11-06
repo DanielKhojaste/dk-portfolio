@@ -67,17 +67,18 @@ test.describe("about", () => {
 		await page.goto("/");
 		const fill = page.locator("#about [data-fill]").first();
 		const clip = () => fill.evaluate((el) => getComputedStyle(el).clipPath);
-		// Waiting below the fold: the red copy is clipped away to nothing.
+		const opacity = (selector: string) =>
+			page.locator(selector).evaluate((el) => getComputedStyle(el).opacity);
+		// Waiting below the fold: the red copy is clipped away to nothing and the facts are hidden, but
+		// the text under the headline is there from the start.
 		expect(await clip()).toBe(FILL_EMPTY);
+		expect(await opacity("#about .about__facts")).toBe("0");
+		expect(await opacity("#about .about__text")).toBe("1");
 
 		await page.locator("#about").scrollIntoViewIfNeeded();
 		// Then wiped in, reaching past the word on every side so no letter is left half filled.
 		await expect.poll(clip, { timeout: 6_000 }).toBe(FILL_FULL_COMPUTED);
-		await expect
-			.poll(() =>
-				page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
-			)
-			.toBe("1");
+		await expect.poll(() => opacity("#about .about__facts")).toBe("1");
 	});
 
 	test("lights the Lineup link up with a glow on hover, at the shared hover pace", async ({
@@ -115,7 +116,7 @@ test.describe("about", () => {
 		const fill = page.locator("#about [data-fill]").first();
 		expect(await fill.evaluate((el) => getComputedStyle(el).clipPath)).toBe(FILL_FULL_COMPUTED);
 		expect(
-			await page.locator("#about .about__text").evaluate((el) => getComputedStyle(el).opacity),
+			await page.locator("#about .about__facts").evaluate((el) => getComputedStyle(el).opacity),
 		).toBe("1");
 	});
 
@@ -318,7 +319,10 @@ test.describe("logo hover", () => {
 		// Stays white, with a wide glow and a tight bright one in the main colour.
 		expect(hovered.color).toBe("rgb(245, 236, 236)");
 		expect(hovered.filter.match(/drop-shadow/g)).toHaveLength(2);
-		expect(hovered.filter).toContain(`${colors.logoHover.glowSize}px`);
+		// The glow finishes growing on its own transition, so wait for it rather than read it mid-way.
+		await expect
+			.poll(async () => (await style()).filter)
+			.toContain(`${colors.logoHover.glowSize}px`);
 
 		await page.mouse.move(700, 600);
 		await expect.poll(async () => (await style()).filter).toBe("none");
@@ -336,9 +340,10 @@ test.describe("main colour", () => {
 		expect(
 			await page.locator(".hero__figure img").evaluate((el) => getComputedStyle(el).filter),
 		).toBe("none");
-		// The scroll prompt's dot uses the bright shade worked out from it.
-		expect(
-			await page.locator(".hero__hint-dot").evaluate((el) => getComputedStyle(el).backgroundColor),
-		).toBe(`rgb(${shades.bright.join(", ")})`);
+		// The other shades are worked out from it.
+		const bright = await page.evaluate(() =>
+			getComputedStyle(document.documentElement).getPropertyValue("--shade-bright").trim(),
+		);
+		expect(bright).toBe(shades.bright.join(" "));
 	});
 });

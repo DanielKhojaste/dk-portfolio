@@ -195,11 +195,6 @@ export const animation = {
 		delay: 4,
 		/** Its fade in and out. */
 		fade: 0.8,
-		/**
-		 * One loop of the DivineFlow strand under it: it draws down, fades, and starts again. The
-		 * strand's look is scrollHintFlow below.
-		 */
-		loop: 2.4,
 	},
 
 	/** The About section, once it comes into view. */
@@ -212,7 +207,7 @@ export const animation = {
 		highlight: motion.draw,
 		/** Pause between one red word finishing and the next starting. */
 		highlightGap: 0.2,
-		/** The text and facts sliding in last. */
+		/** The facts (based in, focus, building) sliding in last. The text above them is there from the start. */
 		rest: 0.8,
 	},
 
@@ -250,7 +245,6 @@ export const colors: {
 	background: DivineFlowPalette;
 	menuUnderline: DivineFlowPalette;
 	sideNavUnderline: DivineFlowPalette;
-	scrollHint: DivineFlowPalette;
 	textHover: { color: string; glow: string };
 	logoHover: { color: string; glow: string; glowSize: number; core: string };
 	sectionGlow: string;
@@ -264,8 +258,6 @@ export const colors: {
 	menuUnderline: flow,
 	/** The underline under the current section in the side nav. */
 	sideNavUnderline: flow,
-	/** The strand under the hero's scroll prompt. */
-	scrollHint: flow,
 	/**
 	 * Hovered text (side nav labels, text links): its colour, and the glow around it as a CSS
 	 * text-shadow, in the main colour.
@@ -401,17 +393,21 @@ export const sideNavUnderlineFlow: UnderlineFlow = {
 };
 
 /**
- * The short strand under the hero's "Scroll to see more" prompt, drawing itself downwards on a loop
- * (animation.scrollHint). Same settings as an underline; "left" here means it starts at the top.
+ * One extra strand through the middle of the hero, on top of the background, with the menu
+ * underline's look (menuUnderlineFlow): its thickness, brightness, sparkles and glide speed. Change
+ * those there and this strand follows; set any of them here instead to make it differ. It takes its
+ * shape and colours from the background (backgroundFlow, colors.background) and draws in with it.
  */
-export const scrollHintFlow: UnderlineFlow = {
-	from: "left",
-	wave: 2,
-	waves: 1,
-	thickness: 2.2,
-	alpha: 1,
-	sway: 0,
-	travelSpeed: 6.0,
-	motion: backgroundFlow.desktop.motion,
-	sparkleCount: 10,
+export const heroStrand: FlowOptions = {
+	thickness: menuUnderlineFlow.thickness,
+	alpha: menuUnderlineFlow.alpha,
+	travelSpeed: menuUnderlineFlow.travelSpeed,
+	sparkleCount: menuUnderlineFlow.sparkleCount,
+	/** Just the one strand each side of the centre, with no strays or embers of its own. */
+	lineCount: 1,
+	scatterCount: 0,
+	spread: 0,
+	emberCount: 0,
+	/** A different seed from the background, so it isn't a copy of one of its strands. */
+	seed: 4242,
 };

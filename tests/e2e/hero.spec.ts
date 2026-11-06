@@ -3,6 +3,7 @@ import {
 	animation,
 	colors,
 	hero as heroCopy,
+	heroStrand,
 	menuUnderlineFlow,
 	sections,
 } from "../../src/site.config";
@@ -203,10 +204,10 @@ test.describe("hero", () => {
 			2,
 		);
 
-		// A DivineFlow strand under it, mounted once it shows and drawing downwards.
-		await expect(hint.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
-		// Low on the hero.
-		expect(rect.y + rect.height).toBeGreaterThan(page.viewportSize()!.height * 0.9);
+		// Just text, close to the bottom edge.
+		await expect(hint.locator("canvas, [data-divine-flow]")).toHaveCount(0);
+		expect(rect.y).toBeGreaterThan(page.viewportSize()!.height * 0.9);
+		expect(rect.y + rect.height).toBeLessThanOrEqual(page.viewportSize()!.height);
 
 		// Gone once you scroll.
 		await page.evaluate(() => window.scrollTo(0, 400));
@@ -240,6 +241,28 @@ test.describe("hero", () => {
 		const size = await canvas.evaluate((el: HTMLCanvasElement) => [el.width, el.height]);
 		expect(size[0]).toBeGreaterThan(0);
 		expect(size[1]).toBeGreaterThan(0);
+	});
+
+	test("runs one extra strand through the middle with the menu underline's sparkles", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const strand = page.locator(".hero__strand > [data-divine-flow]");
+		await expect(strand).toHaveCount(1);
+		await expect(strand).toHaveAttribute("data-flow-ready", "true");
+		// Drawn in with the background, not on its own schedule.
+		const background = page.locator(".hero > [data-divine-flow]");
+		expect(await strand.getAttribute("data-reveal")).toBe(
+			await background.getAttribute("data-reveal"),
+		);
+		for (const attr of ["data-options", "data-compact-options"]) {
+			const options = JSON.parse((await strand.getAttribute(attr)) ?? "{}");
+			expect(options).toMatchObject({ lineCount: 1, scatterCount: 0, emberCount: 0 });
+			for (const key of ["thickness", "alpha", "travelSpeed", "sparkleCount"] as const) {
+				expect(options[key]).toBe(menuUnderlineFlow[key]);
+				expect(heroStrand[key]).toBe(menuUnderlineFlow[key]);
+			}
+		}
 	});
 
 	test("has no console errors", async ({ page }) => {
