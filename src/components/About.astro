@@ -45,10 +45,7 @@ const headline = about.headline.replace(/[[\]]/g, "");
 						<dd>
 							{fact.href ? (
 								<a class="text-link" href={fact.href} target="_blank" rel="noopener noreferrer">
-									{fact.value}{" "}
-									<span class="text-link__arrow" aria-hidden="true">
-										↗
-									</span>
+									{fact.value} <span aria-hidden="true">↗</span>
 									<span class="sr-only">(opens in a new tab)</span>
 								</a>
 							) : (

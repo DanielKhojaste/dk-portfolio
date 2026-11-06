@@ -1,10 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { FILL_EMPTY } from "../../src/scripts/about";
-
-/** FILL_FULL as the browser reports it back. */
-const FILL_FULL_COMPUTED = "inset(-30% -8%)";
 import {
 	about,
+	animation,
 	brand,
 	colors,
 	motion,
@@ -12,8 +10,26 @@ import {
 	sideNavUnderlineFlow,
 } from "../../src/site.config";
 
+/** FILL_FULL as the browser reports it back. */
+const FILL_FULL_COMPUTED = "inset(-30% -8%)";
+
 const SIDE_NAV = "(min-width: 1024px) and (min-height: 600px)";
 const hasSideNav = (page: Page) => page.evaluate((q) => matchMedia(q).matches, SIDE_NAV);
+
+/** Scroll a section into view and wait for smooth scrolling to settle, so nothing moves under the mouse. */
+async function showSection(page: Page, id: string) {
+	await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const content = document.getElementById("smooth-content");
+				if (!content) return 0;
+				const offset = -new DOMMatrix(getComputedStyle(content).transform).m42;
+				return Math.round(Math.abs(offset - scrollY));
+			}),
+		)
+		.toBe(0);
+}
 
 test.describe("about", () => {
 	test("sits right under the hero, one screen tall, with no numbers and no buttons", async ({
@@ -63,25 +79,33 @@ test.describe("about", () => {
 			.toBe("1");
 	});
 
-	test("animates the Lineup link on hover at the shared hover pace", async ({ page }, info) => {
+	test("lights the Lineup link up with a glow on hover, at the shared hover pace", async ({
+		page,
+	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
-		await page.locator("#about").scrollIntoViewIfNeeded();
+		await showSection(page, "about");
+		// Let About's entrance finish: the facts slide up into place, which would move the link out
+		// from under the mouse.
+		await expect
+			.poll(() =>
+				page.locator("#about .about__facts").evaluate((el) => {
+					const cs = getComputedStyle(el);
+					return `${cs.opacity} ${new DOMMatrix(cs.transform).m42}`;
+				}),
+			)
+			.toBe("1 0");
 		const link = page.locator("#about .text-link");
 		const style = () =>
 			link.evaluate((el) => {
 				const cs = getComputedStyle(el);
-				return { underline: cs.backgroundSize, duration: cs.transitionDuration };
+				return { glow: cs.textShadow, duration: cs.transitionDuration };
 			});
-		expect(await style()).toEqual({
-			underline: "0% 1px",
-			duration: `${motion.hover}s, ${motion.hover}s`,
-		});
+		expect(await style()).toEqual({ glow: "none", duration: `${motion.hover}s, ${motion.hover}s` });
 		await link.hover();
-		// Not instant: partway a moment after the pointer arrives, then fully drawn.
-		await page.waitForTimeout(60);
-		expect((await style()).underline).not.toBe("100% 1px");
-		await expect.poll(async () => (await style()).underline).toBe("100% 1px");
+		await expect.poll(async () => (await style()).glow).toContain("14px");
+		// No movement: it lights up in place.
+		expect(await link.evaluate((el) => getComputedStyle(el).translate)).toBe("none");
 	});
 
 	test("shows everything straight away for reduced motion", async ({ page }) => {
@@ -138,14 +162,45 @@ test.describe("side nav", () => {
 		await expect(nav.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 		await expect(current.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 
-		await page.locator("#skills").scrollIntoViewIfNeeded();
-		await expect(nav.locator("[aria-current]")).toHaveAttribute("href", "#skills");
+		// Moving on: the new label fills and the old one empties at the underline's pace. Read straight
+		// after the change, while the old one is still emptying.
+		const change = await page.evaluate(() => {
+			document.dispatchEvent(new CustomEvent("section:change", { detail: "skills" }));
+			const pace = (id: string) =>
+				getComputedStyle(
+					document.querySelector(`[data-side-nav-link="${id}"] .side-nav__label`)!,
+				).transitionDuration.split(", ")[0];
+			return {
+				filling: pace("skills"),
+				emptying: pace("about"),
+				leaving: [...document.querySelectorAll<HTMLElement>("[data-leaving]")].map(
+					(el) => el.dataset.sideNavLink,
+				),
+			};
+		});
+		expect(change.filling).toBe(`${animation.sideNav.labelIn}s`);
+		expect(change.emptying).toBe(`${animation.sideNav.labelOut}s`);
+		expect(change.leaving).toContain("about");
+		expect(change.leaving).not.toContain("skills");
+		expect(animation.sideNav.labelIn).toBe(animation.sideNav.underlineIn);
+		expect(animation.sideNav.labelOut).toBe(animation.sideNav.underlineOut);
+		// Once it has emptied, hovering it goes back to the hover's pace.
+		await expect(nav.locator("[data-leaving]")).toHaveCount(0);
+		expect(
+			await nav
+				.locator('[data-side-nav-link="about"] .side-nav__label')
+				.evaluate((el) => getComputedStyle(el).transitionDuration.split(", ")[0]),
+		).toBe(`${animation.textHover.duration}s`);
+
+		// And it follows real scrolling.
+		await page.locator("#contact").scrollIntoViewIfNeeded();
+		await expect(nav.locator("[aria-current]")).toHaveAttribute("href", "#contact");
 
 		await page.evaluate(() => window.scrollTo(0, 0));
 		await expect(nav).toBeHidden();
 	});
 
-	test("uses its own, flatter underline and fills labels with soft white on hover", async ({
+	test("uses its own, flatter underline; labels glow, slide right and whiten their marker on hover", async ({
 		page,
 	}) => {
 		await page.goto("/");
@@ -160,19 +215,29 @@ test.describe("side nav", () => {
 		});
 		expect(options.theme).toEqual(colors.sideNavUnderline);
 
-		await page.locator("#about").scrollIntoViewIfNeeded();
+		await showSection(page, "about");
 		const link = page.locator('[data-side-nav-link="work"]');
-		const fill = link.locator(".side-nav__fill");
-		const clip = () => fill.evaluate((el) => getComputedStyle(el).clipPath);
-		expect(await clip()).toBe(FILL_EMPTY);
-		expect(await fill.evaluate((el) => getComputedStyle(el).color)).toBe(
-			"rgba(245, 236, 236, 0.4)",
-		);
-		// Slow enough to see it sweep: still going just after the pointer arrives.
+		const label = link.locator(".side-nav__label");
+		const marker = link.locator(".side-nav__marker");
+		const style = () =>
+			label.evaluate((el) => {
+				const cs = getComputedStyle(el);
+				return { color: cs.color, glow: cs.textShadow, translate: cs.translate };
+			});
+		expect(await style()).toMatchObject({
+			color: "rgba(0, 0, 0, 0)",
+			glow: "none",
+			translate: "none",
+		});
+
 		await link.hover();
-		await page.waitForTimeout(150);
-		expect(await clip()).not.toBe(FILL_FULL_COMPUTED);
-		await expect.poll(clip).toBe(FILL_FULL_COMPUTED);
+		await expect.poll(async () => (await style()).translate).toBe(`${animation.sideNav.nudge}px`);
+		const hovered = await style();
+		expect(hovered.color).toBe("rgb(245, 236, 236)");
+		expect(hovered.glow).toContain("14px");
+		await expect
+			.poll(() => marker.evaluate((el) => getComputedStyle(el).color))
+			.toBe("rgb(245, 236, 236)");
 	});
 });
 
@@ -233,26 +298,29 @@ test.describe("smooth scrolling", () => {
 });
 
 test.describe("logo hover", () => {
-	test("turns the logo DivineFlow red with a glow, and back on leave", async ({ page }, info) => {
+	test("glows in the main colour and grows a touch, and settles back on leave", async ({
+		page,
+	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
 		const home = page.getByRole("link", { name: "Daniel Khojaste, home" });
 		const style = () =>
 			home.evaluate((el) => {
 				const cs = getComputedStyle(el);
-				return { color: cs.color, filter: cs.filter };
+				return { color: cs.color, filter: cs.filter, scale: cs.scale };
 			});
-		expect(await style()).toEqual({ color: "rgb(245, 236, 236)", filter: "none" });
-		// The signature effect is gone.
-		await expect(page.locator(".logo__red")).toHaveCount(0);
+		expect(await style()).toEqual({ color: "rgb(245, 236, 236)", filter: "none", scale: "none" });
 
 		await home.hover();
-		const [r, g, b] = colors.logoHover.color.match(/\d+/g)!;
-		await expect.poll(async () => (await style()).color).toBe(`rgb(${r}, ${g}, ${b})`);
-		expect((await style()).filter).toContain("drop-shadow");
+		await expect.poll(async () => (await style()).scale).toBe(String(animation.logoHover.scale));
+		const hovered = await style();
+		// Stays white, with a wide glow and a tight bright one in the main colour.
+		expect(hovered.color).toBe("rgb(245, 236, 236)");
+		expect(hovered.filter.match(/drop-shadow/g)).toHaveLength(2);
+		expect(hovered.filter).toContain(`${colors.logoHover.glowSize}px`);
 
 		await page.mouse.move(700, 600);
-		await expect.poll(async () => (await style()).color).toBe("rgb(245, 236, 236)");
+		await expect.poll(async () => (await style()).filter).toBe("none");
 	});
 });
 
@@ -263,6 +331,10 @@ test.describe("main colour", () => {
 			getComputedStyle(document.documentElement).getPropertyValue("--shade-accent").trim(),
 		);
 		expect(accent).toBe(brand.join(" "));
+		// The hero photo is only regraded for a different main colour.
+		expect(
+			await page.locator(".hero__figure img").evaluate((el) => getComputedStyle(el).filter),
+		).toBe("none");
 		// Buttons use it.
 		const button = page.locator(".hero").getByRole("link", { name: "View my work" });
 		expect(await button.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(

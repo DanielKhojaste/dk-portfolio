@@ -8,6 +8,7 @@ import {
 	DESIGN_BRAND,
 	follow,
 	hex,
+	photoFilter,
 	shadeVariables,
 } from "../brand";
 
@@ -51,10 +52,21 @@ describe("brand colours", () => {
 		expect(colors.background).toEqual(brandFlow(shades));
 		expect(colors.menuUnderline).toBe(colors.background);
 		expect(colors.sideNavUnderline).toBe(colors.background);
-		expect(colors.logoHover.color).toBe(`rgb(${channels(shades.core)})`);
+		expect(colors.logoHover.glow).toBe(`rgb(${channels(shades.halo)})`);
+		expect(colors.textHover.glow).toContain(channels(shades.halo));
 		const vars = shadeVariables(shades);
 		expect(vars["--shade-accent"]).toBe(channels(brand));
 		expect(vars["--shade-accent-soft"]).toBe(channels(shades.accentSoft));
 		expect(hex([8, 4, 5])).toBe("#080405");
+	});
+
+	it("regrades the hero photo to the main colour, and leaves it alone for the original red", () => {
+		expect(photoFilter(DESIGN_BRAND)).toBe("none");
+		const blue = photoFilter([37, 99, 235]);
+		expect(blue).toMatch(/^hue-rotate\(-?\d+(\.\d)?deg\) saturate\([\d.]+\)$/);
+		// The shortest way round the colour wheel.
+		const turn = Number(blue.match(/hue-rotate\((-?[\d.]+)deg/)![1]);
+		expect(Math.abs(turn)).toBeLessThanOrEqual(180);
+		expect(photoFilter([128, 128, 128])).toContain("saturate(0)");
 	});
 });

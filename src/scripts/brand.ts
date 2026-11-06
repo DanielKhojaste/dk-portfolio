@@ -112,6 +112,20 @@ export function brandFlow(shades: Shades): DivineFlowPalette {
 	};
 }
 
+/**
+ * CSS filter that regrades the hero photo (lit in the original red) to the main colour: the hue turned
+ * by as much as the main colour turned, and the saturation scaled the same way. "none" for the
+ * original red, so the photo is untouched.
+ */
+export function photoFilter(brand: RGB): string {
+	const [h0, s0] = rgbToHsl(DESIGN_BRAND);
+	const [h1, s1] = rgbToHsl(brand);
+	const turn = Math.round((((h1 - h0 + 540) % 360) - 180) * 10) / 10;
+	const saturate = Math.round((s0 === 0 ? 1 : s1 / s0) * 100) / 100;
+	if (turn === 0 && saturate === 1) return "none";
+	return `hue-rotate(${turn}deg) saturate(${saturate})`;
+}
+
 /** "r g b", for CSS like `rgb(var(--brand-bright) / 0.5)`. */
 export const channels = ([r, g, b]: RGB) => `${r} ${g} ${b}`;
 

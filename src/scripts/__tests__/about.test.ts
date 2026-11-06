@@ -109,14 +109,19 @@ describe("motion", () => {
 	});
 
 	it("drives the hovers, fills and glides from the shared pace", () => {
-		expect(animation.sideNav.fill).toBe(motion.hover);
+		expect(animation.textHover.duration).toBe(motion.hover);
 		expect(animation.logoHover.duration).toBe(motion.hover);
 		expect(animation.about.highlight).toBe(motion.draw);
 		expect(animation.scroll.smooth).toBe(motion.glide);
 		expect(animation.hover).toBe(motion.quick);
 		// Hovers answer the pointer straight away: an "out" ease, never one that starts slowly.
-		expect(animation.sideNav.fillEase).toBe(motion.ease.out.css);
+		expect(animation.textHover.ease).toBe(motion.ease.out.css);
 		expect(animation.logoHover.ease).toBe(motion.ease.out.css);
+	});
+
+	it("fills the red words in 0.9s each, with a 0.2s pause between them", () => {
+		expect(animation.about.highlight).toBe(0.9);
+		expect(animation.about.highlightGap).toBe(0.2);
 	});
 
 	it("wipes the red words across the word itself, not empty space", () => {

@@ -1,9 +1,10 @@
 ---
 /**
  * Desktop: the list of sections down the left, in place of the menu button. Labels are outlined;
- * hovering fills one with soft white (colors.sideNavHover), left to right. The section you're on is
- * filled white, its marker glows, and a strand of DivineFlow draws out under it (sideNavUnderlineFlow
- * in site.config.ts). Phones and tablets get the menu button instead.
+ * hovering one lights it up white with a glow in the main colour and slides it a little to the right
+ * (textHover and sideNav.nudge in site.config.ts), and its marker turns white. The section you're on
+ * is filled white, its marker glows in the main colour, and a strand of DivineFlow draws out under it
+ * (sideNavUnderlineFlow). Phones and tablets get the menu button instead.
  *
  * It stays out of the way on the hero (the first section) and fades in from About onwards.
  */
@@ -33,12 +34,7 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 							</span>
 						)}
 						<span class="side-nav__text">
-							<span class="side-nav__label">
-								{section.label}
-								<span class="side-nav__fill" aria-hidden="true">
-									{section.label}
-								</span>
-							</span>
+							<span class="side-nav__label">{section.label}</span>
 							<span class="side-nav__rule" aria-hidden="true">
 								<DivineFlow manual fadeIn={0} options={underline} />
 							</span>
@@ -54,11 +50,15 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	import { animation } from "../site.config";
 	import { setupSideNav } from "../scripts/side-nav";
 
-	setupSideNav(document, {
-		in: animation.sideNav.underlineIn,
-		out: animation.sideNav.underlineOut,
-		ease: animation.sideNav.underlineEase,
-	});
+	setupSideNav(
+		document,
+		{
+			in: animation.sideNav.underlineIn,
+			out: animation.sideNav.underlineOut,
+			ease: animation.sideNav.underlineEase,
+		},
+		animation.sideNav.labelOut,
+	);
 </script>
 
 <style>
@@ -120,13 +120,14 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		text-align: center;
 		color: rgb(var(--shade-text) / 0.3);
 		transition:
-			color var(--motion-hover) var(--ease-out),
-			scale var(--motion-hover) var(--ease-out),
-			text-shadow var(--motion-hover) var(--ease-out);
+			color var(--text-hover-duration) var(--text-hover-ease),
+			scale var(--text-hover-duration) var(--text-hover-ease),
+			text-shadow var(--text-hover-duration) var(--text-hover-ease);
 	}
 
-	.side-nav__link:hover .side-nav__marker {
-		color: var(--side-nav-hover);
+	.side-nav__link:hover .side-nav__marker,
+	.side-nav__link:focus-visible .side-nav__marker {
+		color: var(--text-hover-color);
 	}
 
 	.side-nav__link[aria-current] .side-nav__marker {
@@ -141,10 +142,8 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	}
 
 	/* Outlined, in a lighter cut of the display font than the hero's name so small labels stay easy to
-	   read. On top sits a filled copy, wiped in from the left with a clip-path on hover; the clip reaches
-	   past the word on every side so no letter is left half filled. */
+	   read. */
 	.side-nav__label {
-		position: relative;
 		display: block;
 		font-family: var(--font-display);
 		font-stretch: 110%;
@@ -155,39 +154,43 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		text-transform: uppercase;
 		color: transparent;
 		-webkit-text-stroke: 0.8px rgb(var(--shade-text) / 0.7);
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			text-shadow var(--text-hover-duration) var(--text-hover-ease),
+			translate var(--text-hover-duration) var(--text-hover-ease),
+			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
 	}
 
-	.side-nav__fill {
-		position: absolute;
-		inset: 0;
-		white-space: nowrap;
-		color: var(--side-nav-hover);
-		-webkit-text-stroke: 0.8px transparent;
-		/* Same wipe as About's red words (scripts/about.ts: FILL_EMPTY, FILL_FULL). */
-		clip-path: inset(-30% 108% -30% -8%);
-		transition: clip-path var(--side-nav-fill) var(--side-nav-fill-ease);
+	/* Hover: lights up white with a glow, and slides right. */
+	.side-nav__link:hover .side-nav__label,
+	.side-nav__link:focus-visible .side-nav__label {
+		color: var(--text-hover-color);
+		-webkit-text-stroke-color: var(--text-hover-color);
+		text-shadow: var(--text-hover-glow);
+		translate: var(--side-nav-nudge) 0;
 	}
 
-	.side-nav__link:hover .side-nav__fill,
-	.side-nav__link:focus-visible .side-nav__fill,
-	.side-nav__link[aria-current] .side-nav__fill {
-		clip-path: inset(-30% -8% -30% -8%);
-	}
-
+	/* The section you're on: filled white, no glow (its marker and underline mark it). It fills in,
+	   and empties again when you leave (data-leaving), at the underline's pace rather than the
+	   hover's (animation.sideNav.labelIn / labelOut). */
 	.side-nav__link[aria-current] .side-nav__label {
+		color: var(--color-text);
 		-webkit-text-stroke-color: var(--color-text);
 	}
 
-	.side-nav__link[aria-current] .side-nav__fill {
-		color: var(--color-text);
+	.side-nav__link[aria-current] :is(.side-nav__label, .side-nav__marker) {
+		transition-duration: var(--side-nav-label-in);
+		transition-timing-function: var(--side-nav-label-ease);
+	}
+
+	.side-nav__link[data-leaving] :is(.side-nav__label, .side-nav__marker) {
+		transition-duration: var(--side-nav-label-out);
+		transition-timing-function: var(--side-nav-label-ease);
 	}
 
 	@supports not (-webkit-text-stroke: 1px) {
 		.side-nav__label {
 			color: var(--color-text-muted);
-		}
-		.side-nav__fill {
-			display: none;
 		}
 		.side-nav__link[aria-current] .side-nav__label {
 			color: var(--color-text);

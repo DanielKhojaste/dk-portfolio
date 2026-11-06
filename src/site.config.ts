@@ -91,6 +91,13 @@ export const motion = {
 	},
 } as const;
 
+/**
+ * The side nav's current-section change: the new section's underline draws out and its label fills
+ * in; the old one's underline draws back and its label empties. Shared, so underline and label move
+ * together; animation.sideNav has a setting for each in case you want them apart.
+ */
+const sideNavChange = { in: motion.glide, out: 0.7 };
+
 /** The DK signature in the header, written stroke by stroke. */
 const logo = {
 	delay: 0.2,
@@ -129,15 +136,31 @@ export const animation = {
 		underlineEase: motion.ease.inOut.gsap,
 	},
 
-	/** The side nav's DivineFlow underline under the current section (desktop). */
+	/** The side nav (desktop). */
 	sideNav: {
-		underlineIn: motion.glide,
-		underlineOut: 0.7,
+		/** The DivineFlow underline drawing out under the current section, and back in when you leave. */
+		underlineIn: sideNavChange.in,
+		underlineOut: sideNavChange.out,
 		underlineEase: motion.ease.inOut.gsap,
-		/** Hovering a label fills it (colors.sideNavHover), left to right, and empties it on leave. */
-		fill: motion.hover,
-		/** CSS easing for the fill. */
-		fillEase: motion.ease.out.css,
+		/**
+		 * The current section's label filling in (and its marker lighting up), and emptying when you
+		 * leave. Same speed and ease as the underline by default.
+		 */
+		labelIn: sideNavChange.in,
+		labelOut: sideNavChange.out,
+		labelEase: motion.ease.inOut.css,
+		/** How far (px) a hovered label slides to the right, on top of the glow (textHover). */
+		nudge: 4,
+	},
+
+	/**
+	 * Hovering text: side nav labels and text links (like Lineup ↗ in About). The text fills white and
+	 * glows in the main colour (colors.textHover).
+	 */
+	textHover: {
+		duration: motion.hover,
+		/** CSS easing. */
+		ease: motion.ease.out.css,
 	},
 
 	/**
@@ -151,11 +174,13 @@ export const animation = {
 		smoothTouch: 0,
 	},
 
-	/** Hovering the logo: it changes colour and glows (colors.logoHover). */
+	/** Hovering the logo: it glows in the main colour and grows a touch (colors.logoHover). */
 	logoHover: {
 		duration: motion.hover,
 		/** CSS easing. */
 		ease: motion.ease.out.css,
+		/** How much it grows: 1 for not at all. */
+		scale: 1.04,
 	},
 
 	/** The About section, once it comes into view. */
@@ -166,7 +191,8 @@ export const animation = {
 		word: 0.6,
 		/** Each red word filling in, after the headline has lit up. */
 		highlight: motion.draw,
-		highlightStagger: 0.3,
+		/** Pause between one red word finishing and the next starting. */
+		highlightGap: 0.2,
 		/** The text and facts sliding in last. */
 		rest: 0.8,
 	},
@@ -204,8 +230,8 @@ export const colors: {
 	background: DivineFlowPalette;
 	menuUnderline: DivineFlowPalette;
 	sideNavUnderline: DivineFlowPalette;
-	sideNavHover: string;
-	logoHover: { color: string; glow: string; glowSize: number };
+	textHover: { color: string; glow: string };
+	logoHover: { color: string; glow: string; glowSize: number; core: string };
 	sectionGlow: string;
 } = {
 	/**
@@ -217,16 +243,23 @@ export const colors: {
 	menuUnderline: flow,
 	/** The underline under the current section in the side nav. */
 	sideNavUnderline: flow,
-	/** A side nav label's fill while hovered. Any CSS colour. */
-	sideNavHover: rgb(shades.text, 0.4),
 	/**
-	 * The logo while hovered: a DivineFlow filament's light core with its glow around it. `glowSize`
-	 * is the glow's blur in px.
+	 * Hovered text (side nav labels, text links): its colour, and the glow around it as a CSS
+	 * text-shadow, in the main colour.
+	 */
+	textHover: {
+		color: rgb(shades.text),
+		glow: `0 0 14px ${rgb(shades.halo, 0.85)}, 0 0 2px ${rgb(shades.bright, 0.6)}`,
+	},
+	/**
+	 * The logo while hovered: it stays white and glows in the main colour. `glowSize` is the wide
+	 * glow's blur in px; `core` is a tight, brighter glow hugging the strokes.
 	 */
 	logoHover: {
-		color: rgb(shades.core),
-		glow: rgb(shades.glow, 0.9),
-		glowSize: 8,
+		color: rgb(shades.text),
+		glow: rgb(shades.halo),
+		glowSize: 14,
+		core: rgb(shades.bright, 0.9),
 	},
 	/**
 	 * The glow behind every section after the hero. It stays put while the page scrolls. Any CSS

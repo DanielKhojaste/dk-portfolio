@@ -13,7 +13,8 @@ export interface AboutTiming {
 	wordStagger: number;
 	word: number;
 	highlight: number;
-	highlightStagger: number;
+	/** Pause between one red word finishing and the next starting. */
+	highlightGap: number;
 	rest: number;
 }
 
@@ -44,7 +45,8 @@ export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.T
 			{
 				clipPath: FILL_FULL,
 				duration: t.highlight,
-				stagger: t.highlightStagger,
+				// One after another, with a short pause in between.
+				stagger: t.highlight + t.highlightGap,
 				ease: "power3.inOut",
 			},
 			// Each red word fills just after it has lit up.

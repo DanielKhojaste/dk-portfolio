@@ -193,7 +193,10 @@ import { animation, backgroundFlow, colors, profile } from "../site.config";
 		height: 100%;
 	}
 
+	/* The photo is lit in the original red; with another main colour it's regraded to match
+	   (scripts/brand.ts: photoFilter). */
 	.hero__figure :global(img) {
+		filter: var(--photo-filter, none);
 		object-fit: contain;
 		object-position: center bottom;
 		-webkit-mask-image: linear-gradient(#000 64%, transparent 98%);
