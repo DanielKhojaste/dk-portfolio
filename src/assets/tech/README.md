@@ -1,8 +1,9 @@
 # Technology icons
 
-Logos for the tools shown on the Work section's rows, kept here as SVGs so they never depend on an outside link. They're drawn in the text colour (`currentColor`) by `src/components/TechIcon.astro`.
+Logos for the tools on the Work and Skills sections, kept here as SVGs so they never depend on an outside link. `src/components/TechIcon.astro` draws them in the text colour (any colour in the file is ignored) and maps tool names to files (`TECH`).
 
-- Astro, GSAP, React, Rust, Sanity, Tailwind CSS, Tauri, TypeScript: [Simple Icons](https://simpleicons.org/) 16.36.0, CC0 1.0.
-- VS Code (`vscode.svg`): the `vscode` icon from Microsoft's [Codicons](https://github.com/microsoft/vscode-codicons) 0.0.46, CC BY 4.0 (© Microsoft Corporation). Simple Icons doesn't carry Microsoft's logos.
+- [Simple Icons](https://simpleicons.org/) 16.36.0, CC0 1.0: Astro, Claude (Claude Code), CSS, Cursor, Dart, Docker, .NET, Express, Figma, Flutter, Git, GitHub Copilot, GSAP, HTML5, JavaScript, MariaDB, MySQL, Next.js, Node.js, PHP, PostgreSQL, Python, Qt (PyQt), React, Rust, Sanity, Spring Boot, Tailwind CSS, Tauri, TypeScript.
+- [Devicon](https://devicon.dev/) 2.18.0, MIT (© 2015 konpa): C# (`csharp`), Codex, Illustrator (line), Java, Playwright.
+- VS Code (`vscode.svg`): the `vscode` icon from Microsoft's [Codicons](https://github.com/microsoft/vscode-codicons) 0.0.46, CC BY 4.0 (© Microsoft Corporation).
 
-The logos themselves are trademarks of their owners. To add one, copy its SVG here and add it to `TECH` in `TechIcon.astro`.
+The logos themselves are trademarks of their owners. To add one, copy its single-colour SVG here and add it to `TECH` in `TechIcon.astro`.

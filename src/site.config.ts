@@ -186,6 +186,91 @@ export const work = {
 	] as readonly Project[],
 };
 
+/** A tool in the Skills section: its logo (by name, see components/TechIcon.astro) and where it's used. */
+export interface Skill {
+	name: string;
+	/** Projects that use it: names from `work.projects`, or "This site". */
+	usedIn: readonly string[];
+}
+
+const everywhere = ["Lineup", "ApotheonAI", "ToDone", "This site"];
+
+/** The Skills section, after Work: one row per group of tools, filtered by project. */
+export const skills = {
+	eyebrow: "Skills",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "What I [build] with",
+	/** The filter: every project in the Work section, plus this site. */
+	projects: [...work.projects.map((p) => p.name), "This site"] as readonly string[],
+	groups: [
+		{
+			title: "Languages",
+			skills: [
+				{ name: "TypeScript", usedIn: everywhere },
+				{ name: "JavaScript", usedIn: ["ToDone"] },
+				{ name: "Python", usedIn: [] },
+				{ name: "Java", usedIn: [] },
+				{ name: "C#", usedIn: [] },
+				{ name: "PHP", usedIn: [] },
+				{ name: "Rust", usedIn: ["Lineup"] },
+				{ name: "Dart", usedIn: [] },
+			],
+		},
+		{
+			title: "Front end & design",
+			skills: [
+				{ name: "React", usedIn: ["Lineup"] },
+				{ name: "Next.js", usedIn: [] },
+				{ name: "Astro", usedIn: ["ApotheonAI", "This site"] },
+				{ name: "HTML", usedIn: ["Lineup", "ApotheonAI", "This site"] },
+				{ name: "CSS", usedIn: ["Lineup", "ApotheonAI", "This site"] },
+				{ name: "Tailwind CSS", usedIn: ["ApotheonAI"] },
+				{ name: "GSAP", usedIn: ["ApotheonAI", "This site"] },
+				{ name: "Figma", usedIn: [] },
+				{ name: "Illustrator", usedIn: [] },
+			],
+		},
+		{
+			title: "Back end & data",
+			skills: [
+				{ name: "Node.js", usedIn: [] },
+				{ name: "Express", usedIn: [] },
+				{ name: ".NET", usedIn: [] },
+				{ name: "Spring Boot", usedIn: [] },
+				{ name: "MySQL", usedIn: [] },
+				{ name: "PostgreSQL", usedIn: [] },
+				{ name: "MariaDB", usedIn: [] },
+				{ name: "Sanity", usedIn: ["ApotheonAI"] },
+			],
+		},
+		{
+			title: "Apps",
+			skills: [
+				{ name: "Tauri", usedIn: ["Lineup"] },
+				{ name: "Flutter", usedIn: [] },
+				{ name: "PyQt", usedIn: [] },
+			],
+		},
+		{
+			title: "Tools",
+			skills: [
+				{ name: "Git", usedIn: everywhere },
+				{ name: "Docker", usedIn: [] },
+				{ name: "Playwright", usedIn: ["ApotheonAI", "This site"] },
+			],
+		},
+		{
+			title: "AI",
+			skills: [
+				{ name: "Codex", usedIn: [] },
+				{ name: "Claude Code", usedIn: [] },
+				{ name: "Cursor", usedIn: [] },
+				{ name: "GitHub Copilot", usedIn: [] },
+			],
+		},
+	] as readonly { title: string; skills: readonly Skill[] }[],
+};
+
 /* ------------------------------------------------------------------------------------------------
  * 2. Animation (seconds). Eases are GSAP ease names: https://gsap.com/docs/v3/Eases
  *    Everything is skipped for visitors who prefer reduced motion.
@@ -329,6 +414,15 @@ export const animation = {
 		/** The rows rising in on arrival, one after another. */
 		rows: 0.8,
 		rowStagger: 0.1,
+	},
+
+	/** The Skills section. */
+	skills: {
+		/** The headline's red word filling in when the section comes into view. */
+		highlight: motion.draw,
+		/** The rows rising in on arrival, one after another. */
+		rows: 0.8,
+		rowStagger: 0.08,
 	},
 
 	/** The hero's scroll prompt. */

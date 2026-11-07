@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scrolling past an open project no longer collapses it under you. ToDone shows its GIF.
   Projects, copy and screenshots (`public/projects`) are in `site.config.ts` (`work`,
   `animation.work`).
+- Skills section, after Work: "What I build with", one row per group (Languages, Front end &
+  design, Back end & data, Apps, Tools, AI) with the group's name in big outlined type and its
+  tools as logos, with no lines between rows. A filter (All, Lineup, ApotheonAI, ToDone, This site)
+  lights up the tools a project uses and fades the rest, and fills the names of the groups they're
+  in; hovering a row fills its name, and hovering a logo names it. Tools and which project uses
+  them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
+  `src/assets/tech`, drawn by `TechIcon`.
 - Side nav on desktop, in place of the menu button: the sections down the left in grey caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
   its marker white (`animation.textHover`, `colors.textHover`, `animation.sideNav.nudge`). The
