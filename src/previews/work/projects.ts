@@ -25,7 +25,7 @@ export const projects: Project[] = [
 		short: "A tactical board for coaches, offline.",
 		stack: ["Tauri", "Rust", "React", "TypeScript"],
 		link: { label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" },
-		image: "/previews/lineup.webp",
+		image: "/previews/lineup.png",
 		alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
 	},
 	{
@@ -37,7 +37,7 @@ export const projects: Project[] = [
 		short: "A brand site with a CMS-driven blog.",
 		stack: ["Astro", "TypeScript", "Tailwind", "Sanity", "GSAP"],
 		link: { label: "Live site", href: "https://apotheon-ai.vercel.app/" },
-		image: "/previews/apotheon.webp",
+		image: "/previews/apotheon.png",
 		alt: "ApotheonAI's home page: a bronze helmet over gold light filaments, with the words Ascend to the Divine.",
 	},
 	{
@@ -52,7 +52,7 @@ export const projects: Project[] = [
 			label: "Marketplace",
 			href: "https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
 		},
-		image: "/previews/todone.webp",
+		image: "/previews/todone.png",
 		motion: "/previews/todone-commands.gif",
 		alt: "A to-do file in VS Code, with tasks coloured by priority and finished ones struck through.",
 	},
@@ -71,7 +71,7 @@ export const spare: Project[] = [
 		short: "Services, deployments and their health, live.",
 		stack: ["Java", "Spring Boot", "PostgreSQL", "Solace PubSub+", "React", "TypeScript", "Docker"],
 		link: { label: "GitHub", href: "https://github.com/DanielKhojaste/dk8s" },
-		image: "/previews/dk8s.webp",
+		image: "/previews/dk8s.png",
 		alt: "The DK8s dashboard: four registered services with their health, recent registrations and the message queues.",
 	},
 ];

@@ -196,16 +196,14 @@ import { projects, work } from "./projects";
 		text-transform: inherit;
 		color: inherit;
 		cursor: pointer;
-		transition:
-			color var(--motion-hover) var(--ease-out),
-			text-shadow var(--motion-hover) var(--ease-out);
+		transition: color var(--motion-hover) var(--ease-out);
 	}
 
+	/* Plain white, no glow. */
 	.w3__name-link:hover,
 	.w3__name-link:focus-visible,
 	.w3__name-link.is-on {
 		color: #fff;
-		text-shadow: var(--text-hover-glow);
 	}
 
 	/* Panels slide out of view at the content's left edge, never under the side nav. */
