@@ -243,7 +243,7 @@ test.describe("hero", () => {
 		expect(size[1]).toBeGreaterThan(0);
 	});
 
-	test("runs one extra strand through the middle with the menu underline's sparkles, at the background's pace", async ({
+	test("runs one extra strand through the middle with the menu underline's look and its own sparkles", async ({
 		page,
 	}) => {
 		await page.goto("/");
@@ -258,15 +258,16 @@ test.describe("hero", () => {
 		for (const attr of ["data-options", "data-compact-options"]) {
 			const options = JSON.parse((await strand.getAttribute(attr)) ?? "{}");
 			expect(options).toMatchObject({ lineCount: 1, scatterCount: 0, emberCount: 0 });
-			for (const key of ["thickness", "alpha", "sparkleCount"] as const) {
+			for (const key of ["thickness", "alpha"] as const) {
 				expect(options[key]).toBe(menuUnderlineFlow[key]);
 				expect(heroStrand[key]).toBe(menuUnderlineFlow[key]);
 			}
-			// Same pace as the background: its motion and sparkle speed, not the underline's.
+			// The background's motion, with its own sparkles and sparkle speed.
+			expect(options.sparkleCount).toBe(heroStrand.sparkleCount);
 			const background = JSON.parse(
 				(await page.locator(".hero > [data-divine-flow]").getAttribute(attr)) ?? "{}",
 			);
-			expect(options.travelSpeed).toBe(background.travelSpeed);
+			expect(options.travelSpeed).toBe(heroStrand.travelSpeed);
 			expect(options.motion).toBe(background.motion);
 		}
 	});

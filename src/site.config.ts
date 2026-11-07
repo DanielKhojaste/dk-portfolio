@@ -394,17 +394,15 @@ export const sideNavUnderlineFlow: UnderlineFlow = {
 
 /**
  * One extra strand through the middle of the hero, on top of the background, with the menu
- * underline's look (menuUnderlineFlow): its thickness, brightness and sparkles. Change those there
- * and this strand follows; set any of them here instead to make it differ. It moves at the
- * background's pace (backgroundFlow), takes its shape and colours from it (colors.background) and
- * draws in with it.
+ * underline's thickness and brightness (menuUnderlineFlow), with its own sparkles. It takes its
+ * shape and colours from the background (backgroundFlow, colors.background) and draws in with it.
  */
 export const heroStrand: FlowOptions = {
 	thickness: menuUnderlineFlow.thickness,
 	alpha: menuUnderlineFlow.alpha,
-	sparkleCount: menuUnderlineFlow.sparkleCount,
-	/** Sparkles glide at the background's speed, not the underline's faster one. */
-	travelSpeed: backgroundFlow.desktop.travelSpeed,
+	sparkleCount: 16,
+	/** How fast its sparkles glide along it: 1 is the background's speed, the menu underline's is 6. */
+	travelSpeed: 1.6,
 	/** Just the one strand each side of the centre, with no strays or embers of its own. */
 	lineCount: 1,
 	scatterCount: 0,
