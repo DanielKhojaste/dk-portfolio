@@ -166,3 +166,61 @@ test.describe("work", () => {
 		expect(response?.status()).toBe(404);
 	});
 });
+
+test.describe("work layout", () => {
+	for (const size of [
+		{ width: 820, height: 695 },
+		{ width: 1024, height: 768 },
+		{ width: 1280, height: 800 },
+		{ width: 1440, height: 900 },
+	]) {
+		test(`nothing overlaps at ${size.width}x${size.height}, closed or open`, async ({ page }) => {
+			await page.setViewportSize(size);
+			await page.goto("/");
+			await page.locator("#work [data-work-toggle]").first().click();
+			await expect(page.locator("#work [data-work-toggle]").first()).toHaveAttribute(
+				"aria-expanded",
+				"true",
+			);
+			await page.waitForTimeout(900);
+			const overlaps = await page.evaluate(() => {
+				const hit = (a: DOMRect, b: DOMRect) =>
+					!(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
+				const box = (root: Element, sel: string) =>
+					root.querySelector(sel)!.getBoundingClientRect();
+				const found: string[] = [];
+				document.querySelectorAll("#work [data-work-row]").forEach((row, i) => {
+					const [name, meta, stack] = [".work__name", ".work__meta", ".work__stack"].map((s) =>
+						box(row, s),
+					);
+					if (hit(name!, meta!) || hit(name!, stack!) || hit(meta!, stack!)) found.push(`row ${i}`);
+				});
+				const open = document.querySelector("#work .is-open")!;
+				if (hit(box(open, ".work__media"), box(open, ".work__copy"))) found.push("open project");
+				return found;
+			});
+			expect(overlaps).toEqual([]);
+		});
+	}
+
+	test("shows VS Code's logo, and keeps every logo in the repo", async ({ page }) => {
+		await page.goto("/");
+		await expect(page.locator('#work .tech[aria-label="VS Code"] svg')).toHaveCount(1);
+		await expect(page.locator("#work .tech--text")).toHaveCount(0);
+		// No logo is loaded from another site.
+		await expect(page.locator("#work img[src^='http'], #work .tech img")).toHaveCount(0);
+	});
+
+	test("draws lines between projects only, not above the first or below the last", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const list = page.locator("#work .work__list");
+		expect(await list.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("none");
+		const rows = page.locator("#work [data-work-row]");
+		const border = (i: number) =>
+			rows.nth(i).evaluate((el) => getComputedStyle(el).borderBottomStyle);
+		expect(await border(0)).toBe("solid");
+		expect(await border((await rows.count()) - 1)).toBe("none");
+	});
+});

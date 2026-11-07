@@ -1,6 +1,6 @@
 ---
 /**
- * A tool's logo (from src/assets/tech, Simple Icons), in the current text colour, with its name as a
+ * A tool's logo (from src/assets/tech), in the current text colour, with its name as a
  * tooltip and for screen readers. Tools without a logo there show their name as small text instead.
  */
 import astro from "../assets/tech/astro.svg?raw";
@@ -11,6 +11,7 @@ import sanity from "../assets/tech/sanity.svg?raw";
 import tailwind from "../assets/tech/tailwindcss.svg?raw";
 import tauri from "../assets/tech/tauri.svg?raw";
 import typescript from "../assets/tech/typescript.svg?raw";
+import vscode from "../assets/tech/vscode.svg?raw";
 
 /** Tool name (as written in site.config.ts) → its icon's SVG. */
 export const TECH: Record<string, string> = {
@@ -22,6 +23,7 @@ export const TECH: Record<string, string> = {
 	Tailwind: tailwind,
 	Tauri: tauri,
 	TypeScript: typescript,
+	"VS Code": vscode,
 };
 
 interface Props {
@@ -30,14 +32,16 @@ interface Props {
 
 const { name } = Astro.props;
 const svg = TECH[name];
-// Only the path: the title and role come from the wrapper, so the name isn't read twice.
-const path = svg?.match(/<path[^>]*\/>/)?.[0];
+// Only the path and its viewBox: the title and role come from the wrapper, so the name isn't read
+// twice, and the colour comes from the text.
+const path = svg?.match(/<path[^>]*\/>/)?.[0]?.replace(/\sfill="[^"]*"/, "");
+const viewBox = svg?.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 24 24";
 ---
 
 {
 	path ? (
 		<span class="tech" title={name} role="img" aria-label={name}>
-			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={path} />
+			<svg viewBox={viewBox} fill="currentColor" aria-hidden="true" set:html={path} />
 		</span>
 	) : (
 		<span class="tech tech--text">{name}</span>

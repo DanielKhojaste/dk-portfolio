@@ -113,7 +113,7 @@ export const work = {
 				"Play a move back step by step to show how it unfolds",
 				"Works offline, with nothing to sign up for",
 			],
-			stack: ["Tauri", "Rust", "React", "TypeScript"],
+			stack: ["Tauri", "React", "TypeScript", "Rust"],
 			links: [{ label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" }],
 			image: "/projects/lineup.png",
 			alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
@@ -124,9 +124,10 @@ export const work = {
 			status: "Live",
 			summary: "The website of a made-up AI security company, built as if for a real client.",
 			features: [
-				"Several pages with a clear story, from the landing page to contact",
-				"A blog whose posts are written and published in an editor, no code needed",
-				"Smooth animations, and a layout that fits any screen",
+				"Five pages built from reusable parts",
+				"Blog posts published from an editor, no code",
+				"Fits any screen, and works with a keyboard",
+				"Main journeys checked by automated tests",
 			],
 			stack: ["Astro", "TypeScript", "Tailwind", "Sanity", "GSAP"],
 			links: [

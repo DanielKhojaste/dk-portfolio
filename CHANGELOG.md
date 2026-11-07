@@ -23,13 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `site.config.ts`; `[brackets]` mark the red words.
 - Work section, after About: "Selected work", with Lineup, ApotheonAI and ToDone as big outlined
   names, one row each, with what each is, where it's at and the logos of the tools it's built with
-  (`TechIcon`, Simple Icons in `src/assets/tech`). On desktop, hovering a row fills its name white
+  (`TechIcon`; SVGs kept in `src/assets/tech`, from Simple Icons and, for VS Code, Microsoft's
+  Codicons). On desktop, hovering a row fills its name white
   (at the side nav's hover pace, no glow) and drops its screenshot open underneath, next to one plain
   sentence on what it's for, a few short points on what it does and its links (every project has
   its GitHub repo, plus the live site or the VS Code Marketplace); moving off closes it, and
   clicking keeps it open until it's clicked again. Phones and tablets open a project with a tap, one
   at a time, and the hint next to the headline says "Hover" or "Click" to match. The section is
-  anchored at the top, so opening a row only pushes the rows below it. ToDone shows its GIF.
+  anchored at the top, so opening a row only pushes the rows below it. On narrower screens the row
+  stacks (name, then what it is and the tools), and on tablets and phones an open project shows its
+  screenshot full width with the details underneath. There are lines between projects only. ToDone shows its GIF.
   Projects, copy and screenshots (`public/projects`) are in `site.config.ts` (`work`,
   `animation.work`).
 - Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
