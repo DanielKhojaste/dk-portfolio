@@ -46,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text link hover (`.text-link`): the same glow as the side nav's labels, at the same pace, without
   the movement, for links in running text.
 - Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
-  4 seconds on the hero (`animation.scrollHint.delay`), one line of small caps near the bottom edge.
+  4 seconds on the hero (`animation.scrollHint.delay`), one line of small caps near the bottom edge
+  with a small downward chevron under it that bobs gently.
   It brightens on hover (no glow, so it keeps its weight), hides once you scroll and takes you to
   About when clicked.
 

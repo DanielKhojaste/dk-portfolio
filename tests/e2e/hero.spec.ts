@@ -203,10 +203,16 @@ test.describe("hero", () => {
 			2,
 		);
 
-		// Just text, close to the bottom edge.
+		// Text with a downward chevron under it, close to the bottom edge.
 		await expect(hint.locator("canvas, [data-divine-flow]")).toHaveCount(0);
-		expect(rect.y).toBeGreaterThan(page.viewportSize()!.height * 0.9);
+		expect(rect.y).toBeGreaterThan(page.viewportSize()!.height * 0.85);
 		expect(rect.y + rect.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+		const label = (await hint.locator(".hero__hint-label").boundingBox())!;
+		const chevron = (await hint.locator(".hero__hint-chevron").boundingBox())!;
+		expect(chevron.y).toBeGreaterThanOrEqual(label.y + label.height);
+		expect(
+			Math.abs(chevron.x + chevron.width / 2 - (label.x + label.width / 2)),
+		).toBeLessThanOrEqual(2);
 
 		// Gone once you scroll.
 		await page.evaluate(() => window.scrollTo(0, 400));

@@ -76,7 +76,10 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		data-scroll-hint
 		style={`--hint-fade: ${animation.scrollHint.fade}s`}
 	>
-		{hero.scrollHint}
+		<span class="hero__hint-label">{hero.scrollHint}</span>
+		<svg class="hero__hint-chevron" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M6 9l6 6 6-6"></path>
+		</svg>
 	</a>
 </section>
 
@@ -300,6 +303,10 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		left: 50%;
 		bottom: max(14px, 2.2cqh);
 		z-index: 4;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
 		padding: 8px 12px;
 		translate: -50% 8px;
 		opacity: 0;
@@ -308,8 +315,6 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		font-size: 11px;
 		font-weight: 600;
 		letter-spacing: 0.3em;
-		/* Letter spacing adds a gap after the last letter; this evens it out so it sits centred. */
-		text-indent: 0.3em;
 		text-transform: uppercase;
 		color: var(--color-text-muted);
 		text-decoration: none;
@@ -326,6 +331,30 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 		opacity: 1;
 		visibility: visible;
 		transition-delay: 0s;
+	}
+
+	/* Letter spacing adds a gap after the last letter; this evens it out so the text sits centred
+	   over the chevron. */
+	.hero__hint-label {
+		text-indent: 0.3em;
+	}
+
+	/* A small downward chevron under the text, bobbing gently. */
+	.hero__hint-chevron {
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		animation: hint-bob 1.6s var(--ease-in-out) infinite alternate;
+	}
+
+	@keyframes hint-bob {
+		to {
+			translate: 0 4px;
+		}
 	}
 
 	/* Brightens only: a glow makes small text look bolder. */
@@ -345,7 +374,7 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 	@media (max-width: 1023px), (max-aspect-ratio: 115/100) {
 		.hero {
 			--hint-bottom: max(10px, 1.4cqh);
-			--hint-height: 30px;
+			--hint-height: 46px;
 
 			min-height: 480px;
 		}
@@ -413,9 +442,18 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 
 		.hero__hint {
 			bottom: var(--hint-bottom);
+			gap: 4px;
 			font-size: 10px;
 			letter-spacing: 0.24em;
+		}
+
+		.hero__hint-label {
 			text-indent: 0.24em;
+		}
+
+		.hero__hint-chevron {
+			width: 12px;
+			height: 12px;
 		}
 	}
 
