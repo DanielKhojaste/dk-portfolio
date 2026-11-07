@@ -296,7 +296,7 @@ test.describe("smooth scrolling", () => {
 });
 
 test.describe("logo hover", () => {
-	test("glows in the main colour and grows a touch, and settles back on leave", async ({
+	test("glows in the main colour without growing, and settles back on leave", async ({
 		page,
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
@@ -310,15 +310,16 @@ test.describe("logo hover", () => {
 		expect(await style()).toEqual({ color: "rgb(245, 236, 236)", filter: "none", scale: "none" });
 
 		await home.hover();
-		await expect.poll(async () => (await style()).scale).toBe(String(animation.logoHover.scale));
-		const hovered = await style();
-		// Stays white, with a wide glow and a tight bright one in the main colour.
-		expect(hovered.color).toBe("rgb(245, 236, 236)");
-		expect(hovered.filter.match(/drop-shadow/g)).toHaveLength(2);
 		// The glow finishes growing on its own transition, so wait for it rather than read it mid-way.
 		await expect
 			.poll(async () => (await style()).filter)
 			.toContain(`${colors.logoHover.glowSize}px`);
+		const hovered = await style();
+		// Stays white and the same size, with a wide glow and a tight one in the main colour itself.
+		expect(hovered.color).toBe("rgb(245, 236, 236)");
+		expect(hovered.scale).toBe("none");
+		expect(hovered.filter.match(/drop-shadow/g)).toHaveLength(2);
+		expect(hovered.filter).toContain(`rgb(${brand.join(", ")})`);
 
 		await page.mouse.move(700, 600);
 		await expect.poll(async () => (await style()).filter).toBe("none");

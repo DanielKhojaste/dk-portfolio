@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   links glide to their section. Off for reduced motion and, by default, on touch screens.
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
 - The Lineup link in About nudges its arrow up and right on hover, like the hero's Lineup link.
-- Hovering the DK logo makes it glow in the main colour and grow a touch (`colors.logoHover`,
+- Hovering the DK logo makes it glow in the main colour itself, without growing (`colors.logoHover`,
   `animation.logoHover`).
 - Settings for all of the above in `site.config.ts` (timings, side nav marker, underline settings per
   device).
@@ -45,13 +45,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--motion-*`, `--ease-out` and `--ease-in-out`.
 - Text link hover (`.text-link`): the same glow as the side nav's labels, at the same pace, without
   the movement, for links in running text.
-- Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
-  4 seconds on the hero (`animation.scrollHint.delay`), one line of small caps near the bottom edge
-  with a small downward chevron under it that bobs gently.
+- Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in right
+  after the hero's animations (the signature and the DivineFlow draw-in) finish
+  (`animation.scrollHint.gap` adds a pause; straight away with reduced motion). One line of small
+  caps near the bottom edge, with a small downward chevron under it that bobs gently.
   It brightens on hover (no glow, so it keeps its weight), hides once you scroll and takes you to
   About when clicked.
 
 ### Changed
+
+- The tab title reads "Daniel Khojaste | Software Developer" (a bar instead of the em dash).
 
 - The hero's "View my work" and "Get in touch" buttons are gone; the scroll prompt takes their place.
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.

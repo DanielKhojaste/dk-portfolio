@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { dkLogoPens } from "../../assets/brand/dk-logo-pens";
 import { animation, hero } from "../../site.config";
 import { setupScrollHint } from "../scroll-hint";
 
@@ -48,7 +49,15 @@ describe("setupScrollHint", () => {
 	});
 
 	it("is set up in site.config.ts", () => {
-		expect(animation.scrollHint.delay).toBe(4);
+		// Right after the hero's animations: the signature and the DivineFlow draw-in, whichever ends last.
+		const { logo, background, scrollHint } = animation;
+		expect(scrollHint.delay).toBeCloseTo(
+			Math.max(
+				logo.delay + logo.duration + logo.penLift * (dkLogoPens.length - 1),
+				background.delay + background.duration,
+			) + scrollHint.gap,
+		);
+		expect(scrollHint.gap).toBe(0);
 		expect(hero.scrollHint).toMatch(/scroll/i);
 	});
 });

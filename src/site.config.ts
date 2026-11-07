@@ -10,6 +10,7 @@
  */
 import type { DivineFlowOptions, DivineFlowPalette, RGB } from "./lib/divine-flow";
 import { brandFlow, brandShades, type Shades } from "./scripts/brand";
+import { dkLogoPens } from "./assets/brand/dk-logo-pens";
 
 /* ------------------------------------------------------------------------------------------------
  * 1. Copy
@@ -113,17 +114,28 @@ const logo = {
 	penLift: 0.08,
 };
 
+/** The red DivineFlow behind the hero, drawn out from the centre on load (alongside the logo). */
+const background = {
+	delay: 0.0,
+	duration: 6.5,
+	ease: "power1.out",
+	/** Opacity fade-in of the whole canvas, under the draw-in. */
+	fadeIn: 0.0,
+};
+
+/**
+ * When the hero's own animations are done (seconds after load): the signature written out (its
+ * strokes plus the pen lifts between them) and the DivineFlow drawn in, whichever ends last.
+ */
+const heroIntroEnd = Math.max(
+	logo.delay + logo.duration + logo.penLift * (dkLogoPens.length - 1),
+	background.delay + background.duration,
+);
+
 export const animation = {
 	logo,
 
-	/** The red DivineFlow behind the hero, drawn out from the centre on load (alongside the logo). */
-	background: {
-		delay: 0.0,
-		duration: 6.5,
-		ease: "power1.out",
-		/** Opacity fade-in of the whole canvas, under the draw-in. */
-		fadeIn: 0.0,
-	},
+	background,
 
 	/** The full-screen menu. */
 	menu: {
@@ -180,19 +192,24 @@ export const animation = {
 		smoothTouch: 0,
 	},
 
-	/** Hovering the logo: it glows in the main colour and grows a touch (colors.logoHover). */
+	/** Hovering the logo: it glows in the main colour (colors.logoHover). */
 	logoHover: {
 		duration: motion.hover,
 		/** CSS easing. */
 		ease: motion.ease.out.css,
-		/** How much it grows: 1 for not at all. */
-		scale: 1.04,
 	},
 
 	/** The hero's scroll prompt. */
 	scrollHint: {
-		/** Seconds on the hero before it fades in. */
-		delay: 4,
+		/**
+		 * Seconds after the hero's own animations finish (the signature and the DivineFlow drawing
+		 * in) before it fades in. 0 is straight after.
+		 */
+		gap: 0,
+		/** When it fades in, worked out from the gap above. Not a setting: change `gap` instead. */
+		get delay() {
+			return heroIntroEnd + this.gap;
+		},
 		/** Its fade in and out. */
 		fade: 0.8,
 	},
@@ -267,14 +284,15 @@ export const colors: {
 		glow: `0 0 14px ${rgb(shades.halo, 0.85)}, 0 0 2px ${rgb(shades.bright, 0.6)}`,
 	},
 	/**
-	 * The logo while hovered: it stays white and glows in the main colour. `glowSize` is the wide
-	 * glow's blur in px; `core` is a tight, brighter glow hugging the strokes.
+	 * The logo while hovered: it stays white and glows in the main colour itself (the deeper red, not
+	 * the lighter highlight shades, which read orange around white). `glowSize` is the wide glow's
+	 * blur in px; `core` is a tight glow hugging the strokes.
 	 */
 	logoHover: {
 		color: rgb(shades.text),
-		glow: rgb(shades.halo),
+		glow: rgb(shades.accent),
 		glowSize: 14,
-		core: rgb(shades.bright, 0.9),
+		core: rgb(shades.accent, 0.95),
 	},
 	/**
 	 * The glow behind every section after the hero. It stays put while the page scrolls. Any CSS

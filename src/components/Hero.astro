@@ -88,7 +88,9 @@ import { animation, backgroundFlow, colors, hero, profile } from "../site.config
 	import { setupScrollHint } from "../scripts/scroll-hint";
 
 	const hint = document.querySelector<HTMLElement>("[data-scroll-hint]");
-	if (hint) setupScrollHint(hint, animation.scrollHint);
+	// Straight after the hero's animations; with reduced motion they're skipped, so straight away.
+	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	if (hint) setupScrollHint(hint, { delay: reduced ? 0 : animation.scrollHint.delay });
 </script>
 
 <style>

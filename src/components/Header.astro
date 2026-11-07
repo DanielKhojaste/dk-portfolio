@@ -67,7 +67,7 @@ import Menu from "./Menu.astro";
 		pointer-events: auto;
 	}
 
-	/* Hover: the logo glows in the main colour and grows a touch. Colour, glow and timing come from
+	/* Hover: the logo glows in the main colour; it doesn't grow. Colour, glow and timing come from
 	   site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
 	.site-header__home {
 		display: flex;
@@ -77,8 +77,7 @@ import Menu from "./Menu.astro";
 		color: var(--color-text);
 		transition:
 			color var(--logo-hover-duration) var(--logo-hover-ease),
-			filter var(--logo-hover-duration) var(--logo-hover-ease),
-			scale var(--logo-hover-duration) var(--logo-hover-ease);
+			filter var(--logo-hover-duration) var(--logo-hover-ease);
 	}
 
 	.site-header__home:hover,
@@ -86,7 +85,6 @@ import Menu from "./Menu.astro";
 		color: var(--logo-hover-color);
 		filter: drop-shadow(0 0 var(--logo-hover-glow-size) var(--logo-hover-glow))
 			drop-shadow(0 0 3px var(--logo-hover-core));
-		scale: var(--logo-hover-scale);
 	}
 
 	.menu-button {

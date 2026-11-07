@@ -61,7 +61,7 @@ describe("brand colours", () => {
 		expect(colors.background).toEqual(brandFlow(shades));
 		expect(colors.menuUnderline).toBe(colors.background);
 		expect(colors.sideNavUnderline).toBe(colors.background);
-		expect(colors.logoHover.glow).toBe(`rgb(${channels(shades.halo)})`);
+		expect(colors.logoHover.glow).toBe(`rgb(${channels(shades.accent)})`);
 		expect(colors.textHover.glow).toContain(channels(shades.halo));
 		const vars = shadeVariables(shades);
 		expect(vars["--shade-accent"]).toBe(channels(brand));

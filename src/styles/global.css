@@ -53,11 +53,10 @@
 	--text-hover-glow: 0 0 14px rgb(var(--shade-halo) / 0.85), 0 0 2px rgb(var(--shade-bright) / 0.6);
 	--logo-hover-duration: 0.45s;
 	--logo-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
-	--logo-hover-scale: 1.04;
 	--logo-hover-color: rgb(var(--shade-text));
-	--logo-hover-glow: rgb(var(--shade-halo));
+	--logo-hover-glow: rgb(var(--shade-accent));
 	--logo-hover-glow-size: 14px;
-	--logo-hover-core: rgb(var(--shade-bright) / 0.9);
+	--logo-hover-core: rgb(var(--shade-accent) / 0.95);
 
 	/* The sections' dark red glow. BaseLayout sets it from site.config.ts. */
 	--section-glow: rgb(var(--shade-section-glow) / 0.62);
