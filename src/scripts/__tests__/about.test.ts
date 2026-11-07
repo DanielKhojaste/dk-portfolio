@@ -119,9 +119,9 @@ describe("motion", () => {
 		expect(animation.logoHover.ease).toBe(motion.ease.out.css);
 	});
 
-	it("fills the red words in 0.9s each, with a 0.2s pause between them", () => {
+	it("fills the red words in 0.9s each, one straight after the other", () => {
 		expect(animation.about.highlight).toBe(0.9);
-		expect(animation.about.highlightGap).toBe(0.2);
+		expect(animation.about.highlightGap).toBe(0);
 	});
 
 	it("wipes the red words across the word itself, not empty space", () => {

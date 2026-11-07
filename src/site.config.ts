@@ -65,7 +65,7 @@ export const about = {
 	facts: [
 		{ label: "Based in", value: profile.location },
 		{ label: "Focus", value: "Web apps, end to end" },
-		{ label: "Building", value: profile.currently.name, href: profile.currently.href },
+		{ label: "Currently Building", value: profile.currently.name, href: profile.currently.href },
 	] as readonly { label: string; value: string; href?: string }[],
 };
 
@@ -222,9 +222,9 @@ export const animation = {
 		word: 0.6,
 		/** Each red word filling in, after the headline has lit up. */
 		highlight: motion.draw,
-		/** Pause between one red word finishing and the next starting. */
-		highlightGap: 0.2,
-		/** The facts (based in, focus, building) sliding in. The text above them is there from the start. */
+		/** Pause between one red word finishing and the next starting. 0 for none. */
+		highlightGap: 0,
+		/** The facts (based in, focus, currently building) sliding in. The text above them is there from the start. */
 		rest: 0.8,
 		/** When the facts start: seconds after the headline lights up (so alongside the red words). */
 		restAfter: 0.15,
