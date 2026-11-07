@@ -224,8 +224,15 @@ export const animation = {
 		highlight: motion.draw,
 		/** Pause between one red word finishing and the next starting. */
 		highlightGap: 0.2,
-		/** The facts (based in, focus, building) sliding in last. The text above them is there from the start. */
+		/** The facts (based in, focus, building) sliding in. The text above them is there from the start. */
 		rest: 0.8,
+		/** When the facts start: seconds after the headline lights up (so alongside the red words). */
+		restAfter: 0.15,
+		/**
+		 * When it all starts: once the section's top is this far down the screen (0 top, 1 bottom).
+		 * Higher starts sooner.
+		 */
+		start: 0.8,
 	},
 
 	/** Hover and focus feedback on buttons and icons: the hero buttons, the menu button's spin. */

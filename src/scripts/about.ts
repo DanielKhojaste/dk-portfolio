@@ -1,7 +1,7 @@
 /**
  * About's entrance (GSAP): when the section comes into view, the headline's words light up one after
  * another, then each red word fills in from the left (its solid copy is wiped in with a clip-path),
- * then the facts slide in. The text under the headline is there from the start. Runs once. Reduced motion shows everything straight away.
+ * with the facts sliding in alongside. The text under the headline is there from the start. Runs once. Reduced motion shows everything straight away.
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,6 +16,10 @@ export interface AboutTiming {
 	/** Pause between one red word finishing and the next starting. */
 	highlightGap: number;
 	rest: number;
+	/** Seconds after the headline lights up that the facts start sliding in. */
+	restAfter: number;
+	/** Where the section's top must reach (as a share of the screen from the top) to start it. */
+	start: number;
 }
 
 const DIM = "rgb(245 236 236 / 0.14)";
@@ -39,6 +43,8 @@ export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.T
 		{ color: DIM, opacity: 0.6 },
 		{ color: "#ffffff", opacity: 1, duration: t.word, stagger: t.wordStagger, ease: "power2.out" },
 	)
+		// The headline has (nearly) lit up: the red words and the facts start from here.
+		.addLabel("lit", `-=${t.word * 0.4}`)
 		.fromTo(
 			fills,
 			{ clipPath: FILL_EMPTY },
@@ -50,13 +56,14 @@ export function aboutTimeline(section: HTMLElement, t: AboutTiming): gsap.core.T
 				ease: "power3.inOut",
 			},
 			// Each red word fills just after it has lit up.
-			`-=${t.word * 0.4}`,
+			"lit",
 		)
 		.fromTo(
 			rest,
 			{ opacity: 0, y: 16 },
 			{ opacity: 1, y: 0, duration: t.rest, stagger: 0.12, ease: "power3.out" },
-			`-=${t.highlight * 0.6}`,
+			// Alongside the red words rather than after them, so they're in place before you scroll on.
+			`lit+=${t.restAfter}`,
 		);
 	return tl;
 }
@@ -71,7 +78,7 @@ export function revealAbout(
 	// The fromTo tweens have already set the dim start state, so nothing flashes before it plays.
 	ScrollTrigger.create({
 		trigger: section,
-		start: "top 60%",
+		start: `top ${timing.start * 100}%`,
 		once: true,
 		onEnter: () => void tl.play(0),
 	});

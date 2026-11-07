@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The text under the headline is there from the start. When it comes into view the headline lights
   up word by word, the red words are wiped in from the left (GSAP, a clip-path over a solid copy, so
   every letter fills completely), 0.9s each with a 0.2s pause between them
-  (`animation.about.highlight`, `highlightGap`), and then the facts slide in. Copy lives in
+  (`animation.about.highlight`, `highlightGap`), with the facts sliding in alongside them
+  (`restAfter`). It starts once the section's top is in the lower fifth of the screen (`start`), so
+  it's done before you scroll on. Copy lives in
   `site.config.ts`; `[brackets]` mark the red words.
 - Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
