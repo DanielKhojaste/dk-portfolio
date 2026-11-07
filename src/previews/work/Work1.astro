@@ -190,8 +190,8 @@ import { projects, work } from "./projects";
 		cursor: pointer;
 	}
 
-	/* Outlined until its row opens, then the whole name fills white, like the side nav's labels
-	   (same pace and ease: animation.sideNav.labelIn / labelOut), and empties again on close. */
+	/* Outlined until its row opens, then the whole name fills white, at the side nav's hover pace
+	   (animation.textHover: 0.45s, fast start), and empties again on close. */
 	.w1__name {
 		position: relative;
 		width: max-content;
@@ -204,14 +204,13 @@ import { projects, work } from "./projects";
 		color: transparent;
 		-webkit-text-stroke: 1.2px rgb(var(--shade-text) / 0.45);
 		transition:
-			color var(--side-nav-label-out) var(--side-nav-label-ease),
-			-webkit-text-stroke-color var(--side-nav-label-out) var(--side-nav-label-ease);
+			color var(--text-hover-duration) var(--text-hover-ease),
+			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
 	}
 
 	.w1__row.is-open .w1__name {
 		color: #fff;
 		-webkit-text-stroke-color: #fff;
-		transition-duration: var(--side-nav-label-in);
 	}
 
 	.w1__meta {
