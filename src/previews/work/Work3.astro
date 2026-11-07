@@ -12,8 +12,17 @@ import { projects, work } from "./projects";
 <section class="w3" id="work" aria-labelledby="work-title" data-w3>
 	<div class="w3__head">
 		<Head eyebrow={work.eyebrow} headline="Recent [builds]" size="md" />
-		<ol class="w3__names" aria-hidden="true">
-			{projects.map((p, i) => <li data-w3-name={i}>{p.name}</li>)}
+		<!-- Jump to a project: scrolls smoothly to where it's in view. -->
+		<ol class="w3__names" aria-label="Projects">
+			{
+				projects.map((p, i) => (
+					<li>
+						<button type="button" class="w3__name-link" data-w3-name={i}>
+							{p.name}
+						</button>
+					</li>
+				))
+			}
 		</ol>
 	</div>
 
@@ -58,6 +67,7 @@ import { projects, work } from "./projects";
 <script>
 	import { gsap } from "gsap";
 	import { ScrollTrigger } from "gsap/ScrollTrigger";
+	import { ScrollSmoother } from "gsap/ScrollSmoother";
 	import { createDivineFlow } from "../../lib/divine-flow";
 	import { underlineOptions } from "../../scripts/underline-options";
 	import { colors, menuUnderlineFlow } from "../../site.config";
@@ -74,7 +84,14 @@ import { projects, work } from "./projects";
 	const flow = strandEl
 		? createDivineFlow(strandEl, {
 				...underlineOptions(
-					{ ...menuUnderlineFlow, from: "left", wave: 10, sparkleCount: 18 },
+					{
+						...menuUnderlineFlow,
+						from: "left",
+						wave: 10,
+						sparkleCount: 18,
+						// Sparkles glide at a calm pace, closer to the hero's than the menu's.
+						travelSpeed: 1.25,
+					},
 					colors.menuUnderline,
 				),
 				reveal: reduced ? 1 : 0,
@@ -84,9 +101,15 @@ import { projects, work } from "./projects";
 	const setActive = (i: number) => names.forEach((n, j) => n.classList.toggle("is-on", j === i));
 	setActive(0);
 
+	const viewport = document.querySelector<HTMLElement>("[data-w3-viewport]")!;
+	const panels = [...document.querySelectorAll<HTMLElement>("[data-w3-panel]")];
+	/** Where to scroll for project i; set below for the layout in use. */
+	let goTo = (i: number) =>
+		panels[i]?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
+
 	if (section && track && wide && !reduced) {
 		const distance = () => track.scrollWidth - track.parentElement!.clientWidth;
-		gsap.to(track, {
+		const slide = gsap.to(track, {
 			x: () => -distance(),
 			ease: "none",
 			scrollTrigger: {
@@ -103,9 +126,19 @@ import { projects, work } from "./projects";
 				onEnter: () => flow?.setReveal(0.08),
 			},
 		});
+		// Pinned: project i is in view at that share of the pin's scroll distance. ScrollSmoother
+		// glides there (it's the page's scroller); without it, the browser's smooth scroll does.
+		goTo = (i: number) => {
+			const st = slide.scrollTrigger!;
+			const y = st.start + ((st.end - st.start) * i) / Math.max(1, panels.length - 1);
+			const smoother = ScrollSmoother.get();
+			if (smoother) smoother.scrollTo(y, true);
+			else window.scrollTo({ top: y, behavior: "smooth" });
+		};
 	} else if (track && !reduced) {
 		// Phones: swipe sideways; the strand follows the swipe.
-		const viewport = document.querySelector<HTMLElement>("[data-w3-viewport]")!;
+		goTo = (i: number) =>
+			viewport.scrollTo({ left: panels[i]!.offsetLeft - viewport.offsetLeft, behavior: "smooth" });
 		viewport.addEventListener(
 			"scroll",
 			() => {
@@ -117,6 +150,8 @@ import { projects, work } from "./projects";
 		);
 		flow?.setReveal(0.15);
 	}
+
+	names.forEach((name, i) => name.addEventListener("click", () => goTo(i)));
 </script>
 
 <style>
@@ -152,13 +187,23 @@ import { projects, work } from "./projects";
 		color: var(--color-text-muted);
 	}
 
-	.w3__names li {
+	.w3__name-link {
+		padding: 4px 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		letter-spacing: inherit;
+		text-transform: inherit;
+		color: inherit;
+		cursor: pointer;
 		transition:
 			color var(--motion-hover) var(--ease-out),
 			text-shadow var(--motion-hover) var(--ease-out);
 	}
 
-	.w3__names li.is-on {
+	.w3__name-link:hover,
+	.w3__name-link:focus-visible,
+	.w3__name-link.is-on {
 		color: #fff;
 		text-shadow: var(--text-hover-glow);
 	}
@@ -289,10 +334,11 @@ import { projects, work } from "./projects";
 		translate: 2px -2px;
 	}
 
+	/* Pulled up a little, closer to the panels. */
 	.w3__rail {
 		position: relative;
 		height: 44px;
-		margin: 0 var(--gutter) 0 var(--content-left);
+		margin: -14px var(--gutter) 0 var(--content-left);
 	}
 
 	.w3__strand {

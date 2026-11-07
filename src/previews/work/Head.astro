@@ -90,8 +90,12 @@ const plain = headline.replace(/[[\]]/g, "");
 		font-size: clamp(24px, 2.7vw, 42px);
 	}
 
+	/* inline-block, so the solid copy below lines up exactly with the outlined word. As a plain
+	   inline span its box is the font's content area, not the line box, and the copy sat too high,
+	   leaving the bottom of the letters unfilled. */
 	.mhead__hl {
 		position: relative;
+		display: inline-block;
 		color: transparent;
 		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
 	}

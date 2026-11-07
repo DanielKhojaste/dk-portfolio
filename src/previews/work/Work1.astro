@@ -126,11 +126,13 @@ import { projects, work } from "./projects";
 </script>
 
 <style>
+	/* Anchored at the top (not centred), so opening a row only pushes what's below it down: the
+	   rows above, and the row itself, stay where they are. */
 	.w1 {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		min-height: 100svh;
-		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+		padding: clamp(110px, 20vh, 200px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
 	}
 
 	.w1__inner {

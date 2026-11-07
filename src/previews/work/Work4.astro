@@ -1,7 +1,7 @@
 ---
 /**
  * Design 4 · Case file: the project names down the left, styled like the side nav; the chosen one fills
- * white and its details show on the right. Hover or click to switch.
+ * white and its details show on the right. Click a name to switch.
  * Phones get an accordion: one project open at a time.
  */
 import Head from "./Head.astro";
@@ -124,9 +124,8 @@ import { projects, work } from "./projects";
 	};
 
 	tabs.forEach((tab, i) => {
+		// Click (or Enter/Space) only: hovering or tabbing past a name doesn't switch.
 		tab.addEventListener("click", () => select(i));
-		tab.addEventListener("pointerenter", () => select(i));
-		tab.addEventListener("focus", () => select(i));
 	});
 </script>
 

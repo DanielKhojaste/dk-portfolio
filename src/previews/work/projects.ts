@@ -59,3 +59,19 @@ export const projects: Project[] = [
 ];
 
 export const work = { eyebrow: "Work" };
+
+/** Not shown for now. Its screenshot (the dashboard, cropped to 16:10 from the top) is ready to use. */
+export const spare: Project[] = [
+	{
+		name: "DK8s",
+		kind: "Operations console",
+		status: "v0.3.0",
+		blurb:
+			"Register services, request deployments and watch them roll out live. Event-driven: a Spring Boot API, a message broker and a React dashboard that shows what happened and why.",
+		short: "Services, deployments and their health, live.",
+		stack: ["Java", "Spring Boot", "PostgreSQL", "Solace PubSub+", "React", "TypeScript", "Docker"],
+		link: { label: "GitHub", href: "https://github.com/DanielKhojaste/dk8s" },
+		image: "/previews/dk8s.webp",
+		alt: "The DK8s dashboard: four registered services with their health, recent registrations and the message queues.",
+	},
+];
