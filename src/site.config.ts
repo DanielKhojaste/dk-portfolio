@@ -64,7 +64,7 @@ export const about = {
 	text: "I'm Daniel, a software developer based in Canada. I work across the stack, from the interface you touch to the systems behind it.",
 	facts: [
 		{ label: "Based in", value: profile.location },
-		{ label: "Focus", value: "Web apps, end to end" },
+		{ label: "Focus", value: "Full-stack development" },
 		{ label: "Currently Building", value: profile.currently.name, href: profile.currently.href },
 	] as readonly { label: string; value: string; href?: string }[],
 };

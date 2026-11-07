@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`SCREENSHOTS.md`: home and menu on desktop, tablet and phone), and a DivineFlow section (soon its
   own npm package; copyright Daniel Khojaste).
 - About section, right under the hero and one screen tall: a short headline ("I build web apps that
-  are fast, look sharp and hold up."), one line of text and three facts (based in, focus, currently building).
+  are fast, look sharp and hold up."), one line of text and three facts (based in, focus: full-stack development, currently building), with no lines above them.
   The text under the headline is there from the start. When it comes into view the headline lights
   up word by word, the red words are wiped in from the left (GSAP, a clip-path over a solid copy, so
   every letter fills completely), 0.9s each, one straight after the other
