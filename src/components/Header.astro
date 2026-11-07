@@ -67,12 +67,26 @@ import Menu from "./Menu.astro";
 		pointer-events: auto;
 	}
 
+	/* Hover: the logo glows in the main colour and grows a touch. Colour, glow and timing come from
+	   site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
 	.site-header__home {
 		display: flex;
 		align-items: center;
 		height: 48px;
 		padding-block: 5px;
 		color: var(--color-text);
+		transition:
+			color var(--logo-hover-duration) var(--logo-hover-ease),
+			filter var(--logo-hover-duration) var(--logo-hover-ease),
+			scale var(--logo-hover-duration) var(--logo-hover-ease);
+	}
+
+	.site-header__home:hover,
+	.site-header__home:focus-visible {
+		color: var(--logo-hover-color);
+		filter: drop-shadow(0 0 var(--logo-hover-glow-size) var(--logo-hover-glow))
+			drop-shadow(0 0 3px var(--logo-hover-core));
+		scale: var(--logo-hover-scale);
 	}
 
 	.menu-button {
@@ -83,7 +97,7 @@ import Menu from "./Menu.astro";
 		padding: 0 6px 0 18px;
 		border: 1px solid var(--color-line);
 		border-radius: var(--radius-pill);
-		background: rgb(8 4 5 / 0.55);
+		background: rgb(var(--shade-bg) / 0.55);
 		color: var(--color-text);
 		font-size: 14px;
 		font-weight: 600;
@@ -95,9 +109,16 @@ import Menu from "./Menu.astro";
 			background-color var(--hover-duration) var(--ease-out);
 	}
 
+	/* Desktop has the side nav instead (same breakpoint as components/SideNav.astro). */
+	@media (min-width: 1024px) and (min-height: 600px) {
+		.menu-button {
+			display: none;
+		}
+	}
+
 	.menu-button:hover {
 		border-color: var(--color-line-strong);
-		background: rgb(245 236 236 / 0.06);
+		background: rgb(var(--shade-text) / 0.06);
 	}
 
 	/* "Menu" and "Close" share one cell so swapping them never changes the button's width. */

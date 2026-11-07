@@ -7,49 +7,18 @@
  * Open/close animations are CSS transitions on opacity/transform only, so the compositor runs them
  * even when the main thread is busy.
  */
-import type { DivineFlowOptions } from "../lib/divine-flow";
 import { colors, menuUnderlineFlow, sections } from "../site.config";
+import { underlineHeight, underlineOptions } from "../scripts/underline-options";
 import DivineFlow from "./DivineFlow.astro";
 
-const { from, wave, waves, sway, ...strand } = menuUnderlineFlow;
-
-/** Where the strand starts, as DivineFlow's origin and the side(s) it flows towards. */
-const origin = {
-	center: { originX: 0.5, sides: "both" },
-	left: { originX: 0, sides: "right" },
-	right: { originX: 1, sides: "left" },
-} as const;
-
 /** Room for the wave, the tails' sway and the strand's glow. */
-const ruleHeight = Math.ceil(Math.abs(wave) + Math.abs(sway)) * 2 + 24;
+const ruleHeight = underlineHeight(menuUnderlineFlow);
 
 /**
- * One strand of DivineFlow, drawn out from `from` with a gentle wave. Every link gets exactly the
- * same strand (same seed), so the colour and brightness never change from one link to the next.
+ * One strand of DivineFlow, drawn out with a gentle wave. Every link gets exactly the same strand
+ * (same seed), so the colour and brightness never change from one link to the next.
  */
-const underline: Omit<DivineFlowOptions, "canvas"> = {
-	theme: colors.menuUnderline,
-	...origin[from],
-	originY: 0.5,
-	innerGap: 0,
-	wave,
-	wavePeriods: waves,
-	tailSway: sway,
-	// Only the tails move: no per-point wobble, so it stays one smooth curve.
-	amplitude: 0,
-	variance: 0,
-	fadeFromOrigin: false,
-	lineCount: 1,
-	scatterCount: 0,
-	spread: 0,
-	speckCount: 0,
-	emberCount: 0,
-	revealStagger: 0,
-	uniform: true,
-	maxDpr: 2,
-	seed: 7100,
-	...strand,
-};
+const underline = underlineOptions(menuUnderlineFlow, colors.menuUnderline);
 ---
 
 <div
@@ -103,7 +72,7 @@ const underline: Omit<DivineFlowOptions, "canvas"> = {
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		/* See-through enough to keep the hero's colour, blurred so nothing behind competes with the links. */
-		background: rgb(8 4 5 / 0.62);
+		background: rgb(var(--shade-bg) / 0.62);
 		-webkit-backdrop-filter: blur(18px) saturate(1.1);
 		backdrop-filter: blur(18px) saturate(1.1);
 		cursor: pointer;
@@ -126,7 +95,11 @@ const underline: Omit<DivineFlowOptions, "canvas"> = {
 		width: min(90vw, 900px);
 		aspect-ratio: 1;
 		border-radius: 50%;
-		background: radial-gradient(closest-side, rgb(190 28 40 / 0.28), rgb(8 4 5 / 0));
+		background: radial-gradient(
+			closest-side,
+			rgb(var(--shade-hero-glow) / 0.28),
+			rgb(var(--shade-bg) / 0)
+		);
 		pointer-events: none;
 	}
 

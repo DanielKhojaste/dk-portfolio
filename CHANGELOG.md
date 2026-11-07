@@ -12,10 +12,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README titled "Daniel's Portfolio", showing the desktop home page with a button to a screenshot gallery
   (`SCREENSHOTS.md`: home and menu on desktop, tablet and phone), and a DivineFlow section (soon its
   own npm package; copyright Daniel Khojaste).
+- About section, right under the hero and one screen tall: a short headline ("I build web apps that
+  are fast, look sharp and hold up."), one line of text and three facts (based in, focus, building).
+  The text under the headline is there from the start. When it comes into view the headline lights
+  up word by word, the red words are wiped in from the left (GSAP, a clip-path over a solid copy, so
+  every letter fills completely), 0.9s each with a 0.2s pause between them
+  (`animation.about.highlight`, `highlightGap`), and then the facts slide in. Copy lives in
+  `site.config.ts`; `[brackets]` mark the red words.
+- Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
+  Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
+  its marker white (`animation.textHover`, `colors.textHover`, `animation.sideNav.nudge`). The
+  current section is filled white with a glowing marker and a DivineFlow underline with its own,
+  flatter settings (`sideNavUnderlineFlow`). Moving to another section, the old label empties and
+  the new one fills at the underline's pace (`animation.sideNav.labelIn` / `labelOut`). Hidden on
+  the hero; phones and tablets keep the menu button.
+- Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`): the page glides to a stop, and section
+  links glide to their section. Off for reduced motion and, by default, on touch screens.
+- A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
+- The Lineup link in About nudges its arrow up and right on hover, like the hero's Lineup link.
+- Hovering the DK logo makes it glow in the main colour and grow a touch (`colors.logoHover`,
+  `animation.logoHover`).
+- Settings for all of the above in `site.config.ts` (timings, side nav marker, underline settings per
+  device).
+- One main colour (`brand` in `site.config.ts`) that every colour is worked out from
+  (`scripts/brand.ts`): buttons, highlights, glows, the hero's last name, the section glow, the
+  logo hover, every DivineFlow palette, and a faint tint in the background and text. Each shade
+  turns and saturates with the main colour but keeps its designed lightness. In CSS they're
+  `--shade-*` variables. The hero photo is regraded to match with a CSS filter (none for the
+  original red).
+- Shared timings (`motion` in `site.config.ts`: quick, hover, draw, glide, plus matching CSS and
+  GSAP eases), which the hovers, fills, underlines and smooth scrolling now use. In CSS:
+  `--motion-*`, `--ease-out` and `--ease-in-out`.
+- Text link hover (`.text-link`): the same glow as the side nav's labels, at the same pace, without
+  the movement, for links in running text.
+- Scroll prompt at the bottom of the hero ("Scroll to see more", `hero.scrollHint`): fades in after
+  4 seconds on the hero (`animation.scrollHint.delay`), one line of small caps near the bottom edge.
+  It brightens on hover (no glow, so it keeps its weight), hides once you scroll and takes you to
+  About when clicked.
 
 ### Changed
 
+- The hero's "View my work" and "Get in touch" buttons are gone; the scroll prompt takes their place.
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
+- Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
+  section headings no longer have numbers.
+- The temporary Work section is shorter so it fits on one desktop screen.
+- The side nav fill and About's red-word wipe start on the first letter: the wipe no longer crosses
+  empty space first, and hover fills use an ease that starts at full speed.
 
 ## [0.1.0-alpha.1] - 2026-10-31
 

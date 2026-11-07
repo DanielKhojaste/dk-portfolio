@@ -6,7 +6,8 @@ import "../styles/global.css";
 // swapping (and re-laying out) in the middle of the intro animations.
 import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
-import { animation } from "../site.config";
+import { animation, brand, colors, motion, shades } from "../site.config";
+import { hex, photoFilter, shadeVariables } from "../scripts/brand";
 
 interface Props {
 	title?: string;
@@ -26,16 +27,39 @@ const timings = {
 	"--menu-links": s(animation.menu.links),
 	"--menu-link-stagger": s(animation.menu.linkStagger),
 	"--menu-button-duration": s(animation.menu.button),
+	"--motion-quick": s(motion.quick),
+	"--motion-hover": s(motion.hover),
+	"--motion-draw": s(motion.draw),
+	"--motion-glide": s(motion.glide),
+	"--ease-out": motion.ease.out.css,
+	"--ease-in-out": motion.ease.inOut.css,
+	"--side-nav-nudge": `${animation.sideNav.nudge}px`,
+	"--side-nav-label-in": s(animation.sideNav.labelIn),
+	"--side-nav-label-out": s(animation.sideNav.labelOut),
+	"--side-nav-label-ease": animation.sideNav.labelEase,
+	"--text-hover-duration": s(animation.textHover.duration),
+	"--text-hover-ease": animation.textHover.ease,
+	"--text-hover-color": colors.textHover.color,
+	"--text-hover-glow": colors.textHover.glow,
+	"--logo-hover-scale": String(animation.logoHover.scale),
+	"--logo-hover-core": colors.logoHover.core,
+	"--logo-hover-duration": s(animation.logoHover.duration),
+	"--logo-hover-ease": animation.logoHover.ease,
+	"--logo-hover-color": colors.logoHover.color,
+	"--logo-hover-glow": colors.logoHover.glow,
+	"--logo-hover-glow-size": `${colors.logoHover.glowSize}px`,
+	"--section-glow": colors.sectionGlow,
+	"--photo-filter": photoFilter(brand),
 };
 ---
 
 <!doctype html>
-<html lang="en" style={timings}>
+<html lang="en" style={{ ...shadeVariables(shades), ...timings }}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
-		<meta name="theme-color" content="#080405" />
+		<meta name="theme-color" content={hex(shades.bg)} />
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -48,6 +72,7 @@ const timings = {
 		<slot name="head" />
 	</head>
 	<body>
+		<div class="page-glow" aria-hidden="true"></div>
 		<slot />
 	</body>
 </html>

@@ -1,6 +1,6 @@
 ---
 /**
- * Temporary lorem ipsum sections so the page scrolls and the hero links have targets.
+ * Temporary lorem ipsum sections (Work, Skills, Contact) so the page scrolls and the links have targets.
  * Each one gets replaced with real content in v0.2.0 (see notes/ROADMAP.md).
  */
 import Section from "./Section.astro";
@@ -24,7 +24,7 @@ const skills = [
 ];
 ---
 
-<Section id="work" index="01" title="Work">
+<Section id="work" title="Work">
 	<p>{lorem[0]}</p>
 	<ul class="cards">
 		{
@@ -32,25 +32,21 @@ const skills = [
 				<li class="card">
 					<div class="card__media" aria-hidden="true" />
 					<h3 class="card__title">{name}</h3>
-					<p class="card__text">{lorem[1]}</p>
+					<p class="card__text">{lorem[1].split(". ")[0]}.</p>
 				</li>
 			))
 		}
 	</ul>
 </Section>
 
-<Section id="skills" index="02" title="Skills">
+<Section id="skills" title="Skills">
 	<p>{lorem[1]}</p>
 	<ul class="chips">
 		{skills.map((skill) => <li class="chip">{skill}</li>)}
 	</ul>
 </Section>
 
-<Section id="about" index="03" title="About">
-	{lorem.map((text) => <p>{text}</p>)}
-</Section>
-
-<Section id="contact" index="04" title="Contact">
+<Section id="contact" title="Contact">
 	<p>{lorem[2]}</p>
 	<p><a class="contact-link" href="#">lorem@ipsum.dev</a></p>
 </Section>
@@ -70,15 +66,19 @@ const skills = [
 		flex-direction: column;
 		gap: 10px;
 		padding: 16px;
-		border: 1px solid rgb(245 236 236 / 0.1);
+		border: 1px solid rgb(var(--shade-text) / 0.1);
 		border-radius: 16px;
-		background: rgb(245 236 236 / 0.02);
+		background: rgb(var(--shade-text) / 0.02);
 	}
 
 	.card__media {
-		aspect-ratio: 16 / 10;
+		aspect-ratio: 16 / 8;
 		border-radius: 10px;
-		background: linear-gradient(135deg, rgb(200 32 43 / 0.35), rgb(8 4 5 / 0.2));
+		background: linear-gradient(
+			135deg,
+			rgb(var(--shade-accent) / 0.35),
+			rgb(var(--shade-bg) / 0.2)
+		);
 	}
 
 	.card__title {
