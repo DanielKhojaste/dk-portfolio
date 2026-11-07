@@ -3,7 +3,7 @@ import { Picture } from "astro:assets";
 import { throne, throneSizes, throneWidths } from "./hero-image";
 import DivineFlow from "./DivineFlow.astro";
 
-import { animation, backgroundFlow, colors, hero, heroStrand, profile } from "../site.config";
+import { animation, backgroundFlow, colors, hero, profile } from "../site.config";
 ---
 
 <section class="hero" id="intro" aria-labelledby="hero-title">
@@ -15,16 +15,6 @@ import { animation, backgroundFlow, colors, hero, heroStrand, profile } from "..
 		options={{ theme: colors.background, ...backgroundFlow.desktop }}
 		compactOptions={backgroundFlow.compact}
 	/>
-
-	<!-- One strand through the middle with the menu underline's sparkles (heroStrand). -->
-	<div class="hero__strand" aria-hidden="true">
-		<DivineFlow
-			reveal={animation.background}
-			fadeIn={animation.background.fadeIn}
-			options={{ theme: colors.background, ...backgroundFlow.desktop, ...heroStrand }}
-			compactOptions={{ ...backgroundFlow.compact, ...heroStrand }}
-		/>
-	</div>
 
 	<h1 id="hero-title" class="hero__name">
 		<span class="hero__first">Daniel</span>
@@ -209,14 +199,6 @@ import { animation, backgroundFlow, colors, hero, heroStrand, profile } from "..
 		-webkit-mask-image: linear-gradient(#000 64%, transparent 98%);
 		mask-image: linear-gradient(#000 64%, transparent 98%);
 		user-select: none;
-	}
-
-	/* Same layer as the background DivineFlow, just above it. */
-	.hero__strand {
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-		pointer-events: none;
 	}
 
 	.hero__vignette {

@@ -391,23 +391,3 @@ export const sideNavUnderlineFlow: UnderlineFlow = {
 	motion: backgroundFlow.desktop.motion,
 	sparkleCount: 14,
 };
-
-/**
- * One extra strand through the middle of the hero, on top of the background, with the menu
- * underline's thickness and brightness (menuUnderlineFlow), with its own sparkles. It takes its
- * shape and colours from the background (backgroundFlow, colors.background) and draws in with it.
- */
-export const heroStrand: FlowOptions = {
-	thickness: menuUnderlineFlow.thickness,
-	alpha: menuUnderlineFlow.alpha,
-	sparkleCount: 14,
-	/** How fast its sparkles glide along it: 1 is the background's speed, the menu underline's is 6. */
-	travelSpeed: 1.25,
-	/** Just the one strand each side of the centre, with no strays or embers of its own. */
-	lineCount: 1,
-	scatterCount: 0,
-	spread: 0,
-	emberCount: 0,
-	/** A different seed from the background, so it isn't a copy of one of its strands. */
-	seed: 4242,
-};
