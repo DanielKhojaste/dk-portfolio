@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
 - The Lineup link in About nudges its arrow up and right on hover, like the hero's Lineup link.
 - One extra DivineFlow strand through the middle of the hero, with the menu underline's thickness,
-  brightness (`heroStrand`, which follows `menuUnderlineFlow`), 16 sparkles that glide a little
+  brightness (`heroStrand`, which follows `menuUnderlineFlow`), 14 sparkles that glide a little
   faster than the background's, and the background's motion. It draws in with the background.
 - Hovering the DK logo makes it glow in the main colour and grow a touch (`colors.logoHover`,
   `animation.logoHover`).

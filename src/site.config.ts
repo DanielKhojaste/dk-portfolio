@@ -400,9 +400,9 @@ export const sideNavUnderlineFlow: UnderlineFlow = {
 export const heroStrand: FlowOptions = {
 	thickness: menuUnderlineFlow.thickness,
 	alpha: menuUnderlineFlow.alpha,
-	sparkleCount: 16,
+	sparkleCount: 14,
 	/** How fast its sparkles glide along it: 1 is the background's speed, the menu underline's is 6. */
-	travelSpeed: 1.6,
+	travelSpeed: 1.25,
 	/** Just the one strand each side of the centre, with no strays or embers of its own. */
 	lineCount: 1,
 	scatterCount: 0,
