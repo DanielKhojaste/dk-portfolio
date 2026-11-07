@@ -1,0 +1,386 @@
+---
+/**
+ * Design 5 · On the strand: one DivineFlow strand runs across the section and draws in when you arrive.
+ * The projects sit along it like stops, alternating above and below, and each appears as the light
+ * reaches its node. Phones turn it upright: the strand runs down the left with the projects beside it.
+ */
+import Head from "./Head.astro";
+import Shot from "./Shot.astro";
+import { projects, work } from "./projects";
+
+const stops = [0.17, 0.5, 0.83];
+---
+
+<section class="w5" id="work" aria-labelledby="work-title" data-w5>
+	<div class="w5__inner">
+		<div class="w5__top">
+			<Head eyebrow={work.eyebrow} headline="Along the [way]" size="md" />
+			<p class="w5__intro">
+				What I've been building lately, from a desktop app to an editor extension.
+			</p>
+		</div>
+
+		<div class="w5__stage" data-w5-stage>
+			<div class="w5__strand" data-w5-strand aria-hidden="true"></div>
+			<ol class="w5__stops">
+				{
+					projects.map((p, i) => (
+						<li
+							class:list={["w5__stop", i % 2 ? "is-below" : "is-above"]}
+							style={`--at: ${stops[i]}`}
+							data-w5-stop={stops[i]}
+						>
+							<span class="w5__node" aria-hidden="true" />
+							<a class="w5__card" href={p.link.href} target="_blank" rel="noopener noreferrer">
+								<div class="w5__media">
+									<Shot project={p} />
+								</div>
+								<p class="w5__meta">
+									<span>{p.kind}</span>
+									<span class="w5__status">{p.status}</span>
+								</p>
+								<h3 class="w5__name">
+									{p.name}
+									<svg viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M7 17L17 7M8 7h9v9" />
+									</svg>
+								</h3>
+								<p class="w5__short">{p.short}</p>
+							</a>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { gsap } from "gsap";
+	import { ScrollTrigger } from "gsap/ScrollTrigger";
+	import { createDivineFlow } from "../../lib/divine-flow";
+	import { underlineOptions } from "../../scripts/underline-options";
+	import { colors, menuUnderlineFlow } from "../../site.config";
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	const stage = document.querySelector<HTMLElement>("[data-w5-stage]");
+	const strandEl = document.querySelector<HTMLElement>("[data-w5-strand]");
+	const stops = [...document.querySelectorAll<HTMLElement>("[data-w5-stop]")];
+	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+	// Phones: the strand box is turned upright, so it needs the stage's height as its length.
+	const sizeStrand = () => stage && stage.style.setProperty("--stage-h", `${stage.offsetHeight}px`);
+	sizeStrand();
+	addEventListener("resize", sizeStrand);
+
+	if (stage && strandEl) {
+		const flow = createDivineFlow(strandEl, {
+			...underlineOptions(
+				{
+					...menuUnderlineFlow,
+					from: "left",
+					wave: 8,
+					waves: 1,
+					thickness: 1.7,
+					sparkleCount: 14,
+					travelSpeed: 1.25,
+				},
+				colors.menuUnderline,
+			),
+			reveal: reduced ? 1 : 0,
+		});
+
+		if (reduced) {
+			stops.forEach((s) => s.classList.add("is-lit"));
+		} else {
+			const state = { reveal: 0 };
+			ScrollTrigger.create({
+				trigger: stage,
+				start: "top 70%",
+				once: true,
+				onEnter: () =>
+					gsap.to(state, {
+						reveal: 1,
+						duration: 3.2,
+						ease: "power1.inOut",
+						onUpdate: () => {
+							flow.setReveal(state.reveal);
+							stops.forEach((s) =>
+								s.classList.toggle("is-lit", state.reveal >= Number(s.dataset.w5Stop) - 0.02),
+							);
+						},
+					}),
+			});
+		}
+	}
+</script>
+
+<style>
+	.w5 {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.w5__inner {
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.w5__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 32px;
+	}
+
+	.w5__intro {
+		max-width: 36ch;
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--color-text-soft);
+	}
+
+	.w5__stage {
+		position: relative;
+		height: clamp(520px, 66vh, 620px);
+		margin-top: 28px;
+	}
+
+	.w5__strand {
+		position: absolute;
+		left: -2%;
+		right: -2%;
+		top: calc(50% - 40px);
+		height: 80px;
+	}
+
+	.w5__stops {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.w5__stop {
+		position: absolute;
+		left: calc(var(--at) * 100%);
+		top: 50%;
+		width: min(300px, 26%);
+		translate: -50% 0;
+	}
+
+	.w5__node {
+		position: absolute;
+		left: 50%;
+		top: 0;
+		width: 11px;
+		height: 11px;
+		translate: -50% -50%;
+		border-radius: 50%;
+		background: rgb(var(--shade-text) / 0.25);
+		transition:
+			background 0.5s var(--ease-out),
+			box-shadow 0.5s var(--ease-out);
+	}
+
+	.w5__stop.is-lit .w5__node {
+		background: #fff;
+		box-shadow:
+			0 0 0 4px rgb(var(--shade-bright) / 0.25),
+			0 0 18px rgb(var(--shade-halo));
+	}
+
+	.w5__card {
+		position: absolute;
+		left: 0;
+		right: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		color: inherit;
+		text-decoration: none;
+		opacity: 0.12;
+		transition:
+			opacity 0.8s var(--ease-out),
+			translate 0.8s var(--ease-out);
+	}
+
+	.w5__stop.is-above .w5__card {
+		bottom: 34px;
+		translate: 0 10px;
+	}
+
+	.w5__stop.is-below .w5__card {
+		top: 34px;
+		translate: 0 -10px;
+	}
+
+	.w5__stop.is-lit .w5__card {
+		opacity: 1;
+		translate: 0 0;
+	}
+
+	/* A short stem from the node to its card. */
+	.w5__stop::before {
+		content: "";
+		position: absolute;
+		left: 50%;
+		width: 1px;
+		height: 26px;
+		background: linear-gradient(rgb(var(--shade-text) / 0.35), transparent);
+		opacity: 0;
+		transition: opacity 0.6s var(--ease-out);
+	}
+
+	.w5__stop.is-above::before {
+		bottom: 6px;
+		rotate: 180deg;
+		transform-origin: center;
+	}
+
+	.w5__stop.is-below::before {
+		top: 6px;
+	}
+
+	.w5__stop.is-lit::before {
+		opacity: 1;
+	}
+
+	.w5__media {
+		aspect-ratio: 16 / 10;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		transition:
+			border-color var(--motion-hover) var(--ease-out),
+			box-shadow var(--motion-hover) var(--ease-out);
+	}
+
+	.w5__card:hover .w5__media {
+		border-color: rgb(var(--shade-bright) / 0.5);
+		box-shadow: 0 0 36px rgb(var(--shade-halo) / 0.22);
+	}
+
+	.w5__meta {
+		display: flex;
+		gap: 10px;
+		margin: 4px 0 0;
+		font-size: 9.5px;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.w5__status {
+		color: var(--color-accent-soft);
+	}
+
+	.w5__name {
+		display: flex;
+		align-items: center;
+		gap: 0.35em;
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: 19px;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	.w5__name svg {
+		width: 0.6em;
+		height: 0.6em;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: translate var(--motion-hover) var(--ease-out);
+	}
+
+	.w5__card:hover .w5__name svg {
+		translate: 0.08em -0.08em;
+	}
+
+	.w5__short {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--color-text-soft);
+	}
+
+	/* ---------- Phones: upright ---------- */
+	@media (max-width: 767px) {
+		.w5__top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 14px;
+			margin-bottom: 28px;
+		}
+
+		.w5__intro {
+			font-size: 14px;
+		}
+
+		.w5__stage {
+			height: auto;
+			padding-left: 40px;
+		}
+
+		/* The strand box is laid out sideways, then turned to run down the left edge. */
+		.w5__strand {
+			left: 14px;
+			right: auto;
+			top: 0;
+			width: var(--stage-h, 1200px);
+			height: 60px;
+			transform-origin: 0 0;
+			transform: rotate(90deg) translateY(-30px);
+		}
+
+		.w5__stops {
+			display: flex;
+			flex-direction: column;
+			gap: 30px;
+		}
+
+		.w5__stop {
+			position: relative;
+			left: auto;
+			top: auto;
+			width: auto;
+			translate: none;
+		}
+
+		.w5__node {
+			left: -26px;
+			top: 18px;
+		}
+
+		.w5__stop::before {
+			display: none;
+		}
+
+		.w5__card,
+		.w5__stop.is-above .w5__card,
+		.w5__stop.is-below .w5__card {
+			position: relative;
+			top: auto;
+			bottom: auto;
+			translate: 0 12px;
+		}
+
+		.w5__stop.is-lit .w5__card {
+			translate: 0 0;
+		}
+
+		.w5__name {
+			font-size: 20px;
+		}
+	}
+</style>

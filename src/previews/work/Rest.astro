@@ -1,0 +1,106 @@
+---
+/**
+ * The placeholder Skills and Contact sections, for the Work previews, so the page scrolls on and
+ * the links have targets.
+ * Each one gets replaced with real content in v0.2.0 (see notes/ROADMAP.md).
+ */
+import Section from "../../components/Section.astro";
+
+const lorem = [
+	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus, posuere velit aliquet. Donec ullamcorper nulla non metus auctor fringilla.",
+	"Vestibulum id ligula porta felis euismod semper. Cras mattis consectetur purus sit amet fermentum. Maecenas faucibus mollis interdum, nullam quis risus eget urna mollis ornare vel eu leo.",
+	"Aenean lacinia bibendum nulla sed consectetur. Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue. Etiam porta sem malesuada magna mollis euismod.",
+];
+
+const skills = [
+	"Lorem",
+	"Ipsum",
+	"Dolor",
+	"Sit amet",
+	"Consectetur",
+	"Adipiscing",
+	"Elit",
+	"Sed do",
+];
+---
+
+<Section id="skills" title="Skills">
+	<p>{lorem[1]}</p>
+	<ul class="chips">
+		{skills.map((skill) => <li class="chip">{skill}</li>)}
+	</ul>
+</Section>
+
+<Section id="contact" title="Contact">
+	<p>{lorem[2]}</p>
+	<p><a class="contact-link" href="#">lorem@ipsum.dev</a></p>
+</Section>
+
+<style>
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 20px;
+		margin: 12px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 16px;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		border-radius: 16px;
+		background: rgb(var(--shade-text) / 0.02);
+	}
+
+	.card__media {
+		aspect-ratio: 16 / 8;
+		border-radius: 10px;
+		background: linear-gradient(
+			135deg,
+			rgb(var(--shade-accent) / 0.35),
+			rgb(var(--shade-bg) / 0.2)
+		);
+	}
+
+	.card__title {
+		margin: 4px 0 0;
+		font-size: 18px;
+		color: var(--color-text);
+	}
+
+	.card__text {
+		font-size: 15px;
+		line-height: 1.6;
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.chip {
+		padding: 8px 16px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-pill);
+		font-size: 14px;
+		color: var(--color-text);
+	}
+
+	.contact-link {
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(20px, 3vw, 36px);
+		color: var(--color-text);
+		text-decoration-color: var(--color-accent);
+		text-underline-offset: 6px;
+	}
+</style>

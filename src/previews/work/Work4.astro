@@ -1,0 +1,412 @@
+---
+/**
+ * Design 4 · Case file: the project names down the left, styled like the side nav; the chosen one fills
+ * white and its details show on the right. Hover or click to switch.
+ * Phones get an accordion: one project open at a time.
+ */
+import Head from "./Head.astro";
+import Shot from "./Shot.astro";
+import { projects, work } from "./projects";
+---
+
+<section class="w4" id="work" aria-labelledby="work-title">
+	<div class="w4__inner">
+		<div class="w4__left">
+			<Head eyebrow={work.eyebrow} headline="Pick a [project]" size="md" />
+			<ul class="w4__tabs" role="tablist" aria-label="Projects" data-w4-tabs>
+				{
+					projects.map((p, i) => (
+						<li>
+							<button
+								class:list={["w4__tab", i === 0 && "is-on"]}
+								role="tab"
+								aria-selected={i === 0 ? "true" : "false"}
+								data-w4-tab={i}
+							>
+								<span class="w4__tab-name">
+									{p.name}
+									<span class="w4__tab-fill" aria-hidden="true">
+										{p.name}
+									</span>
+								</span>
+								<span class="w4__tab-kind">{p.kind}</span>
+							</button>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="w4__panels">
+			{
+				projects.map((p, i) => (
+					<article
+						class:list={["w4__panel", i === 0 && "is-on"]}
+						role="tabpanel"
+						data-w4-panel={i}
+						aria-hidden={i === 0 ? "false" : "true"}
+					>
+						<div class="w4__media">
+							<Shot project={p} />
+						</div>
+						<div class="w4__copy">
+							<p class="w4__meta">
+								<span>{p.kind}</span>
+								<span class="w4__status">{p.status}</span>
+							</p>
+							<p class="w4__blurb">{p.blurb}</p>
+							<ul class="w4__stack">
+								{p.stack.map((s) => (
+									<li>{s}</li>
+								))}
+							</ul>
+							<a class="w4__go" href={p.link.href} target="_blank" rel="noopener noreferrer">
+								{p.link.label}
+								<svg viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M7 17L17 7M8 7h9v9" />
+								</svg>
+							</a>
+						</div>
+					</article>
+				))
+			}
+		</div>
+
+		<!-- Phones -->
+		<div class="w4__accordion">
+			{
+				projects.map((p, i) => (
+					<details class="w4__item" name="w4" open={i === 0}>
+						<summary class="w4__summary">
+							<span class="w4__tab-name">{p.name}</span>
+							<span class="w4__tab-kind">{p.kind}</span>
+						</summary>
+						<div class="w4__item-body">
+							<div class="w4__media">
+								<Shot project={p} />
+							</div>
+							<p class="w4__blurb">{p.blurb}</p>
+							<p class="w4__stack-line">{p.stack.join(" · ")}</p>
+						</div>
+					</details>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script>
+	import { gsap } from "gsap";
+
+	const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-w4-tab]")];
+	const panels = [...document.querySelectorAll<HTMLElement>("[data-w4-panel]")];
+	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	let current = 0;
+
+	const select = (i: number) => {
+		if (i === current) return;
+		current = i;
+		tabs.forEach((t, j) => {
+			t.classList.toggle("is-on", j === i);
+			t.setAttribute("aria-selected", j === i ? "true" : "false");
+		});
+		panels.forEach((p, j) => {
+			p.setAttribute("aria-hidden", j === i ? "false" : "true");
+			p.classList.toggle("is-on", j === i);
+		});
+		if (!reduced) {
+			gsap.fromTo(
+				panels[i].querySelectorAll(".w4__media, .w4__copy > *"),
+				{ opacity: 0, y: 14 },
+				{ opacity: 1, y: 0, duration: 0.6, stagger: 0.05, ease: "power3.out", overwrite: true },
+			);
+		}
+	};
+
+	tabs.forEach((tab, i) => {
+		tab.addEventListener("click", () => select(i));
+		tab.addEventListener("pointerenter", () => select(i));
+		tab.addEventListener("focus", () => select(i));
+	});
+</script>
+
+<style>
+	.w4 {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.w4__inner {
+		display: grid;
+		grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.4fr);
+		gap: clamp(32px, 5vw, 80px);
+		align-items: center;
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.w4__left {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(28px, 5vh, 48px);
+	}
+
+	.w4__tabs {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.w4__tab {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+		width: 100%;
+		padding: 8px 0 14px;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.w4__tab-name {
+		position: relative;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(24px, 2.4vw, 36px);
+		line-height: 1;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1px rgb(var(--shade-text) / 0.55);
+	}
+
+	.w4__tab-fill {
+		position: absolute;
+		inset: 0;
+		color: #fff;
+		-webkit-text-stroke: 0;
+		text-shadow: var(--text-hover-glow);
+		clip-path: inset(-30% 108% -30% -8%);
+		transition: clip-path var(--motion-glide) var(--ease-in-out);
+	}
+
+	.w4__tab.is-on .w4__tab-fill {
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	.w4__tab-kind {
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		transition: color var(--motion-hover) var(--ease-out);
+	}
+
+	.w4__tab.is-on .w4__tab-kind {
+		color: var(--color-accent-soft);
+	}
+
+	.w4__panels {
+		position: relative;
+		display: grid;
+	}
+
+	.w4__panel {
+		grid-area: 1 / 1;
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+		visibility: hidden;
+		opacity: 0;
+		transition:
+			opacity 0.3s var(--ease-out),
+			visibility 0s 0.3s;
+	}
+
+	.w4__panel.is-on {
+		visibility: visible;
+		opacity: 1;
+		transition: opacity 0.3s var(--ease-out);
+	}
+
+	.w4__media {
+		aspect-ratio: 16 / 10;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		box-shadow:
+			0 30px 70px rgb(0 0 0 / 0.5),
+			0 0 60px rgb(var(--shade-halo) / 0.12);
+	}
+
+	.w4__copy {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 10px 32px;
+		align-items: start;
+	}
+
+	.w4__meta {
+		display: flex;
+		gap: 12px;
+		margin: 0;
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.w4__status {
+		color: var(--color-accent-soft);
+	}
+
+	.w4__blurb {
+		grid-column: 1;
+		margin: 0;
+		max-width: 56ch;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--color-text-soft);
+	}
+
+	.w4__stack {
+		grid-column: 1;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.w4__stack li {
+		padding: 5px 10px;
+		border-radius: 999px;
+		font-size: 12px;
+		color: var(--color-text-soft);
+		border: 1px solid rgb(var(--shade-text) / 0.12);
+	}
+
+	.w4__go {
+		grid-column: 2;
+		grid-row: 1 / span 3;
+		align-self: center;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 12px 18px;
+		border-radius: 999px;
+		border: 1px solid rgb(var(--shade-text) / 0.2);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: #fff;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			border-color var(--motion-hover) var(--ease-out),
+			box-shadow var(--motion-hover) var(--ease-out);
+	}
+
+	.w4__go:hover {
+		border-color: rgb(var(--shade-bright) / 0.6);
+		box-shadow: 0 0 24px rgb(var(--shade-halo) / 0.25);
+	}
+
+	.w4__go svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: translate var(--motion-hover) var(--ease-out);
+	}
+
+	.w4__go:hover svg {
+		translate: 2px -2px;
+	}
+
+	.w4__accordion {
+		display: none;
+	}
+
+	@media (max-width: 900px) {
+		.w4__inner {
+			grid-template-columns: 1fr;
+			gap: 28px;
+		}
+
+		.w4__tabs,
+		.w4__panels {
+			display: none;
+		}
+
+		.w4__accordion {
+			display: flex;
+			flex-direction: column;
+			border-top: 1px solid var(--color-line);
+		}
+
+		.w4__item {
+			border-bottom: 1px solid var(--color-line);
+		}
+
+		.w4__summary {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 12px;
+			padding: 18px 0;
+			list-style: none;
+			cursor: pointer;
+		}
+
+		.w4__summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.w4__summary .w4__tab-name {
+			font-size: 26px;
+		}
+
+		.w4__item[open] .w4__tab-name {
+			color: #fff;
+			-webkit-text-stroke: 0;
+			text-shadow: var(--text-hover-glow);
+		}
+
+		.w4__item[open] .w4__tab-kind {
+			color: var(--color-accent-soft);
+		}
+
+		.w4__item-body {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			padding-bottom: 22px;
+		}
+
+		.w4__blurb {
+			font-size: 14px;
+		}
+
+		.w4__stack-line {
+			margin: 0;
+			font-size: 12px;
+			color: var(--color-text-muted);
+		}
+	}
+</style>

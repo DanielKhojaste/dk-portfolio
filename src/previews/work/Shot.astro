@@ -1,0 +1,43 @@
+---
+/** A project's screenshot, filling its parent (the parent sets the size). `motion` shows the GIF if there is one. */
+import type { Project } from "./projects";
+
+interface Props {
+	project: Project;
+	motion?: boolean;
+	class?: string;
+}
+const { project, motion = false, class: className } = Astro.props;
+const src = motion && project.motion ? project.motion : project.image;
+---
+
+<div class:list={["shot", src === project.motion && "shot--motion", className]}>
+	<img src={src} alt={project.alt} loading="lazy" decoding="async" />
+</div>
+
+<style>
+	.shot {
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background: #0c0909;
+	}
+
+	.shot img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 50% 30%;
+	}
+
+	/* GIFs are recordings of a window: show all of it rather than cropping. */
+	.shot--motion {
+		display: grid;
+		place-items: center;
+		background: #1e1e1e;
+	}
+
+	.shot--motion img {
+		object-fit: contain;
+	}
+</style>

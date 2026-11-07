@@ -1,0 +1,345 @@
+---
+/**
+ * Design 3 · Horizontal gallery: the section pins and scrolling down slides the projects sideways. A
+ * DivineFlow strand under them draws across as you go, and the name of the one in view lights up.
+ * Phones swipe sideways instead (no pinning).
+ */
+import Head from "./Head.astro";
+import Shot from "./Shot.astro";
+import { projects, work } from "./projects";
+---
+
+<section class="w3" id="work" aria-labelledby="work-title" data-w3>
+	<div class="w3__head">
+		<Head eyebrow={work.eyebrow} headline="Recent [builds]" size="md" />
+		<ol class="w3__names" aria-hidden="true">
+			{projects.map((p, i) => <li data-w3-name={i}>{p.name}</li>)}
+		</ol>
+	</div>
+
+	<div class="w3__viewport" data-w3-viewport>
+		<ul class="w3__track" data-w3-track>
+			{
+				projects.map((p, i) => (
+					<li class="w3__panel" data-w3-panel={i}>
+						<a href={p.link.href} target="_blank" rel="noopener noreferrer" class="w3__link">
+							<div class="w3__media">
+								<Shot project={p} />
+							</div>
+							<div class="w3__info">
+								<h3 class="w3__name">{p.name}</h3>
+								<div class="w3__text">
+									<p class="w3__meta">
+										<span>{p.kind}</span>
+										<span class="w3__status">{p.status}</span>
+									</p>
+									<p class="w3__blurb">{p.short}</p>
+									<p class="w3__stack">{p.stack.slice(0, 4).join(" · ")}</p>
+								</div>
+								<span class="w3__go">
+									{p.link.label}
+									<svg viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M7 17L17 7M8 7h9v9" />
+									</svg>
+								</span>
+							</div>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+
+	<div class="w3__rail" aria-hidden="true">
+		<div class="w3__strand" data-w3-strand></div>
+	</div>
+</section>
+
+<script>
+	import { gsap } from "gsap";
+	import { ScrollTrigger } from "gsap/ScrollTrigger";
+	import { createDivineFlow } from "../../lib/divine-flow";
+	import { underlineOptions } from "../../scripts/underline-options";
+	import { colors, menuUnderlineFlow } from "../../site.config";
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	const section = document.querySelector<HTMLElement>("[data-w3]");
+	const track = document.querySelector<HTMLElement>("[data-w3-track]");
+	const strandEl = document.querySelector<HTMLElement>("[data-w3-strand]");
+	const names = [...document.querySelectorAll<HTMLElement>("[data-w3-name]")];
+	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const wide = matchMedia("(min-width: 768px)").matches;
+
+	const flow = strandEl
+		? createDivineFlow(strandEl, {
+				...underlineOptions(
+					{ ...menuUnderlineFlow, from: "left", wave: 10, sparkleCount: 18 },
+					colors.menuUnderline,
+				),
+				reveal: reduced ? 1 : 0,
+			})
+		: null;
+
+	const setActive = (i: number) => names.forEach((n, j) => n.classList.toggle("is-on", j === i));
+	setActive(0);
+
+	if (section && track && wide && !reduced) {
+		const distance = () => track.scrollWidth - track.parentElement!.clientWidth;
+		gsap.to(track, {
+			x: () => -distance(),
+			ease: "none",
+			scrollTrigger: {
+				trigger: section,
+				start: "top top",
+				end: () => `+=${distance()}`,
+				pin: true,
+				scrub: 0.6,
+				invalidateOnRefresh: true,
+				onUpdate: (self) => {
+					flow?.setReveal(0.08 + self.progress * 0.92);
+					setActive(Math.min(names.length - 1, Math.round(self.progress * (names.length - 1))));
+				},
+				onEnter: () => flow?.setReveal(0.08),
+			},
+		});
+	} else if (track && !reduced) {
+		// Phones: swipe sideways; the strand follows the swipe.
+		const viewport = document.querySelector<HTMLElement>("[data-w3-viewport]")!;
+		viewport.addEventListener(
+			"scroll",
+			() => {
+				const p = viewport.scrollLeft / Math.max(1, viewport.scrollWidth - viewport.clientWidth);
+				flow?.setReveal(0.15 + p * 0.85);
+				setActive(Math.round(p * (names.length - 1)));
+			},
+			{ passive: true },
+		);
+		flow?.setReveal(0.15);
+	}
+</script>
+
+<style>
+	.w3 {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: clamp(20px, 3.5vh, 36px);
+		min-height: 100svh;
+		padding-block: clamp(96px, 12vh, 120px) clamp(40px, 6vh, 64px);
+		overflow: hidden;
+	}
+
+	.w3__head {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 24px;
+		padding: 0 var(--gutter) 0 var(--content-left);
+	}
+
+	.w3__names {
+		display: flex;
+		gap: 22px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.w3__names li {
+		transition:
+			color var(--motion-hover) var(--ease-out),
+			text-shadow var(--motion-hover) var(--ease-out);
+	}
+
+	.w3__names li.is-on {
+		color: #fff;
+		text-shadow: var(--text-hover-glow);
+	}
+
+	/* Panels slide out of view at the content's left edge, never under the side nav. */
+	.w3__viewport {
+		margin-left: var(--content-left);
+		overflow: hidden;
+		padding-bottom: 8px;
+	}
+
+	.w3__track {
+		display: flex;
+		gap: clamp(20px, 2.5vw, 36px);
+		width: max-content;
+		margin: 0;
+		padding: 0 var(--gutter) 0 0;
+		list-style: none;
+		will-change: transform;
+	}
+
+	.w3__panel {
+		width: min(820px, 56vw);
+	}
+
+	.w3__link {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.w3__media {
+		aspect-ratio: 16 / 9;
+		max-height: 50vh;
+		width: 100%;
+		border-radius: 12px;
+		overflow: hidden;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		box-shadow: 0 30px 70px rgb(0 0 0 / 0.45);
+		transition:
+			border-color var(--motion-hover) var(--ease-out),
+			box-shadow var(--motion-hover) var(--ease-out);
+	}
+
+	.w3__link:hover .w3__media {
+		border-color: rgb(var(--shade-bright) / 0.45);
+		box-shadow:
+			0 30px 70px rgb(0 0 0 / 0.45),
+			0 0 50px rgb(var(--shade-halo) / 0.2);
+	}
+
+	.w3__info {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: start;
+		gap: 24px;
+		padding-top: 18px;
+	}
+
+	.w3__name {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(26px, 2.6vw, 40px);
+		line-height: 1;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	.w3__text {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.w3__meta {
+		display: flex;
+		gap: 12px;
+		margin: 0;
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.w3__status {
+		color: var(--color-accent-soft);
+	}
+
+	.w3__blurb {
+		margin: 0;
+		font-size: 15px;
+		color: var(--color-text-soft);
+	}
+
+	.w3__stack {
+		margin: 0;
+		font-size: 12px;
+		color: var(--color-text-muted);
+	}
+
+	.w3__go {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text);
+		white-space: nowrap;
+	}
+
+	.w3__go svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: translate var(--motion-hover) var(--ease-out);
+	}
+
+	.w3__link:hover .w3__go svg {
+		translate: 2px -2px;
+	}
+
+	.w3__rail {
+		position: relative;
+		height: 44px;
+		margin: 0 var(--gutter) 0 var(--content-left);
+	}
+
+	.w3__strand {
+		position: absolute;
+		inset: 0;
+	}
+
+	@media (max-width: 767px) {
+		.w3__head {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.w3__names {
+			gap: 14px;
+			font-size: 9px;
+		}
+
+		.w3__viewport {
+			margin-left: 0;
+			padding-left: var(--gutter);
+			overflow-x: auto;
+			scroll-snap-type: x mandatory;
+			scrollbar-width: none;
+		}
+
+		.w3__viewport::-webkit-scrollbar {
+			display: none;
+		}
+
+		.w3__panel {
+			width: 84vw;
+			scroll-snap-align: start;
+			scroll-margin-left: var(--gutter);
+		}
+
+		.w3__info {
+			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		.w3__go {
+			display: none;
+		}
+
+		.w3__blurb {
+			font-size: 14px;
+		}
+	}
+</style>

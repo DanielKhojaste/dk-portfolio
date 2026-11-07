@@ -1,0 +1,381 @@
+---
+/**
+ * Design 1 · Index: big outlined names, one per row. On desktop, hovering a row fills its name and
+ * drops it open to show the screenshot (or GIF); moving off closes it. Phones and tablets open a row
+ * with a click (tap), one at a time.
+ */
+import Head from "./Head.astro";
+import Shot from "./Shot.astro";
+import { projects, work } from "./projects";
+---
+
+<section class="w1" id="work" aria-labelledby="work-title">
+	<div class="w1__inner">
+		<div class="w1__top">
+			<Head eyebrow={work.eyebrow} headline="Selected [work]" />
+			<p class="w1__prompt">
+				<span class="w1__prompt-hover">Hover a project to see more</span>
+				<span class="w1__prompt-click">Click a project to see more</span>
+			</p>
+		</div>
+
+		<ul class="w1__list" data-w1-list>
+			{
+				projects.map((p, i) => (
+					<li class="w1__row" data-w1-row>
+						<button
+							class="w1__head"
+							type="button"
+							aria-expanded="false"
+							aria-controls={`w1-panel-${i}`}
+							data-w1-toggle
+						>
+							<span class="w1__name">
+								{p.name}
+								<span class="w1__fill" aria-hidden="true">
+									{p.name}
+								</span>
+							</span>
+							<span class="w1__meta">
+								<span class="w1__kind">{p.kind}</span>
+								<span class="w1__status">{p.status}</span>
+							</span>
+							<span class="w1__stack">{p.stack.slice(0, 3).join(" · ")}</span>
+							<svg class="w1__chevron" viewBox="0 0 24 24" aria-hidden="true">
+								<path d="M6 9l6 6 6-6" />
+							</svg>
+						</button>
+						<div class="w1__panel" id={`w1-panel-${i}`} data-w1-panel>
+							<div class="w1__panel-inner">
+								<div class="w1__media">
+									<Shot project={p} motion />
+								</div>
+								<div class="w1__copy">
+									<p class="w1__blurb">{p.blurb}</p>
+									<p class="w1__stack-full">{p.stack.join(" · ")}</p>
+									<a class="w1__go" href={p.link.href} target="_blank" rel="noopener noreferrer">
+										{p.link.label}
+										<svg viewBox="0 0 24 24" aria-hidden="true">
+											<path d="M7 17L17 7M8 7h9v9" />
+										</svg>
+										<span class="sr-only">(opens in a new tab)</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
+
+<script>
+	import { gsap } from "gsap";
+	import { ScrollTrigger } from "gsap/ScrollTrigger";
+	gsap.registerPlugin(ScrollTrigger);
+
+	const list = document.querySelector<HTMLElement>("[data-w1-list]");
+	const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const hover = matchMedia("(hover: hover) and (pointer: fine)");
+
+	if (list) {
+		const rows = [...list.querySelectorAll<HTMLElement>("[data-w1-row]")];
+		const panelOf = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-w1-panel]")!;
+		const toggleOf = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-w1-toggle]")!;
+
+		const set = (row: HTMLElement, open: boolean) => {
+			if (row.classList.contains("is-open") === open) return;
+			row.classList.toggle("is-open", open);
+			toggleOf(row).setAttribute("aria-expanded", String(open));
+			gsap.to(panelOf(row), {
+				height: open ? "auto" : 0,
+				duration: reduced ? 0 : open ? 0.7 : 0.5,
+				ease: open ? "power3.out" : "power2.inOut",
+				overwrite: true,
+				// The page got taller or shorter: let scrolling (and the side nav) know.
+				onComplete: () => ScrollTrigger.refresh(),
+			});
+		};
+
+		rows.forEach((row) => {
+			// Desktop: open while hovered.
+			row.addEventListener("pointerenter", () => hover.matches && set(row, true));
+			row.addEventListener("pointerleave", () => hover.matches && set(row, false));
+			// Everywhere: click (or Enter/Space) toggles, one open at a time.
+			toggleOf(row).addEventListener("click", (event) => {
+				// A mouse click on desktop changes nothing (hovering already opened it); keyboard and touch toggle.
+				if (hover.matches && event.detail > 0) return;
+				const open = !row.classList.contains("is-open");
+				if (open) rows.forEach((r) => r !== row && set(r, false));
+				set(row, open);
+			});
+		});
+
+		if (!reduced) {
+			gsap.from(rows, {
+				opacity: 0,
+				y: 30,
+				duration: 0.8,
+				stagger: 0.1,
+				ease: "power3.out",
+				scrollTrigger: { trigger: list, start: "top 80%", once: true },
+			});
+		}
+	}
+</script>
+
+<style>
+	.w1 {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.w1__inner {
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.w1__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 32px;
+		margin-bottom: clamp(24px, 4.5vh, 48px);
+	}
+
+	.w1__prompt {
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.26em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.w1__prompt-click {
+		display: none;
+	}
+
+	@media not ((hover: hover) and (pointer: fine)) {
+		.w1__prompt-hover {
+			display: none;
+		}
+
+		.w1__prompt-click {
+			display: inline;
+		}
+	}
+
+	.w1__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--color-line);
+	}
+
+	.w1__row {
+		border-bottom: 1px solid var(--color-line);
+	}
+
+	.w1__head {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 200px 250px 24px;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+		padding: clamp(12px, 2vh, 20px) 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.w1__name {
+		position: relative;
+		width: max-content;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(30px, 4vw, 60px);
+		line-height: 1;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1.2px rgb(var(--shade-text) / 0.45);
+	}
+
+	.w1__fill {
+		position: absolute;
+		inset: 0;
+		color: #fff;
+		-webkit-text-stroke: 0;
+		text-shadow: 0 0 28px rgb(var(--shade-halo) / 0.5);
+		clip-path: inset(-30% 108% -30% -8%);
+		transition: clip-path 0.7s var(--ease-in-out);
+	}
+
+	.w1__row.is-open .w1__fill {
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	.w1__meta {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+	}
+
+	.w1__kind {
+		color: var(--color-text);
+	}
+
+	.w1__status {
+		color: var(--color-accent-soft);
+	}
+
+	.w1__stack {
+		font-size: 13px;
+		color: var(--color-text-muted);
+	}
+
+	.w1__chevron {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: rotate 0.5s var(--ease-out);
+	}
+
+	.w1__row.is-open .w1__chevron {
+		rotate: 180deg;
+	}
+
+	/* Closed until opened; GSAP animates the height. */
+	.w1__panel {
+		height: 0;
+		overflow: hidden;
+	}
+
+	.w1__panel-inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+		gap: clamp(20px, 3vw, 44px);
+		align-items: end;
+		padding: 4px 0 clamp(20px, 3vh, 32px);
+	}
+
+	.w1__media {
+		aspect-ratio: 16 / 9;
+		max-height: 44vh;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		box-shadow:
+			0 24px 60px rgb(0 0 0 / 0.5),
+			0 0 50px rgb(var(--shade-halo) / 0.14);
+	}
+
+	.w1__copy {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.w1__blurb {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--color-text-soft);
+	}
+
+	.w1__stack-full {
+		margin: 0;
+		font-size: 13px;
+		color: var(--color-text-muted);
+	}
+
+	.w1__go {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45em;
+		width: max-content;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.w1__go svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: translate var(--motion-hover) var(--ease-out);
+	}
+
+	.w1__go:hover svg {
+		translate: 2px -2px;
+	}
+
+	@media (max-width: 1100px) {
+		.w1__head {
+			grid-template-columns: minmax(0, 1fr) 170px 24px;
+		}
+
+		.w1__stack {
+			display: none;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.w1__top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 14px;
+		}
+
+		.w1__head {
+			grid-template-columns: minmax(0, 1fr) 22px;
+			gap: 6px 12px;
+			padding: 16px 0 12px;
+		}
+
+		.w1__name {
+			font-size: clamp(26px, 8.6vw, 40px);
+		}
+
+		.w1__meta {
+			grid-row: 2;
+			flex-direction: row;
+			gap: 12px;
+			font-size: 10px;
+		}
+
+		.w1__chevron {
+			grid-row: 1;
+			grid-column: 2;
+		}
+
+		.w1__panel-inner {
+			grid-template-columns: 1fr;
+			gap: 14px;
+		}
+
+		.w1__blurb {
+			font-size: 14px;
+		}
+	}
+</style>

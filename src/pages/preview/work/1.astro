@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Header from "../../../components/Header.astro";
+import Hero from "../../../components/Hero.astro";
+import About from "../../../components/About.astro";
+import SideNav from "../../../components/SideNav.astro";
+import Work from "../../../previews/work/Work1.astro";
+import Rest from "../../../previews/work/Rest.astro";
+import Footer from "../../../components/Footer.astro";
+import { throneAvifSrcset, throneSizes } from "../../../components/hero-image";
+
+// Start fetching the hero photo straight away, alongside the fonts, instead of when the parser
+// reaches it.
+const throneSrcset = await throneAvifSrcset();
+---
+
+<BaseLayout>
+	<link
+		slot="head"
+		rel="preload"
+		as="image"
+		type="image/avif"
+		imagesrcset={throneSrcset}
+		imagesizes={throneSizes}
+		fetchpriority="high"
+	/>
+	<Header />
+	<SideNav />
+	<!-- ScrollSmoother moves everything in here; fixed things (header, side nav) stay outside. -->
+	<div id="smooth-wrapper">
+		<div id="smooth-content">
+			<main>
+				<Hero />
+				<About />
+				<Work />
+				<Rest />
+			</main>
+			<Footer />
+		</div>
+	</div>
+</BaseLayout>
+
+<script>
+	import { animation } from "../../../site.config";
+	import { setupSmoothScroll } from "../../../scripts/smooth-scroll";
+
+	setupSmoothScroll(animation.scroll);
+</script>

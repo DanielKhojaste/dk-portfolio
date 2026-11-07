@@ -1,0 +1,127 @@
+---
+/** Lists the five Work designs (preview/work branch only). */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const designs = [
+	{
+		n: 1,
+		name: "Index",
+		note: "Big outlined names, one per row. Hover a row (click on phones and tablets) and it drops open to show the screenshot, or ToDone's GIF.",
+	},
+	{
+		n: 2,
+		name: "Featured + grid",
+		note: "One big card for Lineup, with ApotheonAI and ToDone beside it.",
+	},
+	{
+		n: 3,
+		name: "Horizontal gallery",
+		note: "The section holds still while scrolling slides the projects sideways; a DivineFlow strand draws across underneath.",
+	},
+	{
+		n: 4,
+		name: "Case file",
+		note: "Project names down the left, the chosen one's details on the right. No underline.",
+	},
+	{
+		n: 5,
+		name: "On the strand",
+		note: "One DivineFlow strand across the section, with the projects as stops that light up as it reaches them.",
+	},
+];
+---
+
+<BaseLayout title="Work previews">
+	<main class="list">
+		<p class="list__eyebrow">Preview</p>
+		<h1 class="list__title">Work section</h1>
+		<p class="list__intro">
+			Each link opens the full page. Scroll to Work, or click "Work" in the side nav.
+		</p>
+		<ol class="list__items">
+			{
+				designs.map((d) => (
+					<li>
+						<a href={`/preview/work/${d.n}#work`}>
+							<span class="list__name">
+								Design {d.n} · {d.name}
+							</span>
+							<span class="list__note">{d.note}</span>
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</main>
+</BaseLayout>
+
+<style>
+	.list {
+		max-width: 760px;
+		margin: 0 auto;
+		padding: 96px var(--gutter);
+	}
+
+	.list__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.list__title {
+		margin: 12px 0 14px;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(32px, 5vw, 56px);
+		text-transform: uppercase;
+	}
+
+	.list__intro {
+		margin: 0 0 36px;
+		color: var(--color-text-soft);
+	}
+
+	.list__items {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--color-line);
+	}
+
+	.list__items a {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 20px 0;
+		border-bottom: 1px solid var(--color-line);
+		text-decoration: none;
+	}
+
+	.list__name {
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: 20px;
+		text-transform: uppercase;
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			text-shadow var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.list__items a:hover .list__name {
+		color: var(--text-hover-color);
+		text-shadow: var(--text-hover-glow);
+	}
+
+	.list__note {
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--color-text-soft);
+	}
+</style>
