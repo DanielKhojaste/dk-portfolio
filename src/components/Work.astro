@@ -1,0 +1,442 @@
+---
+/**
+ * The Work section: big outlined project names, one per row. Opening a row (hover on desktop, a tap
+ * on phones and tablets) fills its name white and drops the screenshot (or GIF) open under it, with
+ * the details and a link. The section is anchored at the top, so opening a row only pushes the rows
+ * below it down. Copy and projects live in site.config.ts (`work`); behaviour in scripts/work.ts.
+ */
+import { work } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+
+const words = splitHighlights(work.headline);
+const headline = work.headline.replace(/[[\]]/g, "");
+---
+
+<section class="work" id="work" aria-labelledby="work-title" data-work>
+	<div class="work__inner">
+		<div class="work__top">
+			<div class="work__heading">
+				<p class="work__eyebrow">{work.eyebrow}</p>
+				<h2 class="work__headline" id="work-title" aria-label={headline}>
+					{
+						words.map((word) =>
+							word.highlight ? (
+								<span aria-hidden="true">
+									<span class="work__highlight">
+										{word.text}
+										<span class="work__fill" data-fill>
+											{word.text}
+										</span>
+									</span>
+									{word.tail}{" "}
+								</span>
+							) : (
+								<span aria-hidden="true">{word.text} </span>
+							),
+						)
+					}
+				</h2>
+			</div>
+			<p class="work__prompt">
+				<span class="work__prompt-hover">{work.prompt.hover}</span>
+				<span class="work__prompt-click">{work.prompt.click}</span>
+			</p>
+		</div>
+
+		<ul class="work__list" data-work-list>
+			{
+				work.projects.map((project, i) => (
+					<li class="work__row" data-work-row>
+						<button
+							class="work__head"
+							type="button"
+							aria-expanded="false"
+							aria-controls={`work-panel-${i}`}
+							data-work-toggle
+						>
+							<span class="work__name">{project.name}</span>
+							<span class="work__meta">
+								<span class="work__kind">{project.kind}</span>
+								<span class="work__status">{project.status}</span>
+							</span>
+							<span class="work__stack">{project.stack.slice(0, 3).join(" · ")}</span>
+							<svg class="work__chevron" viewBox="0 0 24 24" aria-hidden="true">
+								<path d="M6 9l6 6 6-6" />
+							</svg>
+						</button>
+						<div class="work__panel" id={`work-panel-${i}`} data-work-panel>
+							<div class="work__panel-inner">
+								<div class:list={["work__media", project.motion && "work__media--motion"]}>
+									<img
+										src={project.motion ?? project.image}
+										alt={project.alt}
+										loading="lazy"
+										decoding="async"
+									/>
+								</div>
+								<div class="work__copy">
+									<p class="work__blurb">{project.blurb}</p>
+									<p class="work__stack-full">{project.stack.join(" · ")}</p>
+									<a
+										class="work__link"
+										href={project.link.href}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{project.link.label}
+										<svg viewBox="0 0 24 24" aria-hidden="true">
+											<path d="M7 17L17 7M8 7h9v9" />
+										</svg>
+										<span class="sr-only">(opens in a new tab)</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupWork } from "../scripts/work";
+
+	const section = document.querySelector<HTMLElement>("[data-work]");
+	if (section) setupWork(section, animation.work);
+</script>
+
+<style>
+	/* Anchored at the top (not centred), so opening a row only pushes what's below it down: the
+	   rows above, and the row itself, stay where they are. */
+	.work {
+		display: flex;
+		align-items: flex-start;
+		min-height: 100svh;
+		padding: clamp(110px, 20vh, 200px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.work__inner {
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.work__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 32px;
+		margin-bottom: clamp(24px, 4.5vh, 48px);
+	}
+
+	.work__heading {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(14px, 2.4vh, 22px);
+	}
+
+	.work__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.work__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(28px, 3.6vw, 60px);
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* The red word: outlined, with a solid copy on top wiped in on arrival (like About's). It's an
+	   inline-block so the copy lines up exactly with the outline. */
+	.work__highlight {
+		position: relative;
+		display: inline-block;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
+	}
+
+	.work__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: rgb(var(--shade-bright));
+		text-shadow:
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.work__highlight {
+			color: rgb(var(--shade-bright));
+		}
+	}
+
+	.work__prompt {
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.26em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.work__prompt-click {
+		display: none;
+	}
+
+	@media not ((hover: hover) and (pointer: fine)) {
+		.work__prompt-hover {
+			display: none;
+		}
+
+		.work__prompt-click {
+			display: inline;
+		}
+	}
+
+	.work__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--color-line);
+	}
+
+	.work__row {
+		border-bottom: 1px solid var(--color-line);
+	}
+
+	.work__head {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 200px 250px 24px;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+		padding: clamp(12px, 2vh, 20px) 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	/* Outlined until its row opens, then the whole name fills white at the side nav's hover pace
+	   (animation.textHover), and empties again on close. No glow. */
+	.work__name {
+		width: max-content;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(30px, 4vw, 60px);
+		line-height: 1;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1.2px rgb(var(--shade-text) / 0.45);
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.work__row.is-open .work__name {
+		color: #fff;
+		-webkit-text-stroke-color: #fff;
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.work__name {
+			color: var(--color-text-muted);
+		}
+	}
+
+	.work__meta {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+	}
+
+	.work__kind {
+		color: var(--color-text);
+	}
+
+	.work__status {
+		color: var(--color-accent-soft);
+	}
+
+	.work__stack {
+		font-size: 13px;
+		color: var(--color-text-muted);
+	}
+
+	.work__chevron {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: rotate 0.5s var(--ease-out);
+	}
+
+	.work__row.is-open .work__chevron {
+		rotate: 180deg;
+	}
+
+	/* Closed until opened; GSAP animates the height (scripts/work.ts). */
+	.work__panel {
+		height: 0;
+		overflow: hidden;
+	}
+
+	.work__panel-inner {
+		display: grid;
+		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+		gap: clamp(20px, 3vw, 44px);
+		align-items: end;
+		padding: 4px 0 clamp(20px, 3vh, 32px);
+	}
+
+	.work__media {
+		aspect-ratio: 16 / 9;
+		max-height: 44vh;
+		border-radius: 10px;
+		overflow: hidden;
+		background: #0c0909;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		box-shadow:
+			0 24px 60px rgb(0 0 0 / 0.5),
+			0 0 50px rgb(var(--shade-halo) / 0.14);
+	}
+
+	.work__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 50% 30%;
+	}
+
+	/* GIFs are recordings of a window: show all of it rather than cropping. */
+	.work__media--motion {
+		display: grid;
+		place-items: center;
+		background: #1e1e1e;
+	}
+
+	.work__media--motion img {
+		object-fit: contain;
+	}
+
+	.work__copy {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.work__blurb {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--color-text-soft);
+	}
+
+	.work__stack-full {
+		margin: 0;
+		font-size: 13px;
+		color: var(--color-text-muted);
+	}
+
+	.work__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45em;
+		width: max-content;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.work__link svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: translate var(--hover-duration) var(--ease-out);
+	}
+
+	.work__link:hover svg,
+	.work__link:focus-visible svg {
+		translate: 2px -2px;
+	}
+
+	@media (max-width: 1100px) {
+		.work__head {
+			grid-template-columns: minmax(0, 1fr) 170px 24px;
+		}
+
+		.work__stack {
+			display: none;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.work__top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 14px;
+		}
+
+		.work__headline {
+			font-size: clamp(24px, 7.4vw, 32px);
+		}
+
+		.work__head {
+			grid-template-columns: minmax(0, 1fr) 22px;
+			gap: 6px 12px;
+			padding: 16px 0 12px;
+		}
+
+		.work__name {
+			font-size: clamp(26px, 8.6vw, 40px);
+		}
+
+		.work__meta {
+			grid-row: 2;
+			flex-direction: row;
+			gap: 12px;
+			font-size: 10px;
+		}
+
+		.work__chevron {
+			grid-row: 1;
+			grid-column: 2;
+		}
+
+		.work__panel-inner {
+			grid-template-columns: 1fr;
+			gap: 14px;
+		}
+
+		.work__blurb {
+			font-size: 14px;
+		}
+	}
+</style>

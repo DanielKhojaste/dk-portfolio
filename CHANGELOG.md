@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`restAfter`). It starts once the section's top is in the lower fifth of the screen (`start`), so
   it's done before you scroll on. Copy lives in
   `site.config.ts`; `[brackets]` mark the red words.
+- Work section, after About: "Selected work", with Lineup, ApotheonAI and ToDone as big outlined
+  names, one row each, with what each is, where it's at and its main tools. On desktop, hovering a
+  row fills its name white (at the side nav's hover pace, no glow) and drops its screenshot open
+  underneath, with a short description, the full stack and a link (GitHub, the live site, the
+  VS Code Marketplace); moving off closes it. Phones and tablets open a project with a tap, one at a
+  time, and the hint next to the headline says "Hover" or "Click" to match. The section is anchored
+  at the top, so opening a row only pushes the rows below it. ToDone shows its GIF. Projects, copy
+  and screenshots (`public/projects`) are in `site.config.ts` (`work`, `animation.work`).
 - Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
   its marker white (`animation.textHover`, `colors.textHover`, `animation.sideNav.nudge`). The
@@ -62,7 +70,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
 - Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
   section headings no longer have numbers.
-- The temporary Work section is shorter so it fits on one desktop screen.
 - The side nav fill and About's red-word wipe start on the first letter: the wipe no longer crosses
   empty space first, and hover fills use an ease that starts at full speed.
 

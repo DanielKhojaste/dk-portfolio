@@ -1,0 +1,132 @@
+import { expect, test, type Page } from "@playwright/test";
+import { work } from "../../src/site.config";
+
+/** Scroll to a section and wait for the smooth scroller to settle on it. */
+async function showSection(page: Page, id: string) {
+	await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const content = document.getElementById("smooth-content");
+				// No smooth scrolling (touch screens): the page is already there.
+				if (!content || getComputedStyle(content).transform === "none") return 0;
+				const offset = -new DOMMatrix(getComputedStyle(content).transform).m42;
+				return Math.round(Math.abs(offset - scrollY));
+			}),
+		)
+		.toBe(0);
+}
+
+const rows = (page: Page) => page.locator("#work [data-work-row]");
+const panelHeight = (page: Page, i: number) =>
+	rows(page)
+		.nth(i)
+		.locator("[data-work-panel]")
+		.evaluate((el) => el.getBoundingClientRect().height);
+
+test.describe("work", () => {
+	test("comes after About, with a red word in the headline and one row per project", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const ids = await page
+			.locator("main > section[id]")
+			.evaluateAll((els) => els.map((el) => el.id));
+		expect(ids.slice(0, 3)).toEqual(["intro", "about", "work"]);
+
+		await expect(page.locator("#work-title")).toHaveAccessibleName(
+			work.headline.replace(/[[\]]/g, ""),
+		);
+		await expect(page.locator("#work [data-fill]")).toHaveCount(1);
+		await expect(rows(page)).toHaveCount(work.projects.length);
+		for (const [i, project] of work.projects.entries()) {
+			const row = rows(page).nth(i);
+			await expect(row.locator(".work__name")).toHaveText(project.name);
+			const link = row.locator("a.work__link");
+			await expect(link).toHaveAttribute("href", project.link.href);
+			await expect(link).toHaveAttribute("target", "_blank");
+		}
+		// Every row starts closed.
+		for (let i = 0; i < work.projects.length; i++) expect(await panelHeight(page, i)).toBe(0);
+	});
+
+	test("on desktop, hovering a row fills its name and drops the screenshot open; leaving closes it", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		await page.goto("/");
+		await showSection(page, "work");
+		await expect(page.locator("#work .work__prompt-hover")).toBeVisible();
+		await expect(page.locator("#work .work__prompt-click")).toBeHidden();
+		// Let the rows finish rising in, so they don't move under the mouse.
+		await expect
+			.poll(() =>
+				rows(page)
+					.last()
+					.evaluate((el) => getComputedStyle(el).opacity),
+			)
+			.toBe("1");
+
+		const name = rows(page).nth(0).locator(".work__name");
+		const top = (await rows(page).nth(0).boundingBox())!.y;
+		await name.hover();
+		await expect(rows(page).nth(0).locator("[data-work-toggle]")).toHaveAttribute(
+			"aria-expanded",
+			"true",
+		);
+		await expect.poll(() => panelHeight(page, 0)).toBeGreaterThan(200);
+		await expect(rows(page).nth(0).locator(".work__media img")).toBeVisible();
+		await expect
+			.poll(() => name.evaluate((el) => getComputedStyle(el).color))
+			.toBe("rgb(255, 255, 255)");
+		// White, without a glow.
+		expect(await name.evaluate((el) => getComputedStyle(el).textShadow)).toBe("none");
+		// Anchored at the top: the opened row itself doesn't move.
+		expect(Math.abs((await rows(page).nth(0).boundingBox())!.y - top)).toBeLessThan(1);
+
+		await page.mouse.move(5, 5);
+		await expect.poll(() => panelHeight(page, 0)).toBe(0);
+		await expect(rows(page).nth(0).locator("[data-work-toggle]")).toHaveAttribute(
+			"aria-expanded",
+			"false",
+		);
+	});
+
+	test("on touch screens, a tap opens one project at a time", async ({ page }, info) => {
+		test.skip(info.project.name !== "mobile", "touch only");
+		await page.goto("/");
+		await showSection(page, "work");
+		await expect(page.locator("#work .work__prompt-click")).toBeVisible();
+		await expect(page.locator("#work .work__prompt-hover")).toBeHidden();
+
+		const toggle = (i: number) => rows(page).nth(i).locator("[data-work-toggle]");
+		await toggle(0).click();
+		await expect(toggle(0)).toHaveAttribute("aria-expanded", "true");
+		await expect.poll(() => panelHeight(page, 0)).toBeGreaterThan(150);
+
+		await toggle(2).click();
+		await expect(toggle(2)).toHaveAttribute("aria-expanded", "true");
+		await expect(toggle(0)).toHaveAttribute("aria-expanded", "false");
+		await expect.poll(() => panelHeight(page, 0)).toBe(0);
+
+		await toggle(2).click();
+		await expect(toggle(2)).toHaveAttribute("aria-expanded", "false");
+	});
+
+	test("shows ToDone's GIF whole, and every screenshot loads", async ({ page }) => {
+		await page.goto("/");
+		const images = page.locator("#work .work__media img");
+		await expect(images).toHaveCount(work.projects.length);
+		for (const [i, project] of work.projects.entries()) {
+			const src = project.motion ?? project.image;
+			await expect(images.nth(i)).toHaveAttribute("src", src);
+			const response = await page.request.get(src);
+			expect(response.ok()).toBe(true);
+		}
+	});
+
+	test("has no preview pages", async ({ page }) => {
+		const response = await page.goto("/preview/work");
+		expect(response?.status()).toBe(404);
+	});
+});

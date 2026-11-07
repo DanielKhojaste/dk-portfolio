@@ -69,6 +69,77 @@ export const about = {
 	] as readonly { label: string; value: string; href?: string }[],
 };
 
+/** A project in the Work section. */
+export interface Project {
+	name: string;
+	/** What it is, and where it's at: shown small next to the name. */
+	kind: string;
+	status: string;
+	/** A few sentences, shown when the project is open. */
+	blurb: string;
+	/** Tools used; the first three show next to the name on wide screens. */
+	stack: readonly string[];
+	/** Where the project lives, opened in a new tab. */
+	link: LinkItem;
+	/** Screenshot in public/projects, shown when the project is open. */
+	image: string;
+	/** Optional moving version (a GIF), shown instead of the screenshot. */
+	motion?: string;
+	/** What the screenshot shows, for screen readers. */
+	alt: string;
+}
+
+/** The Work section, after About: one row per project that opens to show it. */
+export const work = {
+	eyebrow: "Work",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "Selected [work]",
+	/** The hint next to the headline, for mouse users and for touch screens. */
+	prompt: {
+		hover: "Hover a project to see more",
+		click: "Click a project to see more",
+	},
+	projects: [
+		{
+			name: "Lineup",
+			kind: "Desktop app",
+			status: "In progress",
+			blurb:
+				"A tactical board for coaches. Drag players into formations, drills and plays, step through them as an animation, and it all works offline.",
+			stack: ["Tauri", "Rust", "React", "TypeScript"],
+			link: { label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" },
+			image: "/projects/lineup.png",
+			alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
+		},
+		{
+			name: "ApotheonAI",
+			kind: "Marketing site",
+			status: "Live",
+			blurb:
+				"A multi-page site for a fictional AI security brand, with a blog run from a headless CMS and an animated hero.",
+			stack: ["Astro", "TypeScript", "Tailwind", "Sanity", "GSAP"],
+			link: { label: "Live site", href: "https://apotheon-ai.vercel.app/" },
+			image: "/projects/apotheon.png",
+			alt: "ApotheonAI's home page: a bronze helmet over gold light filaments, with the words Ascend to the Divine.",
+		},
+		{
+			name: "ToDone",
+			kind: "VS Code extension",
+			status: "Published",
+			blurb:
+				"Plain-text to-do lists in VS Code: priorities, states, notes and headings, with commands that work across multiple cursors. A port of the ToDone syntax from Sublime Text.",
+			stack: ["TypeScript", "VS Code API", "TextMate grammar"],
+			link: {
+				label: "Marketplace",
+				href: "https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
+			},
+			image: "/projects/todone.png",
+			motion: "/projects/todone-commands.gif",
+			alt: "ToDone in VS Code: commands raising priorities and ticking off tasks in a to-do file.",
+		},
+	] as readonly Project[],
+};
+
 /* ------------------------------------------------------------------------------------------------
  * 2. Animation (seconds). Eases are GSAP ease names: https://gsap.com/docs/v3/Eases
  *    Everything is skipped for visitors who prefer reduced motion.
@@ -197,6 +268,18 @@ export const animation = {
 		duration: motion.hover,
 		/** CSS easing. */
 		ease: motion.ease.out.css,
+	},
+
+	/** The Work section. */
+	work: {
+		/** A project's row opening (the screenshot dropping down) and closing. */
+		open: 0.7,
+		close: 0.5,
+		/** The headline's red word filling in when the section comes into view. */
+		highlight: motion.draw,
+		/** The rows rising in on arrival, one after another. */
+		rows: 0.8,
+		rowStagger: 0.1,
 	},
 
 	/** The hero's scroll prompt. */
