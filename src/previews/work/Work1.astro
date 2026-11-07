@@ -1,8 +1,8 @@
 ---
 /**
- * Design 1 · Index: big outlined names, one per row. On desktop, hovering a row fills its name and
- * drops it open to show the screenshot (or GIF); moving off closes it. Phones and tablets open a row
- * with a click (tap), one at a time.
+ * Design 1 · Index: big outlined names, one per row. On desktop, hovering a row fills its name
+ * (fading in white, like the side nav's labels) and drops it open to show the screenshot (or GIF);
+ * moving off closes it. Phones and tablets open a row with a click (tap), one at a time.
  */
 import Head from "./Head.astro";
 import Shot from "./Shot.astro";
@@ -30,12 +30,7 @@ import { projects, work } from "./projects";
 							aria-controls={`w1-panel-${i}`}
 							data-w1-toggle
 						>
-							<span class="w1__name">
-								{p.name}
-								<span class="w1__fill" aria-hidden="true">
-									{p.name}
-								</span>
-							</span>
+							<span class="w1__name">{p.name}</span>
 							<span class="w1__meta">
 								<span class="w1__kind">{p.kind}</span>
 								<span class="w1__status">{p.status}</span>
@@ -195,6 +190,8 @@ import { projects, work } from "./projects";
 		cursor: pointer;
 	}
 
+	/* Outlined until its row opens, then the whole name fills white, like the side nav's labels
+	   (same pace and ease: animation.sideNav.labelIn / labelOut), and empties again on close. */
 	.w1__name {
 		position: relative;
 		width: max-content;
@@ -206,19 +203,15 @@ import { projects, work } from "./projects";
 		text-transform: uppercase;
 		color: transparent;
 		-webkit-text-stroke: 1.2px rgb(var(--shade-text) / 0.45);
+		transition:
+			color var(--side-nav-label-out) var(--side-nav-label-ease),
+			-webkit-text-stroke-color var(--side-nav-label-out) var(--side-nav-label-ease);
 	}
 
-	.w1__fill {
-		position: absolute;
-		inset: 0;
+	.w1__row.is-open .w1__name {
 		color: #fff;
-		-webkit-text-stroke: 0;
-		clip-path: inset(-30% 108% -30% -8%);
-		transition: clip-path 0.7s var(--ease-in-out);
-	}
-
-	.w1__row.is-open .w1__fill {
-		clip-path: inset(-30% -8% -30% -8%);
+		-webkit-text-stroke-color: #fff;
+		transition-duration: var(--side-nav-label-in);
 	}
 
 	.w1__meta {
