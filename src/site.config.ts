@@ -98,7 +98,7 @@ export const work = {
 	headline: "Selected [work]",
 	/** The hint next to the headline, for mouse users and for touch screens. */
 	prompt: {
-		hover: "Hover a project to see more",
+		hover: "Hover over a project to see more",
 		click: "Click a project to see more",
 	},
 	projects: [

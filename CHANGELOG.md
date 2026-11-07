@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   sentence on what it's for, a few short points on what it does and its links (every project has
   its GitHub repo, plus the live site or the VS Code Marketplace); moving off closes it, and
   clicking keeps it open until it's clicked again. Phones and tablets open a project with a tap, one
-  at a time, and the hint next to the headline says "Hover" or "Click" to match. The section is
+  at a time, and the hint next to the headline says "Hover over" or "Click" to match. The section is
   anchored at the top, so opening a row only pushes the rows below it. On narrower screens the row
   stacks (name, then what it is and the tools), and on tablets and phones an open project shows its
   screenshot full width with the details underneath. No lines between the projects. ToDone shows its GIF.
