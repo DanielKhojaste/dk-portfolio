@@ -211,16 +211,13 @@ test.describe("work layout", () => {
 		await expect(page.locator("#work img[src^='http'], #work .tech img")).toHaveCount(0);
 	});
 
-	test("draws lines between projects only, not above the first or below the last", async ({
-		page,
-	}) => {
+	test("draws no lines above, between or below the projects", async ({ page }) => {
 		await page.goto("/");
 		const list = page.locator("#work .work__list");
 		expect(await list.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("none");
-		const rows = page.locator("#work [data-work-row]");
-		const border = (i: number) =>
-			rows.nth(i).evaluate((el) => getComputedStyle(el).borderBottomStyle);
-		expect(await border(0)).toBe("solid");
-		expect(await border((await rows.count()) - 1)).toBe("none");
+		const styles = await page
+			.locator("#work [data-work-row]")
+			.evaluateAll((rows) => rows.map((el) => getComputedStyle(el).borderBottomStyle));
+		expect(styles.every((s) => s === "none")).toBe(true);
 	});
 });
