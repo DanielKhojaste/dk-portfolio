@@ -1,5 +1,5 @@
 ---
-/** Lists the five Work designs (preview/work branch only). */
+/** Lists the Work designs (preview/work branch only). */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 
 const designs = [
@@ -7,6 +7,12 @@ const designs = [
 		n: 1,
 		name: "Index",
 		note: "Big outlined names, one per row. Hover a row (click on phones and tablets) and it drops open to show the screenshot, or ToDone's GIF.",
+	},
+	{
+		n: "1.1",
+		slug: "1-1",
+		name: "Index, opening upwards",
+		note: "Design 1 turned over: each name sits at the bottom of its row and the screenshot rises open above it, with the bottom of the section anchored.",
 	},
 	{
 		n: 2,
@@ -42,7 +48,7 @@ const designs = [
 			{
 				designs.map((d) => (
 					<li>
-						<a href={`/preview/work/${d.n}#work`}>
+						<a href={`/preview/work/${d.slug ?? d.n}#work`}>
 							<span class="list__name">
 								Design {d.n} · {d.name}
 							</span>
