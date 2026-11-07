@@ -42,9 +42,20 @@ test.describe("work", () => {
 		for (const [i, project] of work.projects.entries()) {
 			const row = rows(page).nth(i);
 			await expect(row.locator(".work__name")).toHaveText(project.name);
-			const link = row.locator("a.work__link");
-			await expect(link).toHaveAttribute("href", project.link.href);
-			await expect(link).toHaveAttribute("target", "_blank");
+			// The tools are shown once, as logos (or their name if there's no logo), next to the name.
+			await expect(row.locator(".work__stack .tech")).toHaveCount(project.stack.length);
+			await expect(row.locator(".work__stack")).toHaveAccessibleName(
+				`Built with ${project.stack.join(", ")}`,
+			);
+			// What it does, in a few points, and its links: a GitHub repo for every project.
+			await expect(row.locator(".work__features li")).toHaveCount(project.features.length);
+			const links = row.locator("a.work__link");
+			await expect(links).toHaveCount(project.links.length);
+			for (const [j, link] of project.links.entries()) {
+				await expect(links.nth(j)).toHaveAttribute("href", link.href);
+				await expect(links.nth(j)).toHaveAttribute("target", "_blank");
+			}
+			await expect(links.filter({ hasText: "GitHub" })).toHaveCount(1);
 		}
 		// Every row starts closed.
 		for (let i = 0; i < work.projects.length; i++) expect(await panelHeight(page, i)).toBe(0);
@@ -90,6 +101,31 @@ test.describe("work", () => {
 			"aria-expanded",
 			"false",
 		);
+	});
+
+	test("on desktop, clicking a row keeps it open after the mouse leaves, until it's clicked again", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		await page.goto("/");
+		await showSection(page, "work");
+		await expect
+			.poll(() =>
+				rows(page)
+					.last()
+					.evaluate((el) => getComputedStyle(el).opacity),
+			)
+			.toBe("1");
+
+		const toggle = rows(page).nth(1).locator("[data-work-toggle]");
+		await toggle.click();
+		await page.mouse.move(5, 5);
+		await page.waitForTimeout(800);
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+		expect(await panelHeight(page, 1)).toBeGreaterThan(200);
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute("aria-expanded", "false");
 	});
 
 	test("on touch screens, a tap opens one project at a time", async ({ page }, info) => {

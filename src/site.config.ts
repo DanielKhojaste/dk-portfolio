@@ -75,12 +75,14 @@ export interface Project {
 	/** What it is, and where it's at: shown small next to the name. */
 	kind: string;
 	status: string;
-	/** A few sentences, shown when the project is open. */
-	blurb: string;
-	/** Tools used; the first three show next to the name on wide screens. */
+	/** One plain sentence on what it's for, shown when the project is open. */
+	summary: string;
+	/** A few short points on what it does, in plain words (no jargon). */
+	features: readonly string[];
+	/** Tools used, shown as their logos next to the name (see components/TechIcon.astro). */
 	stack: readonly string[];
-	/** Where the project lives, opened in a new tab. */
-	link: LinkItem;
+	/** Where the project lives, opened in a new tab. Every project has its GitHub repo here. */
+	links: readonly LinkItem[];
 	/** Screenshot in public/projects, shown when the project is open. */
 	image: string;
 	/** Optional moving version (a GIF), shown instead of the screenshot. */
@@ -104,21 +106,33 @@ export const work = {
 			name: "Lineup",
 			kind: "Desktop app",
 			status: "In progress",
-			blurb:
-				"A tactical board for coaches. Drag players into formations, drills and plays, step through them as an animation, and it all works offline.",
+			summary: "A tactical board for coaches, for planning how a team lines up and moves.",
+			features: [
+				"Place players on a pitch and drag them into position",
+				"Plan formations, training drills and set plays",
+				"Play a move back step by step to show how it unfolds",
+				"Works offline, with nothing to sign up for",
+			],
 			stack: ["Tauri", "Rust", "React", "TypeScript"],
-			link: { label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" },
+			links: [{ label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" }],
 			image: "/projects/lineup.png",
 			alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
 		},
 		{
 			name: "ApotheonAI",
-			kind: "Marketing site",
+			kind: "Website",
 			status: "Live",
-			blurb:
-				"A multi-page site for a fictional AI security brand, with a blog run from a headless CMS and an animated hero.",
+			summary: "The website of a made-up AI security company, built as if for a real client.",
+			features: [
+				"Several pages with a clear story, from the landing page to contact",
+				"A blog whose posts are written and published in an editor, no code needed",
+				"Smooth animations, and a layout that fits any screen",
+			],
 			stack: ["Astro", "TypeScript", "Tailwind", "Sanity", "GSAP"],
-			link: { label: "Live site", href: "https://apotheon-ai.vercel.app/" },
+			links: [
+				{ label: "Live site", href: "https://apotheon-ai.vercel.app/" },
+				{ label: "GitHub", href: "https://github.com/DanielKhojaste/apotheon-ai" },
+			],
 			image: "/projects/apotheon.png",
 			alt: "ApotheonAI's home page: a bronze helmet over gold light filaments, with the words Ascend to the Divine.",
 		},
@@ -126,13 +140,21 @@ export const work = {
 			name: "ToDone",
 			kind: "VS Code extension",
 			status: "Published",
-			blurb:
-				"Plain-text to-do lists in VS Code: priorities, states, notes and headings, with commands that work across multiple cursors. A port of the ToDone syntax from Sublime Text.",
-			stack: ["TypeScript", "VS Code API", "TextMate grammar"],
-			link: {
-				label: "Marketplace",
-				href: "https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
-			},
+			summary: "To-do lists kept as simple text files, right inside the code editor VS Code.",
+			features: [
+				"Write tasks as plain text, with no app or account",
+				"Mark a task urgent, done or cancelled with one shortcut",
+				"Rank tasks by priority and add notes under them",
+				"The same files open in the text editor Sublime Text too",
+			],
+			stack: ["TypeScript", "VS Code"],
+			links: [
+				{
+					label: "VS Code Marketplace",
+					href: "https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
+				},
+				{ label: "GitHub", href: "https://github.com/DanielKhojaste/ToDone" },
+			],
 			image: "/projects/todone.png",
 			motion: "/projects/todone-commands.gif",
 			alt: "ToDone in VS Code: commands raising priorities and ticking off tasks in a to-do file.",

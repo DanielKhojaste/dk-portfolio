@@ -1,9 +1,10 @@
 /**
  * The Work section's rows. Each row is a button (the project's name) and a panel under it (the
- * screenshot and details). On desktop, hovering a row opens it and moving off closes it; on phones
- * and tablets (no hover), a tap opens it and closes any other. Keyboard users toggle with Enter or
- * Space everywhere. Opening and closing animate the panel's height (GSAP), and the page is told it
- * got taller or shorter so scrolling and the side nav stay right.
+ * screenshot and details). On desktop, hovering a row opens it and moving off closes it. Clicking
+ * (or tapping, or Enter/Space) pins a row open: it stays open when the pointer leaves, until it's
+ * clicked again. One row is pinned at a time; pinning another closes the last. On touch screens,
+ * with no hover, that's the only way to open one. Opening and closing animate the panel's height
+ * (GSAP), and the page is told it got taller or shorter so scrolling and the side nav stay right.
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -34,6 +35,7 @@ export function setupRows(rows: HTMLElement[], { canHover, animate, onResize }: 
 	const toggle = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-work-toggle]")!;
 	const panel = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-work-panel]")!;
 	const isOpen = (row: HTMLElement) => row.classList.contains("is-open");
+	const isPinned = (row: HTMLElement) => row.classList.contains("is-pinned");
 
 	const set = (row: HTMLElement, open: boolean) => {
 		if (isOpen(row) === open) return;
@@ -42,20 +44,28 @@ export function setupRows(rows: HTMLElement[], { canHover, animate, onResize }: 
 		animate(panel(row), open, () => onResize?.());
 	};
 
+	const pin = (row: HTMLElement, pinned: boolean) => row.classList.toggle("is-pinned", pinned);
+
 	for (const row of rows) {
 		row.addEventListener("pointerenter", () => canHover() && set(row, true));
-		row.addEventListener("pointerleave", () => canHover() && set(row, false));
-		toggle(row).addEventListener("click", (event) => {
-			// With a mouse, hovering already opened it, so the click changes nothing. Keyboard
-			// (detail 0) and touch toggle.
-			if (canHover() && (event as MouseEvent).detail > 0) return;
-			const open = !isOpen(row);
-			if (open) rows.forEach((other) => other !== row && set(other, false));
-			set(row, open);
+		row.addEventListener("pointerleave", () => canHover() && !isPinned(row) && set(row, false));
+		toggle(row).addEventListener("click", () => {
+			if (isPinned(row)) {
+				pin(row, false);
+				set(row, false);
+				return;
+			}
+			for (const other of rows) {
+				if (other === row) continue;
+				pin(other, false);
+				set(other, false);
+			}
+			pin(row, true);
+			set(row, true);
 		});
 	}
 
-	return { set };
+	return { set, pin };
 }
 
 export function setupWork(

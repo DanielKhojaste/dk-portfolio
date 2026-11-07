@@ -1,0 +1,64 @@
+---
+/**
+ * A tool's logo (from src/assets/tech, Simple Icons), in the current text colour, with its name as a
+ * tooltip and for screen readers. Tools without a logo there show their name as small text instead.
+ */
+import astro from "../assets/tech/astro.svg?raw";
+import gsap from "../assets/tech/gsap.svg?raw";
+import react from "../assets/tech/react.svg?raw";
+import rust from "../assets/tech/rust.svg?raw";
+import sanity from "../assets/tech/sanity.svg?raw";
+import tailwind from "../assets/tech/tailwindcss.svg?raw";
+import tauri from "../assets/tech/tauri.svg?raw";
+import typescript from "../assets/tech/typescript.svg?raw";
+
+/** Tool name (as written in site.config.ts) → its icon's SVG. */
+export const TECH: Record<string, string> = {
+	Astro: astro,
+	GSAP: gsap,
+	React: react,
+	Rust: rust,
+	Sanity: sanity,
+	Tailwind: tailwind,
+	Tauri: tauri,
+	TypeScript: typescript,
+};
+
+interface Props {
+	name: string;
+}
+
+const { name } = Astro.props;
+const svg = TECH[name];
+// Only the path: the title and role come from the wrapper, so the name isn't read twice.
+const path = svg?.match(/<path[^>]*\/>/)?.[0];
+---
+
+{
+	path ? (
+		<span class="tech" title={name} role="img" aria-label={name}>
+			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" set:html={path} />
+		</span>
+	) : (
+		<span class="tech tech--text">{name}</span>
+	)
+}
+
+<style>
+	.tech {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.tech svg {
+		width: 18px;
+		height: 18px;
+	}
+
+	.tech--text {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		white-space: nowrap;
+	}
+</style>

@@ -2,11 +2,12 @@
 /**
  * The Work section: big outlined project names, one per row. Opening a row (hover on desktop, a tap
  * on phones and tablets) fills its name white and drops the screenshot (or GIF) open under it, with
- * the details and a link. The section is anchored at the top, so opening a row only pushes the rows
- * below it down. Copy and projects live in site.config.ts (`work`); behaviour in scripts/work.ts.
+ * what it's for, a few plain points on what it does and its links. Clicking a row keeps it open.
+ * The section is anchored at the top, so opening a row only pushes the rows below it down. Copy and projects live in site.config.ts (`work`); behaviour in scripts/work.ts.
  */
 import { work } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
+import TechIcon from "./TechIcon.astro";
 
 const words = splitHighlights(work.headline);
 const headline = work.headline.replace(/[[\]]/g, "");
@@ -59,7 +60,11 @@ const headline = work.headline.replace(/[[\]]/g, "");
 								<span class="work__kind">{project.kind}</span>
 								<span class="work__status">{project.status}</span>
 							</span>
-							<span class="work__stack">{project.stack.slice(0, 3).join(" · ")}</span>
+							<span class="work__stack" aria-label={`Built with ${project.stack.join(", ")}`}>
+								{project.stack.map((tool) => (
+									<TechIcon name={tool} />
+								))}
+							</span>
 							<svg class="work__chevron" viewBox="0 0 24 24" aria-hidden="true">
 								<path d="M6 9l6 6 6-6" />
 							</svg>
@@ -75,20 +80,28 @@ const headline = work.headline.replace(/[[\]]/g, "");
 									/>
 								</div>
 								<div class="work__copy">
-									<p class="work__blurb">{project.blurb}</p>
-									<p class="work__stack-full">{project.stack.join(" · ")}</p>
-									<a
-										class="work__link"
-										href={project.link.href}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{project.link.label}
-										<svg viewBox="0 0 24 24" aria-hidden="true">
-											<path d="M7 17L17 7M8 7h9v9" />
-										</svg>
-										<span class="sr-only">(opens in a new tab)</span>
-									</a>
+									<p class="work__summary">{project.summary}</p>
+									<ul class="work__features">
+										{project.features.map((feature) => (
+											<li>{feature}</li>
+										))}
+									</ul>
+									<p class="work__links">
+										{project.links.map((link) => (
+											<a
+												class="work__link"
+												href={link.href}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{link.label}
+												<svg viewBox="0 0 24 24" aria-hidden="true">
+													<path d="M7 17L17 7M8 7h9v9" />
+												</svg>
+												<span class="sr-only">(opens in a new tab)</span>
+											</a>
+										))}
+									</p>
 								</div>
 							</div>
 						</div>
@@ -275,9 +288,18 @@ const headline = work.headline.replace(/[[\]]/g, "");
 		color: var(--color-accent-soft);
 	}
 
+	/* The tools, as logos: muted until the row opens. */
 	.work__stack {
-		font-size: 13px;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px 14px;
 		color: var(--color-text-muted);
+		transition: color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.work__row.is-open .work__stack {
+		color: var(--color-text);
 	}
 
 	.work__chevron {
@@ -303,9 +325,9 @@ const headline = work.headline.replace(/[[\]]/g, "");
 
 	.work__panel-inner {
 		display: grid;
-		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-		gap: clamp(20px, 3vw, 44px);
-		align-items: end;
+		grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+		gap: clamp(20px, 3vw, 48px);
+		align-items: stretch;
 		padding: 4px 0 clamp(20px, 3vh, 32px);
 	}
 
@@ -339,23 +361,55 @@ const headline = work.headline.replace(/[[\]]/g, "");
 		object-fit: contain;
 	}
 
+	/* Centred beside the screenshot: what it's for, what it does, then the links. */
 	.work__copy {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		justify-content: center;
+		gap: 18px;
+		padding-block: 4px;
 	}
 
-	.work__blurb {
+	.work__summary {
 		margin: 0;
+		font-size: clamp(16px, 1.3vw, 19px);
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.work__features {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 		font-size: 15px;
-		line-height: 1.65;
+		line-height: 1.5;
 		color: var(--color-text-soft);
 	}
 
-	.work__stack-full {
+	.work__features li {
+		position: relative;
+		padding-left: 22px;
+	}
+
+	/* The side nav's marker, in red. */
+	.work__features li::before {
+		content: "✦";
+		position: absolute;
+		left: 0;
+		top: 0.1em;
+		font-size: 10px;
+		color: rgb(var(--shade-bright));
+	}
+
+	.work__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px 28px;
 		margin: 0;
-		font-size: 13px;
-		color: var(--color-text-muted);
+		padding-top: 6px;
 	}
 
 	.work__link {
@@ -389,11 +443,7 @@ const headline = work.headline.replace(/[[\]]/g, "");
 
 	@media (max-width: 1100px) {
 		.work__head {
-			grid-template-columns: minmax(0, 1fr) 170px 24px;
-		}
-
-		.work__stack {
-			display: none;
+			grid-template-columns: minmax(0, 1fr) 170px auto 24px;
 		}
 	}
 
@@ -430,12 +480,18 @@ const headline = work.headline.replace(/[[\]]/g, "");
 			grid-column: 2;
 		}
 
+		.work__stack {
+			grid-row: 3;
+			grid-column: 1 / -1;
+			padding-top: 4px;
+		}
+
 		.work__panel-inner {
 			grid-template-columns: 1fr;
 			gap: 14px;
 		}
 
-		.work__blurb {
+		.work__features {
 			font-size: 14px;
 		}
 	}

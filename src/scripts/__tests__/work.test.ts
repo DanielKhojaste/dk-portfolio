@@ -36,7 +36,7 @@ const click = (row: HTMLElement, detail: number) =>
 const open = (list: HTMLElement[]) => list.map((r) => r.classList.contains("is-open"));
 
 describe("Work rows", () => {
-	it("open on hover and close on leave with a mouse, and a mouse click changes nothing", () => {
+	it("open on hover and close on leave with a mouse", () => {
 		const list = rows();
 		const animate = vi.fn((_p: HTMLElement, _o: boolean, done: () => void) => done());
 		const onResize = vi.fn();
@@ -54,11 +54,37 @@ describe("Work rows", () => {
 		);
 		expect(onResize).toHaveBeenCalled();
 
-		click(list[1]!, 1);
-		expect(open(list)).toEqual([false, true, false]);
-
 		list[1]!.dispatchEvent(new Event("pointerleave"));
 		expect(open(list)).toEqual([false, false, false]);
+	});
+
+	it("stay open after a click, even once the mouse leaves, until clicked again", () => {
+		const list = rows();
+		setupRows(list, { canHover: () => true, animate: (_p, _o, done) => done() });
+
+		list[0]!.dispatchEvent(new Event("pointerenter"));
+		click(list[0]!, 1);
+		list[0]!.dispatchEvent(new Event("pointerleave"));
+		expect(open(list)).toEqual([true, false, false]);
+
+		// Hovering another row still opens (and closes) it; the pinned one stays.
+		list[2]!.dispatchEvent(new Event("pointerenter"));
+		expect(open(list)).toEqual([true, false, true]);
+		list[2]!.dispatchEvent(new Event("pointerleave"));
+		expect(open(list)).toEqual([true, false, false]);
+
+		// Clicking it again lets it go.
+		click(list[0]!, 1);
+		expect(open(list)).toEqual([false, false, false]);
+	});
+
+	it("keep one row pinned at a time: pinning another closes the last", () => {
+		const list = rows();
+		setupRows(list, { canHover: () => true, animate: (_p, _o, done) => done() });
+		click(list[0]!, 1);
+		click(list[1]!, 1);
+		list[1]!.dispatchEvent(new Event("pointerleave"));
+		expect(open(list)).toEqual([false, true, false]);
 	});
 
 	it("open with a tap on touch screens, one at a time, and close with another tap", () => {
@@ -76,7 +102,7 @@ describe("Work rows", () => {
 		expect(open(list)).toEqual([false, false, false]);
 	});
 
-	it("toggle from the keyboard on desktop too", () => {
+	it("toggle from the keyboard too", () => {
 		const list = rows();
 		setupRows(list, { canHover: () => true, animate: (_p, _o, done) => done() });
 		click(list[0]!, 0);
@@ -87,14 +113,22 @@ describe("Work rows", () => {
 });
 
 describe("Work settings", () => {
-	it("lists the projects with their links and screenshots, and a red word in the headline", () => {
+	it("lists the projects, each with a GitHub link, plain feature points and a screenshot", () => {
 		expect(work.projects.map((p) => p.name)).toEqual(["Lineup", "ApotheonAI", "ToDone"]);
-		expect(work.projects.map((p) => p.link.href)).toEqual([
+		expect(work.projects.map((p) => p.links.find((l) => l.label === "GitHub")?.href)).toEqual([
 			"https://github.com/DanielKhojaste/lineup",
-			"https://apotheon-ai.vercel.app/",
-			"https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
+			"https://github.com/DanielKhojaste/apotheon-ai",
+			"https://github.com/DanielKhojaste/ToDone",
 		]);
-		for (const p of work.projects) expect(p.image).toMatch(/^\/projects\/.+\.png$/);
+		expect(work.projects[1]!.links[0]!.href).toBe("https://apotheon-ai.vercel.app/");
+		expect(work.projects[2]!.links[0]!.href).toBe(
+			"https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
+		);
+		for (const p of work.projects) {
+			expect(p.image).toMatch(/^\/projects\/.+\.png$/);
+			expect(p.features.length).toBeGreaterThanOrEqual(3);
+			expect(p.summary.length).toBeGreaterThan(20);
+		}
 		expect(work.headline).toMatch(/\[.+\]/);
 		expect(animation.work.open).toBeGreaterThan(animation.work.close);
 	});
