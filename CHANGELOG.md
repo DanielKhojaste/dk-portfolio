@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`contact.form.accessKey`, free for 250 messages a month) it sends from the page and says whether
   it went; without one it opens the visitor's email app with the message filled in. A hidden field
   catches spam bots. Beside the form, "Or reach me directly": Email, GitHub and LinkedIn as logos
-  with their names (LinkedIn shows once its address is set), without spelling out the email
+  with their names, without spelling out the email
   address. On arrival the red word wipes in and the cards and form rise in
   (`animation.contact`). Copy is in `site.config.ts` (`contact`).
 - Side nav on desktop, in place of the menu button: the sections down the left in grey caps.

@@ -48,7 +48,7 @@ export const seo = {
 	image: "/og.png",
 	imageAlt: "Daniel Khojaste, software developer: the hero of his portfolio.",
 	/** Profiles, for search engines' "this person" card. */
-	sameAs: ["https://github.com/DanielKhojaste"],
+	sameAs: ["https://github.com/DanielKhojaste", "https://www.linkedin.com/in/aref-khojaste/"],
 };
 
 /** The hero. */
@@ -281,8 +281,8 @@ export const contact = {
 	links: [
 		{ label: "Email", href: "mailto:danielkhojaste101@gmail.com" },
 		{ label: "GitHub", href: "https://github.com/DanielKhojaste" },
-		/** Leave the address empty to hide it. */
-		{ label: "LinkedIn", href: "" },
+		/** Leave an address empty to hide it. */
+		{ label: "LinkedIn", href: "https://www.linkedin.com/in/aref-khojaste/" },
 	] as readonly LinkItem[],
 	hiring: {
 		title: "Hiring?",
