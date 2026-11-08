@@ -61,6 +61,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   big outlined type with the role and dates beside it; hovering (or tapping) opens the details
   underneath and fills the name, and clicking keeps it open. Copy in `site.config.ts`
   (`backgroundSection`, `animation.backgroundSection`). The side nav and menu list it.
+- Security: a strict Content Security Policy on every page (scripts only from the site plus the
+  one inline script by its hash, no plugins, requests only to the site and Web3Forms), worked out
+  at build time (`integrations/security-headers.mjs`) and added as a `<meta>` tag, and a
+  `_headers` file for the host with the same policy plus no framing (clickjacking), no MIME
+  sniffing, a strict referrer policy, no camera/mic/location and HTTPS only.
+- Contact form hardening: what's typed is cleaned before it's sent (no control characters, no line
+  breaks in the name or email, so nothing can slip extra lines into the email), each field has a
+  length limit (also set as `maxlength`), the email has to look real, the "need" must be one of
+  the form's own choices, one message is sent at a time, a request that hangs gives up after 15
+  seconds, and an incomplete form says what's missing (`contact.form.invalid`). Status messages
+  are only ever set as plain text.
 - Contact section, last on the page: "Two ways to work together". Two cards side by side:
   "Hiring?" (a full-time role) and "Need a site?" (websites, web apps and redesigns, each with a
   line on what it covers). Each card's button glides down to the form with its choice already
@@ -112,6 +123,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Urlocker Consulting's screenshot is now its home page, cropped to the frame (16:9, no
+  scrollbar) and kept in view from the top (`focus` on a project, a CSS object-position). The SEO
+  wording is plainer ("handled its SEO", "better SEO"), and Algonquin is a "College diploma".
 - The Work section is now called Projects (side nav, menu, its label and `#projects` in the
   address). The headline stays "Selected work".
 - Hovering the logo now writes a brush stroke under it instead of glowing: one simple stroke on a

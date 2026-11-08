@@ -27,8 +27,10 @@ const msg = {
 const settings = {
 	email: "me@example.com",
 	accessKey: "",
+	needs: contact.form.needs,
 	sent: "Sent!",
 	failed: "Didn't send.",
+	invalid: "Fill it in.",
 };
 
 function page() {
@@ -181,5 +183,116 @@ describe("setupPicks", () => {
 	it("each card's choice is one of the form's", () => {
 		expect(contact.form.needs).toContain(contact.hiring.need);
 		expect(contact.form.needs).toContain(contact.projects.need);
+	});
+});
+
+describe("safety", () => {
+	const needs = contact.form.needs;
+
+	it("keeps the name and email on one line and drops control characters", () => {
+		const msg = mod.clean(
+			{
+				name: "Ada\r\nBcc: everyone@example.com\u0000",
+				email: " ada@example.com\n",
+				need: "A web app",
+				message: "Line one\r\nLine two\u0007",
+			},
+			needs,
+		);
+		expect(msg.name).toBe("Ada Bcc: everyone@example.com");
+		expect(msg.email).toBe("ada@example.com");
+		expect(msg.message).toBe("Line one\nLine two");
+		expect(mod.compose(msg).subject).not.toMatch(/[\r\n]/);
+	});
+
+	it("cuts every field to its limit", () => {
+		const msg = mod.clean(
+			{
+				name: "a".repeat(500),
+				email: "b".repeat(500),
+				need: "A website",
+				message: "c".repeat(9000),
+			},
+			needs,
+		);
+		expect(msg.name).toHaveLength(mod.LIMITS.name);
+		expect(msg.email).toHaveLength(mod.LIMITS.email);
+		expect(msg.message).toHaveLength(mod.LIMITS.message);
+	});
+
+	it("only takes a need from the form's own list", () => {
+		const msg = mod.clean(
+			{ ...{ name: "a", email: "a@b.co", message: "x" }, need: "<script>" },
+			needs,
+		);
+		expect(msg.need).toBe(needs.at(-1));
+	});
+
+	it("rejects a missing name, a bad email or an empty message", () => {
+		const ok = { name: "Ada", email: "ada@example.com", need: "A website", message: "Hi" };
+		expect(mod.isValid(ok)).toBe(true);
+		expect(mod.isValid({ ...ok, name: "" })).toBe(false);
+		expect(mod.isValid({ ...ok, message: "   ".trim() })).toBe(false);
+		for (const email of ["abc", "a@b", "a b@c.com", "<a@b.com>", "a@b.com\nBcc: x@y.com"]) {
+			expect(mod.isValid({ ...ok, email }), email).toBe(false);
+		}
+	});
+
+	it("never puts what was typed into the page as HTML", async () => {
+		const { form } = page();
+		const attack = '<img src=x onerror="alert(1)">';
+		form.querySelector<HTMLInputElement>("input[name=name]")!.value = attack;
+		const failing = vi.fn(async () => new Response("{}", { status: 500 }));
+		mod.setupForm(form, { ...settings, accessKey: "k", failed: attack }, vi.fn(), failing);
+		await submit(form);
+		const status = form.querySelector("[data-form-status]")!;
+		expect(status.textContent).toBe(attack);
+		expect(status.querySelector("img")).toBeNull();
+		expect(document.querySelectorAll("img")).toHaveLength(0);
+	});
+
+	it("doesn't send an invalid message, and says what's missing", async () => {
+		const { form } = page();
+		form.querySelector<HTMLInputElement>("input[name=email]")!.value = "not-an-email";
+		const go = vi.fn();
+		const fetcher = okFetch();
+		mod.setupForm(form, { ...settings, accessKey: "k" }, go, fetcher);
+		await submit(form);
+		expect(fetcher).not.toHaveBeenCalled();
+		expect(go).not.toHaveBeenCalled();
+		expect(form.dataset.state).toBe("invalid");
+		expect(form.querySelector("[data-form-status]")!.textContent).toBe(settings.invalid);
+	});
+
+	it("sends one message at a time, however many times Send is clicked", async () => {
+		const { form } = page();
+		let release!: () => void;
+		const fetcher = vi.fn(
+			() =>
+				new Promise<Response>((resolve) => {
+					release = () => resolve(new Response(JSON.stringify({ success: true })));
+				}),
+		);
+		mod.setupForm(form, { ...settings, accessKey: "k" }, vi.fn(), fetcher);
+		form.dispatchEvent(new Event("submit", { cancelable: true }));
+		form.dispatchEvent(new Event("submit", { cancelable: true }));
+		await new Promise((r) => setTimeout(r, 0));
+		expect(fetcher).toHaveBeenCalledOnce();
+		release();
+		await new Promise((r) => setTimeout(r, 0));
+	});
+
+	it("gives up on a request that hangs", async () => {
+		vi.useFakeTimers();
+		const fetcher = vi.fn(
+			(_url: string, init: RequestInit) =>
+				new Promise<Response>((_, reject) =>
+					init.signal!.addEventListener("abort", () => reject(new Error("aborted"))),
+				),
+		);
+		const sent = mod.sendWithWeb3Forms("k", msg, fetcher as unknown as typeof fetch);
+		await vi.advanceTimersByTimeAsync(15_000);
+		expect(await sent).toBe(false);
+		vi.useRealTimers();
 	});
 });

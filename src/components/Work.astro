@@ -97,6 +97,7 @@ const headline = work.headline.replace(/[[\]]/g, "");
 											widths={[640, 960, 1280, 1600]}
 											sizes="(max-width: 1023px) 92vw, 640px"
 											quality={90}
+											style={project.focus ? `object-position: ${project.focus}` : undefined}
 											loading="lazy"
 											decoding="async"
 										/>

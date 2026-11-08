@@ -9,6 +9,7 @@
 import { contact } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
 import TechIcon from "./TechIcon.astro";
+import { LIMITS } from "../scripts/contact-limits";
 
 const words = splitHighlights(contact.headline);
 const headline = contact.headline.replace(/[[\]]/g, "");
@@ -78,11 +79,17 @@ const links = contact.links.filter((l) => l.href);
 				<div class="contact__form-row">
 					<label class="contact__form-field">
 						<span>Name</span>
-						<input name="name" autocomplete="name" required />
+						<input name="name" autocomplete="name" maxlength={LIMITS.name} required />
 					</label>
 					<label class="contact__form-field">
 						<span>Email</span>
-						<input name="email" type="email" autocomplete="email" required />
+						<input
+							name="email"
+							type="email"
+							autocomplete="email"
+							maxlength={LIMITS.email}
+							required
+						/>
 					</label>
 				</div>
 				<fieldset class="contact__form-needs">
@@ -100,7 +107,7 @@ const links = contact.links.filter((l) => l.href);
 				</fieldset>
 				<label class="contact__form-field">
 					<span>A few words about it</span>
-					<textarea name="message" rows="3" required></textarea>
+					<textarea name="message" rows="3" maxlength={LIMITS.message} required></textarea>
 				</label>
 				<!-- Spam trap: hidden from people, filled in by bots. -->
 				<input
@@ -537,7 +544,7 @@ const links = contact.links.filter((l) => l.href);
 		color: var(--color-text-soft);
 	}
 
-	.contact__form[data-state="failed"] .contact__form-status {
+	.contact__form:is([data-state="failed"], [data-state="invalid"]) .contact__form-status {
 		color: var(--color-accent-soft);
 	}
 

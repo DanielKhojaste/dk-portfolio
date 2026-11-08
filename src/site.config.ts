@@ -116,6 +116,11 @@ export interface Project {
 	motion?: string;
 	/** What the screenshot shows, for screen readers. */
 	alt: string;
+	/**
+	 * Optional: which part of the screenshot to keep in view when the frame crops it, as a CSS
+	 * object-position ("50% 0%" keeps the top). Default "50% 30%".
+	 */
+	focus?: string;
 }
 
 /** The Work section, after About: one row per project that opens to show it. */
@@ -155,12 +160,13 @@ export const work = {
 				"Built on Squarespace to the client's brief",
 				"Custom CSS and JavaScript for the layout, look and behaviour",
 				"Checked on every browser and screen size before each update went live",
-				"Set up to be found on Google, and tracked in Search Console",
+				"SEO best practices, with search performance tracked in Google Search Console",
 			],
 			stack: ["Squarespace", "CSS", "JavaScript", "Google Search Console"],
 			links: [{ label: "Live site", href: "https://www.urlockerconsulting.com/" }],
 			image: "urlocker.jpg",
-			alt: "Urlocker Consulting's Sell page: a warmly lit brewery bar under the words Sell Your Ontario Craft Brewery.",
+			alt: "Urlocker Consulting's home page: friends toasting with craft beer beside Grow Your Brewery's Value, with Find Breweries for Sale below.",
+			focus: "50% 0%",
 		},
 		{
 			name: "ApotheonAI",
@@ -338,13 +344,12 @@ export const backgroundSection = {
 					name: "Urlocker Consulting",
 					role: "Web Designer & SEO Consultant",
 					when: "Mar – Jul 2025",
-					summary:
-						"Built and looked after the company's public website, and helped it get found on Google.",
+					summary: "Built and maintained the company's public website, and handled its SEO.",
 					points: [
 						"Built and customized the website on Squarespace, to the client's brief",
 						"Wrote custom CSS and JavaScript for the layout and features",
 						"Checked every change across browsers and screen sizes before it went live",
-						"Set up SEO and tracked search results in Google Search Console",
+						"Applied SEO best practices and tracked search performance in Google Search Console",
 					],
 				},
 			],
@@ -354,7 +359,7 @@ export const backgroundSection = {
 			entries: [
 				{
 					name: "Algonquin College",
-					role: "Diploma",
+					role: "College diploma",
 					when: "Jan 2024 – Aug 2025",
 					summary:
 						"Web Development and Internet Applications: front end, back end, databases and testing, with real client projects.",
@@ -398,7 +403,7 @@ export const contact = {
 			},
 			{
 				title: "Redesigns",
-				text: "An old site brought up to date: new look, faster pages, easier to find on Google.",
+				text: "An old site brought up to date: a new look, faster pages and better SEO.",
 			},
 		],
 		cta: "Start a project",
@@ -415,6 +420,7 @@ export const contact = {
 		accessKey: "",
 		sent: "Thanks! Your message is on its way. I'll get back to you soon.",
 		failed: "That didn't send. Please try again, or email me directly.",
+		invalid: "Please add your name, a valid email and a few words.",
 	},
 	linksTitle: "Or reach me directly",
 };

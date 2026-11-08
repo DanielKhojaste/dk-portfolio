@@ -7,6 +7,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FILL_EMPTY, FILL_FULL } from "./about";
+import { LIMITS } from "./contact-limits";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,8 +20,12 @@ export interface ContactTiming {
 export interface FormSettings {
 	email: string;
 	accessKey: string;
+	/** The choices under "What do you need?"; anything else is treated as the last one. */
+	needs: readonly string[];
 	sent: string;
 	failed: string;
+	/** Shown when a field is missing or the email doesn't look right. */
+	invalid: string;
 }
 
 export interface Message {
@@ -28,6 +33,47 @@ export interface Message {
 	email: string;
 	need: string;
 	message: string;
+}
+
+export { LIMITS };
+
+/** Control characters, except tab and newline. They have no place in a message. */
+// eslint-disable-next-line no-control-regex
+const CONTROL = /[\u0000-\u0008\u000B-\u001F\u007F]/g;
+
+/** A plain email address: something@something.tld, no spaces or angle brackets. */
+const EMAIL = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]{2,}$/;
+
+/**
+ * Cleans what was typed before it goes anywhere: drops control characters, keeps the name and
+ * email on one line (no line breaks to slip extra headers into an email), trims everything to its
+ * limit, and only accepts a "need" that's one of the form's own choices.
+ */
+export function clean(
+	raw: { name: string; email: string; need: string; message: string },
+	needs: readonly string[],
+): Message {
+	const line = (text: string, max: number) =>
+		text
+			.replace(CONTROL, "")
+			.replace(/[\r\n\t]+/g, " ")
+			.trim()
+			.slice(0, max);
+	return {
+		name: line(raw.name, LIMITS.name),
+		email: line(raw.email, LIMITS.email),
+		need: needs.includes(raw.need) ? raw.need : (needs.at(-1) ?? ""),
+		message: raw.message
+			.replace(CONTROL, "")
+			.replace(/\r\n?/g, "\n")
+			.trim()
+			.slice(0, LIMITS.message),
+	};
+}
+
+/** Whether a cleaned message can be sent: a name, a real-looking email and some words. */
+export function isValid(msg: Message) {
+	return msg.name.length > 0 && EMAIL.test(msg.email) && msg.message.length > 0;
 }
 
 /** Subject and body for an email about a message. */
@@ -51,9 +97,13 @@ export async function sendWithWeb3Forms(
 	fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
 	const { subject } = compose(msg);
+	// Give up after 15 seconds rather than leave the button waiting forever.
+	const timeout = new AbortController();
+	const timer = setTimeout(() => timeout.abort(), 15_000);
 	try {
 		const response = await fetcher("https://api.web3forms.com/submit", {
 			method: "POST",
+			signal: timeout.signal,
 			headers: { "Content-Type": "application/json", Accept: "application/json" },
 			body: JSON.stringify({
 				access_key: accessKey,
@@ -69,6 +119,8 @@ export async function sendWithWeb3Forms(
 		return response.ok && data.success !== false;
 	} catch {
 		return false;
+	} finally {
+		clearTimeout(timer);
 	}
 }
 
@@ -81,30 +133,48 @@ export function setupForm(
 	const status = form.querySelector<HTMLElement>("[data-form-status]");
 	const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
 
+	// One message at a time: a second click while one is on its way does nothing.
+	let sending = false;
+	const say = (text: string) => {
+		// Plain text only: whatever the visitor typed is never put into the page as HTML.
+		if (status) status.textContent = text;
+	};
+
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
+		if (sending) return;
 		const data = new FormData(form);
-		const msg: Message = {
-			name: String(data.get("name") ?? "").trim(),
-			email: String(data.get("email") ?? "").trim(),
-			need: String(data.get("need") ?? ""),
-			message: String(data.get("message") ?? "").trim(),
-		};
 		// A bot filled in the hidden field: pretend it worked.
 		if (data.get("botcheck")) return;
+		const msg = clean(
+			{
+				name: String(data.get("name") ?? ""),
+				email: String(data.get("email") ?? ""),
+				need: String(data.get("need") ?? ""),
+				message: String(data.get("message") ?? ""),
+			},
+			settings.needs,
+		);
+		if (!isValid(msg)) {
+			form.dataset.state = "invalid";
+			say(settings.invalid);
+			return;
+		}
 
 		if (!settings.accessKey) {
 			go(mailtoFor(settings.email, msg));
 			return;
 		}
 
+		sending = true;
 		button?.setAttribute("disabled", "");
 		form.dataset.state = "sending";
 		const ok = await sendWithWeb3Forms(settings.accessKey, msg, fetcher);
 		form.dataset.state = ok ? "sent" : "failed";
-		if (status) status.textContent = ok ? settings.sent : settings.failed;
+		say(ok ? settings.sent : settings.failed);
 		if (ok) form.reset();
 		button?.removeAttribute("disabled");
+		sending = false;
 	});
 }
 
