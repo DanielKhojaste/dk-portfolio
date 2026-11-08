@@ -47,7 +47,8 @@ test.describe("work", () => {
 			await expect(row.locator(".work__stack")).toHaveAccessibleName(
 				`Built with ${project.stack.join(", ")}`,
 			);
-			// What it does, in a few points, and its links: a GitHub repo for every project.
+			// What it does, in a few points, and its links: a GitHub repo for every project with code of
+			// its own (the client site has its live address).
 			await expect(row.locator(".work__features li")).toHaveCount(project.features.length);
 			const links = row.locator("a.work__link");
 			await expect(links).toHaveCount(project.links.length);
@@ -55,7 +56,9 @@ test.describe("work", () => {
 				await expect(links.nth(j)).toHaveAttribute("href", link.href);
 				await expect(links.nth(j)).toHaveAttribute("target", "_blank");
 			}
-			await expect(links.filter({ hasText: "GitHub" })).toHaveCount(1);
+			await expect(links.filter({ hasText: "GitHub" })).toHaveCount(
+				project.links.some((l) => l.label === "GitHub") ? 1 : 0,
+			);
 		}
 		// Every row starts closed.
 		for (let i = 0; i < work.projects.length; i++) expect(await panelHeight(page, i)).toBe(0);

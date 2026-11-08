@@ -263,8 +263,11 @@ const headline = work.headline.replace(/[[\]]/g, "");
 
 	/* Outlined until its row opens, then the whole name fills white at the side nav's hover pace
 	   (animation.textHover), and empties again on close. No glow. */
+	/* As wide as the name, up to the row's width; a name too long for a phone wraps onto two lines. */
 	.work__name {
 		width: max-content;
+		max-width: 100%;
+		text-wrap: balance;
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 900;

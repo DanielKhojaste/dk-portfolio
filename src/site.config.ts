@@ -98,7 +98,10 @@ export interface Project {
 	features: readonly string[];
 	/** Tools used, shown as their logos next to the name (see components/TechIcon.astro). */
 	stack: readonly string[];
-	/** Where the project lives, opened in a new tab. Every project has its GitHub repo here. */
+	/**
+	 * Where the project lives, opened in a new tab. Every project with code of its own has its GitHub
+	 * repo here (a client site may only have its live address).
+	 */
 	links: readonly LinkItem[];
 	/**
 	 * Screenshot in src/assets/projects, shown when the project is open. It's served resized and in
@@ -140,6 +143,23 @@ export const work = {
 			links: [{ label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" }],
 			image: "lineup.png",
 			alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
+		},
+		{
+			name: "Urlocker Consulting",
+			kind: "Client website",
+			status: "Live",
+			summary:
+				"The website of an Ontario consultancy that helps craft breweries sell, grow or buy, built for the client (Mar to Jul 2025).",
+			features: [
+				"Built on Squarespace to the client's brief",
+				"Custom CSS and JavaScript for the layout, look and behaviour",
+				"Checked on every browser and screen size before each update went live",
+				"Set up to be found on Google, and tracked in Search Console",
+			],
+			stack: ["Squarespace", "CSS", "JavaScript", "Google Search Console"],
+			links: [{ label: "Live site", href: "https://www.urlockerconsulting.com/" }],
+			image: "urlocker.jpg",
+			alt: "Urlocker Consulting's Sell page: a warmly lit brewery bar under the words Sell Your Ontario Craft Brewery.",
 		},
 		{
 			name: "ApotheonAI",
@@ -207,7 +227,7 @@ export const skills = {
 			title: "Languages",
 			skills: [
 				{ name: "TypeScript", usedIn: everywhere },
-				{ name: "JavaScript", usedIn: ["ToDone"] },
+				{ name: "JavaScript", usedIn: ["ToDone", "Urlocker Consulting"] },
 				{ name: "Python", usedIn: [] },
 				{ name: "Java", usedIn: [] },
 				{ name: "C#", usedIn: [] },
@@ -222,8 +242,8 @@ export const skills = {
 				{ name: "React", usedIn: ["Lineup"] },
 				{ name: "Next.js", usedIn: [] },
 				{ name: "Astro", usedIn: ["ApotheonAI", "Portfolio"] },
-				{ name: "HTML", usedIn: ["Lineup", "ApotheonAI", "Portfolio"] },
-				{ name: "CSS", usedIn: ["Lineup", "ApotheonAI", "Portfolio"] },
+				{ name: "HTML", usedIn: ["Lineup", "Urlocker Consulting", "ApotheonAI", "Portfolio"] },
+				{ name: "CSS", usedIn: ["Lineup", "Urlocker Consulting", "ApotheonAI", "Portfolio"] },
 				{ name: "Tailwind CSS", usedIn: ["ApotheonAI"] },
 				{ name: "GSAP", usedIn: ["ApotheonAI", "Portfolio"] },
 				{ name: "Figma", usedIn: [] },
@@ -257,6 +277,8 @@ export const skills = {
 				{ name: "Git", usedIn: everywhere },
 				{ name: "Docker", usedIn: [] },
 				{ name: "Playwright", usedIn: ["ApotheonAI", "Portfolio"] },
+				{ name: "Squarespace", usedIn: ["Urlocker Consulting"] },
+				{ name: "Google Search Console", usedIn: ["Urlocker Consulting"] },
 			],
 		},
 		{

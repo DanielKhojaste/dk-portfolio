@@ -49,6 +49,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so each row's logos stay on one line). Tools and which project uses
   them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
   `src/assets/tech`, drawn by `TechIcon`.
+- Urlocker Consulting in the Work section, second after Lineup: the website of an Ontario craft
+  brewery consultancy, built on Squarespace for the client (Mar to Jul 2025), with custom CSS and
+  JavaScript, cross-browser checks and SEO tracked in Google Search Console. It shows the site's
+  Sell page and links to the live site (a client site, so no GitHub repo). Its tools are in the
+  Skills filter, with Squarespace and Google Search Console added to Tools.
 - Contact section, last on the page: "Two ways to work together". Two cards side by side:
   "Hiring?" (a full-time role) and "Need a site?" (websites, web apps and redesigns, each with a
   line on what it covers). Each card's button glides down to the form with its choice already

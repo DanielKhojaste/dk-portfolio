@@ -154,17 +154,25 @@ describe("Work rows", () => {
 });
 
 describe("Work settings", () => {
-	it("lists the projects, each with a GitHub link, plain feature points and a screenshot", () => {
-		expect(work.projects.map((p) => p.name)).toEqual(["Lineup", "ApotheonAI", "ToDone"]);
-		expect(work.projects.map((p) => p.links.find((l) => l.label === "GitHub")?.href)).toEqual([
-			"https://github.com/DanielKhojaste/lineup",
-			"https://github.com/DanielKhojaste/apotheon-ai",
-			"https://github.com/DanielKhojaste/ToDone",
+	it("lists the projects, each with its links, plain feature points and a screenshot", () => {
+		expect(work.projects.map((p) => p.name)).toEqual([
+			"Lineup",
+			"Urlocker Consulting",
+			"ApotheonAI",
+			"ToDone",
 		]);
-		expect(work.projects[1]!.links[0]!.href).toBe("https://apotheon-ai.vercel.app/");
-		expect(work.projects[2]!.links[0]!.href).toBe(
+		const link = (name: string, label: string) =>
+			work.projects.find((p) => p.name === name)!.links.find((l) => l.label === label)?.href;
+		expect(link("Lineup", "GitHub")).toBe("https://github.com/DanielKhojaste/lineup");
+		expect(link("ApotheonAI", "GitHub")).toBe("https://github.com/DanielKhojaste/apotheon-ai");
+		expect(link("ToDone", "GitHub")).toBe("https://github.com/DanielKhojaste/ToDone");
+		expect(link("ApotheonAI", "Live site")).toBe("https://apotheon-ai.vercel.app/");
+		expect(link("ToDone", "VS Code Marketplace")).toBe(
 			"https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
 		);
+		// A client site: its live address, and no repo of its own.
+		expect(link("Urlocker Consulting", "Live site")).toBe("https://www.urlockerconsulting.com/");
+		expect(link("Urlocker Consulting", "GitHub")).toBeUndefined();
 		for (const p of work.projects) {
 			expect(existsSync(`src/assets/projects/${p.image}`), p.image).toBe(true);
 			expect(p.features.length).toBeGreaterThanOrEqual(3);
