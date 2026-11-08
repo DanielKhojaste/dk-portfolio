@@ -79,7 +79,17 @@ test.describe("work", () => {
 			.toBe("1");
 
 		const name = rows(page).nth(0).locator(".work__name");
-		const top = (await rows(page).nth(0).boundingBox())!.y;
+		// The row's place on the page (not on screen, which smooth scrolling may still be moving).
+		const pageTop = () =>
+			rows(page)
+				.nth(0)
+				.evaluate(
+					(el) =>
+						el.getBoundingClientRect().top -
+						(document.getElementById("smooth-content") ?? document.body).getBoundingClientRect()
+							.top,
+				);
+		const top = await pageTop();
 		await name.hover();
 		await expect(rows(page).nth(0).locator("[data-work-toggle]")).toHaveAttribute(
 			"aria-expanded",
@@ -93,7 +103,7 @@ test.describe("work", () => {
 		// White, without a glow.
 		expect(await name.evaluate((el) => getComputedStyle(el).textShadow)).toBe("none");
 		// Anchored at the top: the opened row itself doesn't move.
-		expect(Math.abs((await rows(page).nth(0).boundingBox())!.y - top)).toBeLessThan(1);
+		expect(Math.abs((await pageTop()) - top)).toBeLessThan(1);
 
 		await page.mouse.move(5, 5);
 		await expect.poll(() => panelHeight(page, 0)).toBe(0);
