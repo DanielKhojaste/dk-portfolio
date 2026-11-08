@@ -38,14 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scrolling past an open project no longer collapses it under you. ToDone shows its GIF.
   Projects, copy and screenshots (`public/projects`) are in `site.config.ts` (`work`,
   `animation.work`).
-- Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.
+- Side nav on desktop, in place of the menu button: the sections down the left in grey caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
   its marker white (`animation.textHover`, `colors.textHover`, `animation.sideNav.nudge`). The
   current section is filled white with a glowing marker and a DivineFlow underline with its own,
   flatter settings (`sideNavUnderlineFlow`). Moving to another section, the old label empties and
   the new one fills at the underline's pace (`animation.sideNav.labelIn` / `labelOut`). Hidden on
   the hero; phones and tablets keep the menu button.
-- Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`): the page glides to a stop, and section
+- Smooth scrolling (GSAP ScrollSmoother, `animation.scroll`, 1.6s): the page glides to a stop, and section
   links glide to their section. Off for reduced motion and, by default, on touch screens.
 - A fixed dark red glow behind the sections after the hero (`colors.sectionGlow`).
 - The Lineup link in About nudges its arrow up and right on hover, like the hero's Lineup link.

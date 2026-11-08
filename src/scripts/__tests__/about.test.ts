@@ -112,7 +112,7 @@ describe("motion", () => {
 		expect(animation.textHover.duration).toBe(motion.hover);
 		expect(animation.logoHover.duration).toBe(motion.hover);
 		expect(animation.about.highlight).toBe(motion.draw);
-		expect(animation.scroll.smooth).toBe(motion.glide);
+		expect(animation.scroll.smooth).toBe(1.6);
 		expect(animation.hover).toBe(motion.quick);
 		// Hovers answer the pointer straight away: an "out" ease, never one that starts slowly.
 		expect(animation.textHover.ease).toBe(motion.ease.out.css);

@@ -303,8 +303,11 @@ export const animation = {
 	 * instead of stopping dead. Off for reduced motion.
 	 */
 	scroll: {
-		/** Seconds the page takes to catch up with the wheel or scrollbar. 0 turns it off. */
-		smooth: motion.glide,
+		/**
+		 * Seconds the page takes to catch up with the wheel or scrollbar. 0 turns it off. Tried on
+		 * preview/polish: 0.6 (light), 1.1 (the shared glide), 1.6 (picked).
+		 */
+		smooth: 1.6,
 		/** The same on touch screens. 0 keeps the phone's own scrolling, which already feels smooth. */
 		smoothTouch: 0,
 	},

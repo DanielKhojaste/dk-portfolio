@@ -141,8 +141,9 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		display: block;
 	}
 
-	/* Outlined, in a lighter cut of the display font than the hero's name so small labels stay easy to
-	   read. */
+	/* Filled grey, in a lighter cut of the display font than the hero's name so small labels stay easy
+	   to read. Tried on preview/polish: the old outline (color: transparent with a 0.8px stroke at
+	   70%), and white at 55% or 35%. */
 	.side-nav__label {
 		display: block;
 		font-family: var(--font-display);
@@ -152,20 +153,17 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 		line-height: 1.2;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: transparent;
-		-webkit-text-stroke: 0.8px rgb(var(--shade-text) / 0.7);
+		color: rgb(var(--shade-text) / 0.42);
 		transition:
 			color var(--text-hover-duration) var(--text-hover-ease),
 			text-shadow var(--text-hover-duration) var(--text-hover-ease),
-			translate var(--text-hover-duration) var(--text-hover-ease),
-			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
+			translate var(--text-hover-duration) var(--text-hover-ease);
 	}
 
 	/* Hover: lights up white with a glow, and slides right. */
 	.side-nav__link:hover .side-nav__label,
 	.side-nav__link:focus-visible .side-nav__label {
 		color: var(--text-hover-color);
-		-webkit-text-stroke-color: var(--text-hover-color);
 		text-shadow: var(--text-hover-glow);
 		translate: var(--side-nav-nudge) 0;
 	}
@@ -175,7 +173,6 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	   hover's (animation.sideNav.labelIn / labelOut). */
 	.side-nav__link[aria-current] .side-nav__label {
 		color: var(--color-text);
-		-webkit-text-stroke-color: var(--color-text);
 	}
 
 	.side-nav__link[aria-current] :is(.side-nav__label, .side-nav__marker) {
@@ -186,15 +183,6 @@ const underline = underlineOptions(sideNavUnderlineFlow, colors.sideNavUnderline
 	.side-nav__link[data-leaving] :is(.side-nav__label, .side-nav__marker) {
 		transition-duration: var(--side-nav-label-out);
 		transition-timing-function: var(--side-nav-label-ease);
-	}
-
-	@supports not (-webkit-text-stroke: 1px) {
-		.side-nav__label {
-			color: var(--color-text-muted);
-		}
-		.side-nav__link[aria-current] .side-nav__label {
-			color: var(--color-text);
-		}
 	}
 
 	/* Strip for the underline: a little wider than the word, fading out at both ends. Absolutely

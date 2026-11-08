@@ -223,7 +223,8 @@ test.describe("side nav", () => {
 				return { color: cs.color, glow: cs.textShadow, translate: cs.translate };
 			});
 		expect(await style()).toMatchObject({
-			color: "rgba(0, 0, 0, 0)",
+			// Filled grey (not an outline) until hovered.
+			color: "rgba(245, 236, 236, 0.42)",
 			glow: "none",
 			translate: "none",
 		});
