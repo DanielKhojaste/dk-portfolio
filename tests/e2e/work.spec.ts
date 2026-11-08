@@ -149,15 +149,22 @@ test.describe("work", () => {
 		await expect(toggle(2)).toHaveAttribute("aria-expanded", "false");
 	});
 
-	test("shows ToDone's GIF whole, and every screenshot loads", async ({ page }) => {
+	test("serves screenshots in modern formats and ToDone's recording as video", async ({ page }) => {
 		await page.goto("/");
-		const images = page.locator("#work .work__media img");
-		await expect(images).toHaveCount(work.projects.length);
 		for (const [i, project] of work.projects.entries()) {
-			const src = project.motion ?? project.image;
-			await expect(images.nth(i)).toHaveAttribute("src", src);
-			const response = await page.request.get(src);
-			expect(response.ok()).toBe(true);
+			const media = page.locator("#work .work__media").nth(i);
+			if (project.motion) {
+				const video = media.locator("video");
+				await expect(video).toHaveAttribute("loop", "");
+				expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(true);
+				for (const ext of ["webm", "mp4"]) {
+					expect((await page.request.get(`${project.motion}.${ext}`)).ok()).toBe(true);
+				}
+			} else {
+				await expect(media.locator("picture source[type='image/avif']")).toHaveCount(1);
+				const src = await media.locator("img").getAttribute("src");
+				expect((await page.request.get(src!)).ok()).toBe(true);
+			}
 		}
 	});
 

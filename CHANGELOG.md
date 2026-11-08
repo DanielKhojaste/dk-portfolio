@@ -71,7 +71,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   It brightens on hover (no glow, so it keeps its weight), hides once you scroll and takes you to
   About when clicked.
 
+- Search and sharing: a clearer description, Open Graph and Twitter card tags with a share image
+  of the hero (`public/og.png`), a schema.org Person record, and `robots.txt`. Settings in
+  `site.config.ts` (`seo`); the canonical link and absolute image address switch on once
+  `seo.url` is set to the site's address.
+
 ### Changed
+
+- Work screenshots are served resized, in AVIF and WebP at full quality (`src/assets/projects`),
+  and ToDone's recording is a looping muted video (WebM and MP4) instead of a GIF: the page
+  weighs about 430 KB instead of about 2 MB. The page's colour and timing variables moved from
+  `<html>` into a `<style>` block, so the charset comes first.
 
 - The tab title reads "Daniel Khojaste | Software Developer" (a bar instead of the em dash).
 

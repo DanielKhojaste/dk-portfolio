@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { existsSync } from "node:fs";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { animation, work } from "../../site.config";
 
@@ -165,7 +166,7 @@ describe("Work settings", () => {
 			"https://marketplace.visualstudio.com/items?itemName=danielkhojaste.todone-vscode",
 		);
 		for (const p of work.projects) {
-			expect(p.image).toMatch(/^\/projects\/.+\.png$/);
+			expect(existsSync(`src/assets/projects/${p.image}`), p.image).toBe(true);
 			expect(p.features.length).toBeGreaterThanOrEqual(3);
 			expect(p.summary.length).toBeGreaterThan(20);
 		}

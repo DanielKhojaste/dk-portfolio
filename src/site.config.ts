@@ -34,6 +34,23 @@ export const profile = {
 	},
 } as const;
 
+/** How the site shows up in search results and when it's shared (BaseLayout). */
+export const seo = {
+	title: "Daniel Khojaste | Software Developer",
+	description:
+		"Daniel Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and editor extensions.",
+	/**
+	 * The site's address once it's hosted, e.g. "https://danielkhojaste.com" (no trailing slash).
+	 * Until then it's empty, and the canonical link and absolute share-image address are left out.
+	 */
+	url: "",
+	/** The picture shown when the site is shared (in public/), 1200×630. */
+	image: "/og.png",
+	imageAlt: "Daniel Khojaste, software developer: the hero of his portfolio.",
+	/** Profiles, for search engines' "this person" card. */
+	sameAs: ["https://github.com/DanielKhojaste"],
+};
+
 /** The hero. */
 export const hero = {
 	/** The prompt that fades in at the bottom of the hero after a few seconds. */
@@ -83,9 +100,15 @@ export interface Project {
 	stack: readonly string[];
 	/** Where the project lives, opened in a new tab. Every project has its GitHub repo here. */
 	links: readonly LinkItem[];
-	/** Screenshot in public/projects, shown when the project is open. */
+	/**
+	 * Screenshot in src/assets/projects, shown when the project is open. It's served resized and in
+	 * modern formats (AVIF, WebP) at full quality, so keep the original here as large as you like.
+	 */
 	image: string;
-	/** Optional moving version (a GIF), shown instead of the screenshot. */
+	/**
+	 * Optional screen recording, played (muted, looping) instead of the screenshot: the path in
+	 * public/ without its extension, with a .webm and an .mp4 there.
+	 */
 	motion?: string;
 	/** What the screenshot shows, for screen readers. */
 	alt: string;
@@ -115,7 +138,7 @@ export const work = {
 			],
 			stack: ["Tauri", "React", "TypeScript", "Rust"],
 			links: [{ label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" }],
-			image: "/projects/lineup.png",
+			image: "lineup.png",
 			alt: "Lineup: a pitch with two teams' players placed by position, with the tools on the left and the player list on the right.",
 		},
 		{
@@ -134,7 +157,7 @@ export const work = {
 				{ label: "Live site", href: "https://apotheon-ai.vercel.app/" },
 				{ label: "GitHub", href: "https://github.com/DanielKhojaste/apotheon-ai" },
 			],
-			image: "/projects/apotheon.png",
+			image: "apotheon.png",
 			alt: "ApotheonAI's home page: a bronze helmet over gold light filaments, with the words Ascend to the Divine.",
 		},
 		{
@@ -156,8 +179,8 @@ export const work = {
 				},
 				{ label: "GitHub", href: "https://github.com/DanielKhojaste/ToDone" },
 			],
-			image: "/projects/todone.png",
-			motion: "/projects/todone-commands.gif",
+			image: "todone.png",
+			motion: "/projects/todone-commands",
 			alt: "ToDone in VS Code: commands raising priorities and ticking off tasks in a to-do file.",
 		},
 	] as readonly Project[],

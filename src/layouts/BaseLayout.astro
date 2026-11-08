@@ -6,7 +6,7 @@ import "../styles/global.css";
 // swapping (and re-laying out) in the middle of the intro animations.
 import archivoLatin from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
-import { animation, brand, colors, motion, shades } from "../site.config";
+import { animation, brand, colors, motion, profile, seo, shades } from "../site.config";
 import { hex, photoFilter, shadeVariables } from "../scripts/brand";
 
 interface Props {
@@ -14,10 +14,20 @@ interface Props {
 	description?: string;
 }
 
-const {
-	title = "Daniel Khojaste | Software Developer",
-	description = "Portfolio of Daniel Khojaste, software developer.",
-} = Astro.props;
+const { title = seo.title, description = seo.description } = Astro.props;
+
+// Absolute addresses need the site's URL; until it's hosted, they're left out or kept relative.
+const absolute = (path: string) => (seo.url ? new URL(path, seo.url).href : path);
+const canonical = seo.url ? new URL(Astro.url.pathname, seo.url).href : undefined;
+const person = {
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: profile.name,
+	jobTitle: profile.role,
+	address: { "@type": "PostalAddress", addressCountry: profile.location },
+	...(seo.url ? { url: seo.url } : {}),
+	sameAs: seo.sameAs,
+};
 
 // CSS-driven timings from site.config.ts, available to every component's styles.
 const s = (seconds: number) => `${seconds}s`;
@@ -53,13 +63,39 @@ const timings = {
 ---
 
 <!doctype html>
-<html lang="en" style={{ ...shadeVariables(shades), ...timings }}>
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		{
+			/* The colours and timings from site.config.ts, for every component's styles. In a style
+		    block rather than on <html>, so the charset above stays in the first bytes of the page. */
+		}
+		<style
+			is:inline
+			set:html={`:root{${Object.entries({ ...shadeVariables(shades), ...timings })
+				.map(([k, v]) => `${k}:${v}`)
+				.join(";")}}`}
+		></style>
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content={hex(shades.bg)} />
 		<meta name="description" content={description} />
+		{canonical && <link rel="canonical" href={canonical} />}
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={profile.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		{canonical && <meta property="og:url" content={canonical} />}
+		<meta property="og:image" content={absolute(seo.image)} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={seo.imageAlt} />
+		<meta property="og:locale" content="en_CA" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={absolute(seo.image)} />
+		<script type="application/ld+json" set:html={JSON.stringify(person)} />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
