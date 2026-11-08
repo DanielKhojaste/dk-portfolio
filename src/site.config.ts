@@ -130,8 +130,8 @@ export const work = {
 	headline: "Selected [work]",
 	/** The hint next to the headline, for mouse users and for touch screens. */
 	prompt: {
-		hover: "Hover over a project to see more",
-		click: "Click a project to see more",
+		hover: "Hover over an item for more details",
+		click: "Click an item for more details",
 	},
 	projects: [
 		{
@@ -164,8 +164,8 @@ export const work = {
 			],
 			stack: ["Squarespace", "CSS", "JavaScript", "Google Search Console"],
 			links: [{ label: "Live site", href: "https://www.urlockerconsulting.com/" }],
-			image: "urlocker.jpg",
-			alt: "Urlocker Consulting's home page: friends toasting with craft beer beside Grow Your Brewery's Value, with Find Breweries for Sale below.",
+			image: "urlocker-consulting.jpg",
+			alt: "Urlocker Consulting's Sell page: a warmly lit brewery bar under the words Sell Your Ontario Craft Brewery.",
 			focus: "50% 0%",
 		},
 		{
@@ -324,19 +324,19 @@ export const backgroundSection = {
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "How I [got] here",
 	prompt: {
-		hover: "Hover over one to see more",
-		click: "Click one to see more",
+		hover: "Hover over an item for more details",
+		click: "Click an item for more details",
 	},
 	groups: [
 		{
 			title: "Experience",
 			entries: [
 				{
-					name: "Freelance",
-					role: "Web developer",
+					name: "Freelancer",
+					role: "Software developer",
 					when: "Now",
 					summary:
-						"Websites and web apps for people and small businesses, designed and built end to end.",
+						"I build websites and web apps for clients, handling everything from design to launch.",
 					points: [],
 					badge: "Taking on projects",
 				},

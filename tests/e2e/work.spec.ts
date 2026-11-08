@@ -131,7 +131,12 @@ test.describe("work", () => {
 			.toBe("1");
 
 		const toggle = rows(page).nth(1).locator("[data-work-toggle]");
-		await toggle.click();
+		// A click can land while the smooth scroller is still easing the row into place (and a
+		// passing hover can open it first, so the click closes it): retry until it's pinned open.
+		await expect(async () => {
+			await toggle.click();
+			await expect(rows(page).nth(1)).toHaveClass(/is-pinned/, { timeout: 500 });
+		}).toPass();
 		await page.mouse.move(5, 5);
 		await page.waitForTimeout(800);
 		await expect(toggle).toHaveAttribute("aria-expanded", "true");

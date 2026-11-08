@@ -324,6 +324,8 @@ const groups = background.groups.map((group) => ({
 	}
 
 	.bg__points {
+		/* One line of the points' text (15px × 1.5), for centring the stars on it. */
+		--bullet-line: 22.5px;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
@@ -345,8 +347,13 @@ const groups = background.groups.map((group) => ({
 		content: "✦";
 		position: absolute;
 		left: 0;
-		top: 0.1em;
+		top: 0;
+		/* As tall as the first line of text, with the star centred in it. */
+		display: flex;
+		align-items: center;
+		height: var(--bullet-line);
 		font-size: 10px;
+		line-height: 1;
 		color: rgb(var(--shade-bright));
 	}
 
@@ -439,6 +446,7 @@ const groups = background.groups.map((group) => ({
 		}
 
 		.bg__points {
+			--bullet-line: 21px;
 			font-size: 14px;
 		}
 	}

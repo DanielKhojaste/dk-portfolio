@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Sell page and links to the live site (a client site, so no GitHub repo). Its tools are in the
   Skills filter, with Squarespace and Google Search Console added to Tools.
 - Background section, between Skills and Contact: "How I got here", in two parts, Experience
-  (Freelance web developer, taking on projects; Web Designer & SEO Consultant at Urlocker
+  (Freelancer, software developer, taking on projects; Web Designer & SEO Consultant at Urlocker
   Consulting) and Education (Algonquin College, Web Development and Internet Applications diploma,
   Dean's Honours List three terms). Each place is a row like the Projects section's: its name in
   big outlined type with the role and dates beside it; hovering (or tapping) opens the details
@@ -123,7 +123,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Urlocker Consulting's screenshot is now its home page, cropped to the frame (16:9, no
+- The Projects and Background prompts read "Hover over an item for more details" ("Click an item
+  for more details" on touch screens), and the red stars beside their points are centred on the
+  first line of each point.
+- Urlocker Consulting's screenshot is now its Sell page (`urlocker-consulting.jpg`), cropped to the frame (16:9, no
   scrollbar) and kept in view from the top (`focus` on a project, a CSS object-position). The SEO
   wording is plainer ("handled its SEO", "better SEO"), and Algonquin is a "College diploma".
 - The Work section is now called Projects (side nav, menu, its label and `#projects` in the

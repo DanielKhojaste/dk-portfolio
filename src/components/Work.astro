@@ -412,6 +412,8 @@ const headline = work.headline.replace(/[[\]]/g, "");
 	}
 
 	.work__features {
+		/* One line of the points' text (15px × 1.5), for centring the stars on it. */
+		--bullet-line: 22.5px;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
@@ -433,8 +435,13 @@ const headline = work.headline.replace(/[[\]]/g, "");
 		content: "✦";
 		position: absolute;
 		left: 0;
-		top: 0.1em;
+		top: 0;
+		/* As tall as the first line of text, with the star centred in it. */
+		display: flex;
+		align-items: center;
+		height: var(--bullet-line);
 		font-size: 10px;
+		line-height: 1;
 		color: rgb(var(--shade-bright));
 	}
 
@@ -546,6 +553,7 @@ const headline = work.headline.replace(/[[\]]/g, "");
 		}
 
 		.work__features {
+			--bullet-line: 21px;
 			font-size: 14px;
 		}
 	}
