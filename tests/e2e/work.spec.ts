@@ -221,3 +221,48 @@ test.describe("work layout", () => {
 		expect(styles.every((s) => s === "none")).toBe(true);
 	});
 });
+
+test.describe("work details", () => {
+	test("project names are a step smaller than the headline, at every size", async ({ page }) => {
+		for (const width of [390, 820, 1024, 1280, 1440, 1920]) {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto("/");
+			const [headline, name] = await Promise.all(
+				["#work-title", "#work .work__name"].map((sel) =>
+					page
+						.locator(sel)
+						.first()
+						.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+				),
+			);
+			expect(name, `at ${width}px`).toBeLessThan(headline!);
+		}
+	});
+
+	test("scrolling past an open project doesn't close it until the mouse moves", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		await page.goto("/");
+		await page.locator("#work").scrollIntoViewIfNeeded();
+		const last = page.locator("#work [data-work-row]").last();
+		await expect.poll(() => last.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+		await page.waitForTimeout(1200);
+		await last.locator(".work__name").hover();
+		const toggle = last.locator("[data-work-toggle]");
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+		// Scroll down with the wheel, without moving the mouse: it stays open.
+		for (let i = 0; i < 6; i++) {
+			await page.mouse.wheel(0, 120);
+			await page.waitForTimeout(60);
+		}
+		await page.waitForTimeout(900);
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+		// Moving the mouse off it closes it.
+		await page.mouse.move(5, 5);
+		await page.mouse.move(8, 8);
+		await expect(toggle).toHaveAttribute("aria-expanded", "false");
+	});
+});

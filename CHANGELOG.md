@@ -32,7 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   at a time, and the hint next to the headline says "Hover over" or "Click" to match. The section is
   anchored at the top, so opening a row only pushes the rows below it. On narrower screens the row
   stacks (name, then what it is and the tools), and on tablets and phones an open project shows its
-  screenshot full width with the details underneath. No lines between the projects. ToDone shows its GIF.
+  screenshot full width with the details underneath. No lines between the projects.
+  Project names are a step smaller than the headline, with a touch of letter-spacing. Rows that
+  slide under a still pointer while you scroll don't open or close until the mouse moves, so
+  scrolling past an open project no longer collapses it under you. ToDone shows its GIF.
   Projects, copy and screenshots (`public/projects`) are in `site.config.ts` (`work`,
   `animation.work`).
 - Side nav on desktop, in place of the menu button: the sections down the left in outlined caps.

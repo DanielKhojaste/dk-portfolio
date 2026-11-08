@@ -2,7 +2,7 @@
  * The Work section's rows. Each row is a button (the project's name) and a panel under it (the
  * screenshot and details). On desktop, hovering a row opens it and moving off closes it. Clicking
  * (or tapping, or Enter/Space) pins a row open: it stays open when the pointer leaves, until it's
- * clicked again. One row is pinned at a time; pinning another closes the last. On touch screens,
+ * clicked again. Rows sliding under a still pointer while the page scrolls don't count as hovers. One row is pinned at a time; pinning another closes the last. On touch screens,
  * with no hover, that's the only way to open one. Opening and closing animate the panel's height
  * (GSAP), and the page is told it got taller or shorter so scrolling and the side nav stay right.
  */
@@ -29,9 +29,19 @@ export interface RowOptions {
 	animate: AnimatePanel;
 	/** Called once a panel has finished opening or closing. */
 	onResize?: () => void;
+	/**
+	 * Whether the page is being scrolled right now. Rows moving under a still pointer while you
+	 * scroll aren't hovers: they don't open or close until the pointer itself moves.
+	 */
+	isScrolling?: () => boolean;
+	/** Where to listen for the pointer moving again (the document in the page). */
+	pointerTarget?: Pick<Document, "addEventListener" | "removeEventListener">;
 }
 
-export function setupRows(rows: HTMLElement[], { canHover, animate, onResize }: RowOptions) {
+export function setupRows(
+	rows: HTMLElement[],
+	{ canHover, animate, onResize, isScrolling = () => false, pointerTarget = document }: RowOptions,
+) {
 	const toggle = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-work-toggle]")!;
 	const panel = (row: HTMLElement) => row.querySelector<HTMLElement>("[data-work-panel]")!;
 	const isOpen = (row: HTMLElement) => row.classList.contains("is-open");
@@ -46,9 +56,34 @@ export function setupRows(rows: HTMLElement[], { canHover, animate, onResize }: 
 
 	const pin = (row: HTMLElement, pinned: boolean) => row.classList.toggle("is-pinned", pinned);
 
+	/**
+	 * While scrolling, wait for the pointer to actually move before acting on a hover, then open the
+	 * row if the pointer is over it and close it if not. Without this, scrolling past the last
+	 * project closes it as it slides out from under the pointer; the page gets shorter under you
+	 * and the scroll jumps.
+	 */
+	const waiting = new Map<HTMLElement, (event: Event) => void>();
+	const stopWaiting = (row: HTMLElement) => {
+		const handler = waiting.get(row);
+		if (handler) pointerTarget.removeEventListener("pointermove", handler);
+		waiting.delete(row);
+	};
+	const hover = (row: HTMLElement, over: boolean) => {
+		stopWaiting(row);
+		if (!canHover() || (!over && isPinned(row))) return;
+		if (!isScrolling()) return set(row, over);
+		const handler = (event: Event) => {
+			stopWaiting(row);
+			const inside = row.contains(event.target as Node);
+			if (inside || !isPinned(row)) set(row, inside);
+		};
+		waiting.set(row, handler);
+		pointerTarget.addEventListener("pointermove", handler);
+	};
+
 	for (const row of rows) {
-		row.addEventListener("pointerenter", () => canHover() && set(row, true));
-		row.addEventListener("pointerleave", () => canHover() && !isPinned(row) && set(row, false));
+		row.addEventListener("pointerenter", () => hover(row, true));
+		row.addEventListener("pointerleave", () => hover(row, false));
 		toggle(row).addEventListener("click", () => {
 			if (isPinned(row)) {
 				pin(row, false);
@@ -76,8 +111,15 @@ export function setupWork(
 	const hover = matchMedia("(hover: hover) and (pointer: fine)");
 	const rows = [...section.querySelectorAll<HTMLElement>("[data-work-row]")];
 
+	// The last time the page scrolled (wheel, keys, scrollbar or the smooth scroller).
+	let lastScroll = -Infinity;
+	const scrolled = () => (lastScroll = performance.now());
+	addEventListener("wheel", scrolled, { passive: true });
+	addEventListener("scroll", scrolled, { passive: true });
+
 	setupRows(rows, {
 		canHover: () => hover.matches,
+		isScrolling: () => performance.now() - lastScroll < 200,
 		animate: (panel, open, done) =>
 			gsap.to(panel, {
 				height: open ? "auto" : 0,

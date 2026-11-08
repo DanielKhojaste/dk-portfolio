@@ -102,6 +102,46 @@ describe("Work rows", () => {
 		expect(open(list)).toEqual([false, false, false]);
 	});
 
+	it("don't open or close while the page scrolls under a still pointer, only once it moves", () => {
+		const list = rows();
+		let scrolling = false;
+		setupRows(list, {
+			canHover: () => true,
+			animate: (_p, _o, done) => done(),
+			isScrolling: () => scrolling,
+		});
+		list[2]!.dispatchEvent(new Event("pointerenter"));
+		expect(open(list)).toEqual([false, false, true]);
+
+		// Scrolling down: the last row slides out from under the pointer, and the one above slides in.
+		scrolling = true;
+		list[2]!.dispatchEvent(new Event("pointerleave"));
+		list[1]!.dispatchEvent(new Event("pointerenter"));
+		expect(open(list)).toEqual([false, false, true]);
+
+		// The pointer moves (outside every row): now the last one closes, and nothing else opens.
+		scrolling = false;
+		document.body.dispatchEvent(new Event("pointermove", { bubbles: true }));
+		expect(open(list)).toEqual([false, false, false]);
+	});
+
+	it("open a row the pointer has come to rest over once it moves after scrolling", () => {
+		const list = rows();
+		let scrolling = true;
+		setupRows(list, {
+			canHover: () => true,
+			animate: (_p, _o, done) => done(),
+			isScrolling: () => scrolling,
+		});
+		list[0]!.dispatchEvent(new Event("pointerenter"));
+		expect(open(list)).toEqual([false, false, false]);
+		scrolling = false;
+		list[0]!
+			.querySelector("[data-work-panel]")!
+			.dispatchEvent(new Event("pointermove", { bubbles: true }));
+		expect(open(list)).toEqual([true, false, false]);
+	});
+
 	it("toggle from the keyboard too", () => {
 		const list = rows();
 		setupRows(list, { canHover: () => true, animate: (_p, _o, done) => done() });
