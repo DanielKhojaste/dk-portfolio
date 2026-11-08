@@ -54,6 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   JavaScript, cross-browser checks and SEO tracked in Google Search Console. It shows the site's
   Sell page and links to the live site (a client site, so no GitHub repo). Its tools are in the
   Skills filter, with Squarespace and Google Search Console added to Tools.
+- Background section, between Skills and Contact: "How I got here", in two parts, Experience
+  (Freelance web developer, taking on projects; Web Designer & SEO Consultant at Urlocker
+  Consulting) and Education (Algonquin College, Web Development and Internet Applications diploma,
+  Dean's Honours List three terms). Each place is a row like the Projects section's: its name in
+  big outlined type with the role and dates beside it; hovering (or tapping) opens the details
+  underneath and fills the name, and clicking keeps it open. Copy in `site.config.ts`
+  (`backgroundSection`, `animation.backgroundSection`). The side nav and menu list it.
 - Contact section, last on the page: "Two ways to work together". Two cards side by side:
   "Hiring?" (a full-time role) and "Need a site?" (websites, web apps and redesigns, each with a
   line on what it covers). Each card's button glides down to the form with its choice already
@@ -105,6 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The Work section is now called Projects (side nav, menu, its label and `#projects` in the
+  address). The headline stays "Selected work".
 - Hovering the logo now writes a brush stroke under it instead of glowing: one simple stroke on a
   slight arc, blunt at the start and tapering to a point, drawn left to right in 0.45s. Its look is
   set in `site.config.ts` (`animation.logoUnderline`): `style` ("single", "double" for a shorter

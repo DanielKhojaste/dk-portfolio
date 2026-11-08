@@ -1,6 +1,6 @@
 ---
 /**
- * The Work section: big outlined project names, one per row. Opening a row (hover on desktop, a tap
+ * The Projects section (called Work in the code): big outlined project names, one per row. Opening a row (hover on desktop, a tap
  * on phones and tablets) fills its name white and drops the screenshot (or GIF) open under it, with
  * what it's for, a few plain points on what it does and its links. Clicking a row keeps it open.
  * The section is anchored at the top, so opening a row only pushes the rows below it down. Copy and projects live in site.config.ts (`work`); behaviour in scripts/work.ts.
@@ -25,12 +25,12 @@ const words = splitHighlights(work.headline);
 const headline = work.headline.replace(/[[\]]/g, "");
 ---
 
-<section class="work" id="work" aria-labelledby="work-title" data-work>
+<section class="work" id="projects" aria-labelledby="projects-title" data-work>
 	<div class="work__inner">
 		<div class="work__top">
 			<div class="work__heading">
 				<p class="work__eyebrow">{work.eyebrow}</p>
-				<h2 class="work__headline" id="work-title" aria-label={headline}>
+				<h2 class="work__headline" id="projects-title" aria-label={headline}>
 					{
 						words.map((word) =>
 							word.highlight ? (

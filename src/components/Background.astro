@@ -1,0 +1,445 @@
+---
+/**
+ * The Background section, after Skills: Experience, then Education. Each place is a row like the
+ * Projects section's: its name in big outlined type, the role and dates beside it. Opening a row
+ * (hover on desktop, a tap on phones and tablets) fills the name white and drops the details open
+ * under it; clicking keeps it open. Copy lives in site.config.ts (`backgroundSection`); the rows work
+ * like Projects' (scripts/work.ts).
+ */
+import { backgroundSection as background } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+
+const words = splitHighlights(background.headline);
+const headline = background.headline.replace(/[[\]]/g, "");
+let index = 0;
+const groups = background.groups.map((group) => ({
+	...group,
+	entries: group.entries.map((entry) => ({ ...entry, id: `background-panel-${index++}` })),
+}));
+---
+
+<section class="bg" id="background" aria-labelledby="background-title" data-background>
+	<div class="bg__inner">
+		<div class="bg__top">
+			<div class="bg__heading">
+				<p class="bg__eyebrow">{background.eyebrow}</p>
+				<h2 class="bg__headline" id="background-title" aria-label={headline}>
+					{
+						words.map((word) =>
+							word.highlight ? (
+								<span aria-hidden="true">
+									<span class="bg__highlight">
+										{word.text}
+										<span class="bg__fill" data-fill>
+											{word.text}
+										</span>
+									</span>
+									{word.tail}{" "}
+								</span>
+							) : (
+								<span aria-hidden="true">{word.text} </span>
+							),
+						)
+					}
+				</h2>
+			</div>
+			<p class="bg__prompt">
+				<span class="bg__prompt-hover">{background.prompt.hover}</span>
+				<span class="bg__prompt-click">{background.prompt.click}</span>
+			</p>
+		</div>
+
+		{
+			groups.map((group) => (
+				<div class="bg__group">
+					<h3 class="bg__group-title">{group.title}</h3>
+					<ul class="bg__list">
+						{group.entries.map((entry) => (
+							<li class="bg__row" data-work-row data-background-row>
+								<button
+									class="bg__head"
+									type="button"
+									aria-expanded="false"
+									aria-controls={entry.id}
+									data-work-toggle
+								>
+									<span class="bg__name">{entry.name}</span>
+									<span class="bg__meta">
+										<span class="bg__role">{entry.role}</span>
+										<span class="bg__when">{entry.when}</span>
+									</span>
+									<svg class="bg__chevron" viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M6 9l6 6 6-6" />
+									</svg>
+								</button>
+								<div class="bg__panel" id={entry.id} data-work-panel>
+									<div class="bg__panel-inner">
+										<p class="bg__summary">{entry.summary}</p>
+										{entry.points.length > 0 && (
+											<ul class="bg__points">
+												{entry.points.map((point) => (
+													<li>{point}</li>
+												))}
+											</ul>
+										)}
+										{entry.badge && (
+											<p class="bg__badge">
+												<span class="bg__dot" aria-hidden="true" />
+												{entry.badge}
+											</p>
+										)}
+									</div>
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupWork } from "../scripts/work";
+
+	const section = document.querySelector<HTMLElement>("[data-background]");
+	if (section) setupWork(section, animation.backgroundSection);
+</script>
+
+<style>
+	/* Anchored at the top, like Projects, so opening a row only pushes what's below it down. */
+	.bg {
+		display: flex;
+		align-items: flex-start;
+		min-height: 100svh;
+		padding: clamp(110px, 20vh, 200px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.bg__inner {
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.bg__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 32px;
+		margin-bottom: clamp(24px, 4.5vh, 48px);
+	}
+
+	.bg__heading {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(14px, 2.4vh, 22px);
+	}
+
+	.bg__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.bg__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(28px, 3.6vw, 60px);
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* The red word: outlined, with a solid copy on top wiped in on arrival (like About's). */
+	.bg__highlight {
+		position: relative;
+		display: inline-block;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
+	}
+
+	.bg__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: rgb(var(--shade-bright));
+		text-shadow:
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.bg__highlight {
+			color: rgb(var(--shade-bright));
+		}
+	}
+
+	.bg__prompt {
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.26em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.bg__prompt-click {
+		display: none;
+	}
+
+	@media not ((hover: hover) and (pointer: fine)) {
+		.bg__prompt-hover {
+			display: none;
+		}
+
+		.bg__prompt-click {
+			display: inline;
+		}
+	}
+
+	/* Experience, then Education: a small label over each list. */
+	.bg__group + .bg__group {
+		margin-top: clamp(24px, 4vh, 44px);
+	}
+
+	.bg__group-title {
+		margin: 0 0 4px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.bg__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.bg__head {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto 24px;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+		padding: clamp(12px, 2vh, 20px) 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	/* Outlined until its row opens, then filled white, like the project names (same size too). */
+	.bg__name {
+		width: max-content;
+		max-width: 100%;
+		text-wrap: balance;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		font-size: clamp(24px, 2.95vw, 49px);
+		line-height: 1;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1.2px rgb(var(--shade-text) / 0.45);
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.bg__row:global(.is-open) .bg__name {
+		color: #fff;
+		-webkit-text-stroke-color: #fff;
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.bg__name {
+			color: var(--color-text-muted);
+		}
+	}
+
+	.bg__meta {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		text-align: right;
+	}
+
+	.bg__role {
+		color: var(--color-text);
+	}
+
+	.bg__when {
+		color: var(--color-accent-soft);
+	}
+
+	.bg__chevron {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: var(--color-accent-soft);
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: rotate 0.5s var(--ease-out);
+	}
+
+	.bg__row:global(.is-open) .bg__chevron {
+		rotate: 180deg;
+	}
+
+	/* Closed until opened; GSAP animates the height (scripts/work.ts). */
+	.bg__panel {
+		height: 0;
+		overflow: hidden;
+	}
+
+	.bg__panel-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		padding: 2px 0 clamp(20px, 3vh, 30px);
+	}
+
+	.bg__summary {
+		max-width: 60ch;
+		margin: 0;
+		font-size: clamp(16px, 1.3vw, 19px);
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	.bg__points {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--color-text-soft);
+	}
+
+	.bg__points li {
+		position: relative;
+		padding-left: 22px;
+	}
+
+	/* The side nav's marker, in red. */
+	.bg__points li::before {
+		content: "✦";
+		position: absolute;
+		left: 0;
+		top: 0.1em;
+		font-size: 10px;
+		color: rgb(var(--shade-bright));
+	}
+
+	/* Something ongoing: a softly pulsing red dot. */
+	.bg__badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		margin: 2px 0 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.bg__dot {
+		position: relative;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: rgb(var(--shade-bright));
+		box-shadow: 0 0 10px rgb(var(--shade-halo));
+	}
+
+	.bg__dot::after {
+		content: "";
+		position: absolute;
+		inset: -4px;
+		border-radius: 50%;
+		border: 1px solid rgb(var(--shade-bright) / 0.6);
+		animation: bg-pulse 2.2s var(--ease-out) infinite;
+	}
+
+	@keyframes bg-pulse {
+		from {
+			opacity: 1;
+			scale: 0.6;
+		}
+		to {
+			opacity: 0;
+			scale: 1.8;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.bg__dot::after {
+			animation: none;
+		}
+	}
+
+	@media (max-width: 1023px) {
+		.bg__top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 14px;
+		}
+	}
+
+	/* Phones: the role and dates go under the name. */
+	@media (max-width: 767px) {
+		.bg__headline {
+			font-size: clamp(24px, 7.4vw, 32px);
+		}
+
+		.bg__head {
+			grid-template-columns: minmax(0, 1fr) 22px;
+			gap: 10px 16px;
+			padding: 18px 0 14px;
+		}
+
+		.bg__name {
+			font-size: clamp(20px, 6.1vw, 26px);
+		}
+
+		.bg__meta {
+			grid-row: 2;
+			grid-column: 1 / -1;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: baseline;
+			gap: 4px 12px;
+			font-size: 10px;
+			text-align: left;
+		}
+
+		.bg__chevron {
+			grid-row: 1;
+			grid-column: 2;
+		}
+
+		.bg__points {
+			font-size: 14px;
+		}
+	}
+</style>

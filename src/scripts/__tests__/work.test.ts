@@ -182,3 +182,15 @@ describe("Work settings", () => {
 		expect(animation.work.open).toBeGreaterThan(animation.work.close);
 	});
 });
+
+describe("Background settings", () => {
+	it("has Experience and Education, with Algonquin's honours and no GPA", async () => {
+		const { backgroundSection } = await import("../../site.config");
+		expect(backgroundSection.groups.map((g) => g.title)).toEqual(["Experience", "Education"]);
+		const algonquin = backgroundSection.groups[1]!.entries.find(
+			(e) => e.name === "Algonquin College",
+		)!;
+		expect(algonquin.points.join(" ")).toContain("Dean's Honours List");
+		expect(JSON.stringify(backgroundSection)).not.toMatch(/GPA/);
+	});
+});

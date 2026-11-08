@@ -61,8 +61,9 @@ export const hero = {
 export const sections: readonly LinkItem[] = [
 	{ label: "Intro", href: "#intro" },
 	{ label: "About", href: "#about" },
-	{ label: "Work", href: "#work" },
+	{ label: "Projects", href: "#projects" },
 	{ label: "Skills", href: "#skills" },
+	{ label: "Background", href: "#background" },
 	{ label: "Contact", href: "#contact" },
 ];
 
@@ -119,7 +120,7 @@ export interface Project {
 
 /** The Work section, after About: one row per project that opens to show it. */
 export const work = {
-	eyebrow: "Work",
+	eyebrow: "Projects",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "Selected [work]",
 	/** The hint next to the headline, for mouse users and for touch screens. */
@@ -291,6 +292,77 @@ export const skills = {
 			],
 		},
 	] as readonly { title: string; skills: readonly Skill[] }[],
+};
+
+/** A place in the Background section: a job, or a school. */
+export interface BackgroundEntry {
+	/** The place, in big type: the company, the school, or "Freelance". */
+	name: string;
+	/** Shown small beside it: the role or the qualification, then the dates. */
+	role: string;
+	when: string;
+	/** One plain sentence, shown when the row is open. */
+	summary: string;
+	/** A few short points under it (can be empty). */
+	points: readonly string[];
+	/** Optional: a line with a softly pulsing dot under the points, for something ongoing. */
+	badge?: string;
+}
+
+/**
+ * The Background section, after Skills: where I've worked and studied, opened like Projects.
+ * (`backgroundSection`, since `background` is the hero's.)
+ */
+export const backgroundSection = {
+	eyebrow: "Background",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "How I [got] here",
+	prompt: {
+		hover: "Hover over one to see more",
+		click: "Click one to see more",
+	},
+	groups: [
+		{
+			title: "Experience",
+			entries: [
+				{
+					name: "Freelance",
+					role: "Web developer",
+					when: "Now",
+					summary:
+						"Websites and web apps for people and small businesses, designed and built end to end.",
+					points: [],
+					badge: "Taking on projects",
+				},
+				{
+					name: "Urlocker Consulting",
+					role: "Web Designer & SEO Consultant",
+					when: "Mar – Jul 2025",
+					summary:
+						"Built and looked after the company's public website, and helped it get found on Google.",
+					points: [
+						"Built and customized the website on Squarespace, to the client's brief",
+						"Wrote custom CSS and JavaScript for the layout and features",
+						"Checked every change across browsers and screen sizes before it went live",
+						"Set up SEO and tracked search results in Google Search Console",
+					],
+				},
+			],
+		},
+		{
+			title: "Education",
+			entries: [
+				{
+					name: "Algonquin College",
+					role: "Diploma",
+					when: "Jan 2024 – Aug 2025",
+					summary:
+						"Web Development and Internet Applications: front end, back end, databases and testing, with real client projects.",
+					points: ["Dean's Honours List: Winter 2024, Fall 2024 and Spring 2025"],
+				},
+			],
+		},
+	] as readonly { title: string; entries: readonly BackgroundEntry[] }[],
 };
 
 /** The Contact section, last on the page: two ways to work together, and one form for both. */
@@ -505,6 +577,15 @@ export const animation = {
 		/** The headline's red word filling in when the section comes into view. */
 		highlight: motion.draw,
 		/** The rows rising in on arrival, one after another. */
+		rows: 0.8,
+		rowStagger: 0.1,
+	},
+
+	/** The Background section: rows open and close like Projects', and rise in the same way. */
+	backgroundSection: {
+		open: 0.6,
+		close: 0.45,
+		highlight: motion.draw,
 		rows: 0.8,
 		rowStagger: 0.1,
 	},

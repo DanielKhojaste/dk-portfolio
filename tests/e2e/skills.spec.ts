@@ -24,7 +24,7 @@ test.describe("skills", () => {
 		const ids = await page
 			.locator("main > section[id]")
 			.evaluateAll((els) => els.map((el) => el.id));
-		expect(ids.slice(0, 4)).toEqual(["intro", "about", "work", "skills"]);
+		expect(ids.slice(0, 4)).toEqual(["intro", "about", "projects", "skills"]);
 
 		await expect(page.locator("#skills-title")).toHaveAccessibleName(
 			skills.headline.replace(/[[\]]/g, ""),
@@ -151,6 +151,6 @@ test.describe("skills", () => {
 				.locator(selector)
 				.first()
 				.evaluate((el) => getComputedStyle(el).fontSize);
-		expect(await size("#skills .skills__name")).toBe(await size("#work .work__name"));
+		expect(await size("#skills .skills__name")).toBe(await size("#projects .work__name"));
 	});
 });

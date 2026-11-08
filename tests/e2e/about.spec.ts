@@ -203,7 +203,7 @@ test.describe("side nav", () => {
 	}) => {
 		await page.goto("/");
 		test.skip(!(await hasSideNav(page)), "desktop only");
-		const flow = page.locator('[data-side-nav-link="work"] [data-divine-flow]');
+		const flow = page.locator('[data-side-nav-link="projects"] [data-divine-flow]');
 		const options = JSON.parse((await flow.getAttribute("data-options"))!);
 		expect(options).toMatchObject({
 			wave: sideNavUnderlineFlow.wave,
@@ -214,7 +214,7 @@ test.describe("side nav", () => {
 		expect(options.theme).toEqual(colors.sideNavUnderline);
 
 		await showSection(page, "about");
-		const link = page.locator('[data-side-nav-link="work"]');
+		const link = page.locator('[data-side-nav-link="projects"]');
 		const label = link.locator(".side-nav__label");
 		const marker = link.locator(".side-nav__marker");
 		const style = () =>

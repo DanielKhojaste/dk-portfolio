@@ -1,6 +1,6 @@
 /**
  * Smooth scrolling with GSAP ScrollSmoother: the page keeps its normal scrollbar and scrolls freely,
- * but glides to a stop instead of stopping dead. In-page links (#about, #work…) glide to their
+ * but glides to a stop instead of stopping dead. In-page links (#about, #projects…) glide to their
  * section too. Off for reduced motion, and on touch screens unless `smoothTouch` is set.
  *
  * Needs the page wrapped as #smooth-wrapper > #smooth-content (see pages/index.astro). Anything fixed

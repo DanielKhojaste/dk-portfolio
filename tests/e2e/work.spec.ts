@@ -17,7 +17,7 @@ async function showSection(page: Page, id: string) {
 		.toBe(0);
 }
 
-const rows = (page: Page) => page.locator("#work [data-work-row]");
+const rows = (page: Page) => page.locator("#projects [data-work-row]");
 const panelHeight = (page: Page, i: number) =>
 	rows(page)
 		.nth(i)
@@ -32,12 +32,12 @@ test.describe("work", () => {
 		const ids = await page
 			.locator("main > section[id]")
 			.evaluateAll((els) => els.map((el) => el.id));
-		expect(ids.slice(0, 3)).toEqual(["intro", "about", "work"]);
+		expect(ids.slice(0, 3)).toEqual(["intro", "about", "projects"]);
 
-		await expect(page.locator("#work-title")).toHaveAccessibleName(
+		await expect(page.locator("#projects-title")).toHaveAccessibleName(
 			work.headline.replace(/[[\]]/g, ""),
 		);
-		await expect(page.locator("#work [data-fill]")).toHaveCount(1);
+		await expect(page.locator("#projects [data-fill]")).toHaveCount(1);
 		await expect(rows(page)).toHaveCount(work.projects.length);
 		for (const [i, project] of work.projects.entries()) {
 			const row = rows(page).nth(i);
@@ -69,9 +69,9 @@ test.describe("work", () => {
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
-		await showSection(page, "work");
-		await expect(page.locator("#work .work__prompt-hover")).toBeVisible();
-		await expect(page.locator("#work .work__prompt-click")).toBeHidden();
+		await showSection(page, "projects");
+		await expect(page.locator("#projects .work__prompt-hover")).toBeVisible();
+		await expect(page.locator("#projects .work__prompt-click")).toBeHidden();
 		// Let the rows finish rising in, so they don't move under the mouse.
 		await expect
 			.poll(() =>
@@ -121,7 +121,7 @@ test.describe("work", () => {
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
-		await showSection(page, "work");
+		await showSection(page, "projects");
 		await expect
 			.poll(() =>
 				rows(page)
@@ -144,9 +144,9 @@ test.describe("work", () => {
 	test("on touch screens, a tap opens one project at a time", async ({ page }, info) => {
 		test.skip(info.project.name !== "mobile", "touch only");
 		await page.goto("/");
-		await showSection(page, "work");
-		await expect(page.locator("#work .work__prompt-click")).toBeVisible();
-		await expect(page.locator("#work .work__prompt-hover")).toBeHidden();
+		await showSection(page, "projects");
+		await expect(page.locator("#projects .work__prompt-click")).toBeVisible();
+		await expect(page.locator("#projects .work__prompt-hover")).toBeHidden();
 
 		const toggle = (i: number) => rows(page).nth(i).locator("[data-work-toggle]");
 		await toggle(0).click();
@@ -165,7 +165,7 @@ test.describe("work", () => {
 	test("serves screenshots in modern formats and ToDone's recording as video", async ({ page }) => {
 		await page.goto("/");
 		for (const [i, project] of work.projects.entries()) {
-			const media = page.locator("#work .work__media").nth(i);
+			const media = page.locator("#projects .work__media").nth(i);
 			if (project.motion) {
 				const video = media.locator("video");
 				await expect(video).toHaveAttribute("loop", "");
@@ -197,8 +197,8 @@ test.describe("work layout", () => {
 		test(`nothing overlaps at ${size.width}x${size.height}, closed or open`, async ({ page }) => {
 			await page.setViewportSize(size);
 			await page.goto("/");
-			await page.locator("#work [data-work-toggle]").first().click();
-			await expect(page.locator("#work [data-work-toggle]").first()).toHaveAttribute(
+			await page.locator("#projects [data-work-toggle]").first().click();
+			await expect(page.locator("#projects [data-work-toggle]").first()).toHaveAttribute(
 				"aria-expanded",
 				"true",
 			);
@@ -209,13 +209,13 @@ test.describe("work layout", () => {
 				const box = (root: Element, sel: string) =>
 					root.querySelector(sel)!.getBoundingClientRect();
 				const found: string[] = [];
-				document.querySelectorAll("#work [data-work-row]").forEach((row, i) => {
+				document.querySelectorAll("#projects [data-work-row]").forEach((row, i) => {
 					const [name, meta, stack] = [".work__name", ".work__meta", ".work__stack"].map((s) =>
 						box(row, s),
 					);
 					if (hit(name!, meta!) || hit(name!, stack!) || hit(meta!, stack!)) found.push(`row ${i}`);
 				});
-				const open = document.querySelector("#work .is-open")!;
+				const open = document.querySelector("#projects .is-open")!;
 				if (hit(box(open, ".work__media"), box(open, ".work__copy"))) found.push("open project");
 				return found;
 			});
@@ -225,18 +225,18 @@ test.describe("work layout", () => {
 
 	test("shows VS Code's logo, and keeps every logo in the repo", async ({ page }) => {
 		await page.goto("/");
-		await expect(page.locator('#work .tech[aria-label="VS Code"] svg')).toHaveCount(1);
-		await expect(page.locator("#work .tech--text")).toHaveCount(0);
+		await expect(page.locator('#projects .tech[aria-label="VS Code"] svg')).toHaveCount(1);
+		await expect(page.locator("#projects .tech--text")).toHaveCount(0);
 		// No logo is loaded from another site.
-		await expect(page.locator("#work img[src^='http'], #work .tech img")).toHaveCount(0);
+		await expect(page.locator("#projects img[src^='http'], #projects .tech img")).toHaveCount(0);
 	});
 
 	test("draws no lines above, between or below the projects", async ({ page }) => {
 		await page.goto("/");
-		const list = page.locator("#work .work__list");
+		const list = page.locator("#projects .work__list");
 		expect(await list.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("none");
 		const styles = await page
-			.locator("#work [data-work-row]")
+			.locator("#projects [data-work-row]")
 			.evaluateAll((rows) => rows.map((el) => getComputedStyle(el).borderBottomStyle));
 		expect(styles.every((s) => s === "none")).toBe(true);
 	});
@@ -248,7 +248,7 @@ test.describe("work details", () => {
 			await page.setViewportSize({ width, height: 900 });
 			await page.goto("/");
 			const [headline, name] = await Promise.all(
-				["#work-title", "#work .work__name"].map((sel) =>
+				["#projects-title", "#projects .work__name"].map((sel) =>
 					page
 						.locator(sel)
 						.first()
@@ -264,8 +264,8 @@ test.describe("work details", () => {
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
 		await page.goto("/");
-		await page.locator("#work").scrollIntoViewIfNeeded();
-		const last = page.locator("#work [data-work-row]").last();
+		await page.locator("#projects").scrollIntoViewIfNeeded();
+		const last = page.locator("#projects [data-work-row]").last();
 		await expect.poll(() => last.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
 		await page.waitForTimeout(1200);
 		await last.locator(".work__name").hover();

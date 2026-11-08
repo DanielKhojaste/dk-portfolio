@@ -432,7 +432,7 @@ test.describe("header", () => {
 test.describe("page sections", () => {
 	test("give the page room to scroll and the hero links somewhere to go", async ({ page }) => {
 		await page.goto("/");
-		for (const id of ["work", "skills", "contact"]) {
+		for (const id of ["projects", "skills", "background", "contact"]) {
 			await expect(page.locator(`main section#${id} h2`)).toBeVisible();
 		}
 		const height = await page.evaluate(() => document.documentElement.scrollHeight);
