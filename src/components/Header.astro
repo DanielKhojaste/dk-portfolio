@@ -1,11 +1,23 @@
 ---
 import Logo from "./Logo.astro";
 import Menu from "./Menu.astro";
+import LogoUnderline from "./LogoUnderline.astro";
+import { animation } from "../site.config";
+
+const underline = animation.logoUnderline.style !== "off";
 ---
 
 <header class="site-header">
-	<a class="site-header__home" href="/" aria-label="Daniel Khojaste, home">
-		<Logo draw />
+	<a
+		class="site-header__home"
+		href="/"
+		aria-label="Daniel Khojaste, home"
+		data-underline={underline ? "" : undefined}
+	>
+		<span class="site-header__mark">
+			<Logo draw />
+			<LogoUnderline />
+		</span>
 	</a>
 
 	<button
@@ -67,8 +79,9 @@ import Menu from "./Menu.astro";
 		pointer-events: auto;
 	}
 
-	/* Hover: the logo glows in the main colour; it doesn't grow. Colour, glow and timing come from
-	   site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
+	/* Hover: a brush stroke is written under the logo (LogoUnderline, animation.logoUnderline). With
+	   the underline off, the logo glows in the main colour instead; it never grows. Colour, glow and
+	   timing come from site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
 	.site-header__home {
 		display: flex;
 		align-items: center;
@@ -80,8 +93,13 @@ import Menu from "./Menu.astro";
 			filter var(--logo-hover-duration) var(--logo-hover-ease);
 	}
 
-	.site-header__home:hover,
-	.site-header__home:focus-visible {
+	.site-header__mark {
+		position: relative;
+		display: block;
+		height: 100%;
+	}
+
+	.site-header__home:not([data-underline]):is(:hover, :focus-visible) {
 		color: var(--logo-hover-color);
 		filter: drop-shadow(0 0 var(--logo-hover-glow-size) var(--logo-hover-glow))
 			drop-shadow(0 0 3px var(--logo-hover-core));

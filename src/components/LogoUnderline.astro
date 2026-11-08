@@ -1,0 +1,147 @@
+---
+/**
+ * The brush stroke written under the logo on hover (animation.logoUnderline in site.config.ts).
+ * The shape is worked out here from the settings: a stroke along a gentle curve (a quadratic
+ * Bézier), blunt at the start and tapering to a point. It's revealed along its middle line with
+ * stroke-dashoffset (pathLength 1), so it looks written rather than wiped.
+ */
+import { animation } from "../site.config";
+
+type Point = [number, number];
+const { style, curve, weight } = animation.logoUnderline;
+
+/** Moves the curve's middle point toward the straight line between its ends: 0 flat, 1 full arc. */
+function bend([x0, y0]: Point, [cx, cy]: Point, [x2, y2]: Point): Point {
+	const lineY = y0 + ((y2 - y0) * (cx - x0)) / (x2 - x0);
+	return [cx, lineY + curve * (cy - lineY)];
+}
+
+/** The stroke's outline and its middle line, in the SVG's 100 × 18 box. */
+function stroke(p0: Point, c: Point, p2: Point, width: number) {
+	const ctrl = bend(p0, c, p2);
+	const at = (t: number): Point => [
+		(1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * ctrl[0] + t * t * p2[0],
+		(1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * ctrl[1] + t * t * p2[1],
+	];
+	const tangent = (t: number): Point => [
+		2 * (1 - t) * (ctrl[0] - p0[0]) + 2 * t * (p2[0] - ctrl[0]),
+		2 * (1 - t) * (ctrl[1] - p0[1]) + 2 * t * (p2[1] - ctrl[1]),
+	];
+	const top: Point[] = [];
+	const bottom: Point[] = [];
+	const middle: Point[] = [];
+	const steps = 60;
+	const full = width * weight;
+	for (let i = 0; i <= steps; i++) {
+		const t = i / steps;
+		const [x, y] = at(t);
+		const [dx, dy] = tangent(t);
+		const length = Math.hypot(dx, dy);
+		const [nx, ny] = [-dy / length, dx / length];
+		// Full width most of the way, narrowing to a point at the end, a touch softer at the start.
+		const half = (0.12 + (full - 0.12) * (1 - t ** 1.8)) * (0.82 + 0.18 * Math.min(1, t * 12));
+		top.push([x + nx * half, y + ny * half]);
+		bottom.push([x - nx * half, y - ny * half]);
+		middle.push([x, y]);
+	}
+	const xy = ([x, y]: Point) => `${x.toFixed(2)} ${y.toFixed(2)}`;
+	return {
+		shape: `M${[...top, ...bottom.reverse()].map(xy).join(" L")}Z`,
+		line: `M${middle
+			.filter((_, i) => i % 3 === 0 || i === steps)
+			.map(xy)
+			.join(" L")}`,
+	};
+}
+
+const strokes =
+	style === "double"
+		? [stroke([1, 9.4], [60, 1], [99, 6], 1.5), stroke([7, 13.8], [56, 6.4], [90, 10.6], 1.15)]
+		: [stroke([1, 12.2], [60, 3.2], [99, 8.6], 1.7)];
+---
+
+{
+	style !== "off" && (
+		<svg
+			class:list={["logo-underline", `logo-underline--${style}`]}
+			viewBox="0 -1 100 18"
+			preserveAspectRatio="none"
+			aria-hidden="true"
+			focusable="false"
+			data-logo-underline
+		>
+			<defs>
+				{strokes.map((s, i) => (
+					<mask
+						id={`logo-underline-${i}`}
+						maskUnits="userSpaceOnUse"
+						x="-4"
+						y="-4"
+						width="108"
+						height="26"
+					>
+						<path class="logo-underline__draw" d={s.line} pathLength="1" />
+					</mask>
+				))}
+			</defs>
+			{strokes.map((s, i) => (
+				<path d={s.shape} mask={`url(#logo-underline-${i})`} />
+			))}
+		</svg>
+	)
+}
+
+<style>
+	/* Under the signature, a little wider than it. */
+	.logo-underline {
+		position: absolute;
+		left: -8%;
+		bottom: calc(var(--logo-underline-drop) * -1);
+		width: 116%;
+		height: 16px;
+		overflow: visible;
+		fill: currentColor;
+		pointer-events: none;
+		opacity: 0;
+		/* Leaving: fade out, then reset the stroke out of sight. */
+		transition: opacity 0.25s var(--ease-out);
+	}
+
+	.logo-underline--double {
+		height: 18px;
+		bottom: calc(var(--logo-underline-drop) * -1 - 2px);
+	}
+
+	:global(.site-header__home:is(:hover, :focus-visible)) .logo-underline {
+		opacity: 1;
+		transition: none;
+	}
+
+	/* The reveal: a thick line along the middle, drawn from the start (dashoffset 1 to 0). */
+	.logo-underline__draw {
+		fill: none;
+		stroke: #fff;
+		stroke-width: 7;
+		stroke-linecap: round;
+		stroke-dasharray: 1;
+		stroke-dashoffset: 1;
+		transition: stroke-dashoffset 0s linear 0.25s;
+	}
+
+	/* Writing speed: quick off the mark, easing out as the pen lifts. */
+	:global(.site-header__home:is(:hover, :focus-visible)) .logo-underline__draw {
+		stroke-dashoffset: 0;
+		transition: stroke-dashoffset var(--logo-underline-draw) cubic-bezier(0.3, 0.7, 0.4, 1);
+	}
+
+	:global(.site-header__home:is(:hover, :focus-visible)) mask:nth-of-type(2) .logo-underline__draw {
+		transition: stroke-dashoffset calc(var(--logo-underline-draw) * 0.75)
+			cubic-bezier(0.3, 0.7, 0.4, 1) calc(var(--logo-underline-draw) * 0.65);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.site-header__home:is(:hover, :focus-visible)) .logo-underline__draw {
+			transition: none;
+		}
+	}
+</style>

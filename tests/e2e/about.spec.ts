@@ -297,33 +297,61 @@ test.describe("smooth scrolling", () => {
 });
 
 test.describe("logo hover", () => {
-	test("glows in the main colour without growing, and settles back on leave", async ({
+	test("writes a brush stroke under the logo, without a glow or growing, and clears it on leave", async ({
 		page,
 	}, info) => {
 		test.skip(info.project.name !== "desktop", "needs a mouse");
+		test.skip(animation.logoUnderline.style === "off", "the underline is off");
 		await page.goto("/");
 		const home = page.getByRole("link", { name: "Daniel Khojaste, home" });
-		const style = () =>
-			home.evaluate((el) => {
-				const cs = getComputedStyle(el);
-				return { color: cs.color, filter: cs.filter, scale: cs.scale };
+		const underline = home.locator("[data-logo-underline]");
+		const drawn = () =>
+			underline.evaluate((el) => {
+				const dash = el.querySelectorAll<SVGPathElement>(".logo-underline__draw");
+				return {
+					opacity: getComputedStyle(el).opacity,
+					offsets: [...dash].map((d) => getComputedStyle(d).strokeDashoffset),
+				};
 			});
-		expect(await style()).toEqual({ color: "rgb(245, 236, 236)", filter: "none", scale: "none" });
+		const strokes = animation.logoUnderline.style === "double" ? 2 : 1;
+		await expect(underline.locator("mask")).toHaveCount(strokes);
+		expect(await drawn()).toEqual({ opacity: "0", offsets: Array(strokes).fill("1px") });
 
 		await home.hover();
-		// The glow finishes growing on its own transition, so wait for it rather than read it mid-way.
-		await expect
-			.poll(async () => (await style()).filter)
-			.toContain(`${colors.logoHover.glowSize}px`);
-		const hovered = await style();
-		// Stays white and the same size, with a wide glow and a tight one in the main colour itself.
-		expect(hovered.color).toBe("rgb(245, 236, 236)");
-		expect(hovered.scale).toBe("none");
-		expect(hovered.filter.match(/drop-shadow/g)).toHaveLength(2);
-		expect(hovered.filter).toContain(`rgb(${brand.join(", ")})`);
+		await expect.poll(drawn).toEqual({ opacity: "1", offsets: Array(strokes).fill("0px") });
+		// It sits under the logo, by the set drop, and the logo itself stays white and the same size.
+		const [logo, line] = await Promise.all([
+			home.locator(".logo").boundingBox(),
+			underline.boundingBox(),
+		]);
+		expect(line!.y + line!.height).toBeCloseTo(
+			logo!.y + logo!.height + animation.logoUnderline.drop,
+			0,
+		);
+		const style = await home.evaluate((el) => {
+			const cs = getComputedStyle(el);
+			return { color: cs.color, filter: cs.filter, scale: cs.scale };
+		});
+		expect(style).toEqual({ color: "rgb(245, 236, 236)", filter: "none", scale: "none" });
 
 		await page.mouse.move(700, 600);
-		await expect.poll(async () => (await style()).filter).toBe("none");
+		await expect.poll(async () => (await drawn()).opacity).toBe("0");
+	});
+
+	test("with the underline off, the logo glows in the main colour instead", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		test.skip(animation.logoUnderline.style !== "off", "the underline is on");
+		await page.goto("/");
+		const home = page.getByRole("link", { name: "Daniel Khojaste, home" });
+		await home.hover();
+		await expect
+			.poll(() => home.evaluate((el) => getComputedStyle(el).filter))
+			.toContain(`${colors.logoHover.glowSize}px`);
+		expect(await home.evaluate((el) => getComputedStyle(el).filter)).toContain(
+			`rgb(${brand.join(", ")})`,
+		);
 	});
 });
 

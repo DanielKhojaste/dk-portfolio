@@ -473,11 +473,28 @@ export const animation = {
 		smoothTouch: 0,
 	},
 
-	/** Hovering the logo: it glows in the main colour (colors.logoHover). */
+	/** Hovering the logo with the underline off: it glows in the main colour (colors.logoHover). */
 	logoHover: {
 		duration: motion.hover,
 		/** CSS easing. */
 		ease: motion.ease.out.css,
+	},
+
+	/**
+	 * Hovering the logo writes a brush stroke under it, on a slight arc: a little low on the left,
+	 * rising to just past the middle, then dipping a touch as it tapers off to the right.
+	 */
+	logoUnderline: {
+		/** "single", "double" (a shorter, thinner second stroke underneath) or "off" (glow instead). */
+		style: "single" as "single" | "double" | "off",
+		/** How far below the logo it sits, in px. Bigger is lower. */
+		drop: 16,
+		/** How much it bends: 0 is a straight line, 1 the full arc. */
+		curve: 0.55,
+		/** How thick it is: 1 is normal, 1.3 a third thicker. */
+		weight: 1,
+		/** Seconds to write it (the second stroke of "double" follows a beat later). */
+		draw: 0.45,
 	},
 
 	/** The Work section. */

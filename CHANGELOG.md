@@ -105,6 +105,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Hovering the logo now writes a brush stroke under it instead of glowing: one simple stroke on a
+  slight arc, blunt at the start and tapering to a point, drawn left to right in 0.45s. Its look is
+  set in `site.config.ts` (`animation.logoUnderline`): `style` ("single", "double" for a shorter
+  second stroke underneath, or "off" to go back to the glow), `drop` (how far below the logo, in
+  px), `curve` (0 straight, 1 the full arc), `weight` and `draw` (seconds).
 - Work screenshots are served resized, in AVIF and WebP at full quality (`src/assets/projects`),
   and ToDone's recording is a looping muted video (WebM and MP4) instead of a GIF: the page
   weighs about 430 KB instead of about 2 MB. The page's colour and timing variables moved from
