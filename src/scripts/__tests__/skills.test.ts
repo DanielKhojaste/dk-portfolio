@@ -70,10 +70,12 @@ describe("Skills filter", () => {
 		const root = section();
 		setupFilter(root);
 		const rust = root.querySelector<HTMLElement>('[data-skill="Rust"]')!;
+		const caption = root.querySelector("[data-caption]")!;
 		rust.dispatchEvent(new Event("pointerenter"));
-		expect(root.querySelector("[data-caption]")!.textContent).toBe("Rust");
+		expect(caption.textContent).toBe("Rust");
+		expect(caption.classList.contains("is-shown")).toBe(true);
 		rust.dispatchEvent(new Event("pointerleave"));
-		expect(root.querySelector("[data-caption]")!.textContent).toBe("");
+		expect(caption.classList.contains("is-shown")).toBe(false);
 	});
 });
 

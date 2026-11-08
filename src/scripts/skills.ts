@@ -36,8 +36,12 @@ export function setupFilter(section: HTMLElement) {
 		const caption = row.querySelector<HTMLElement>("[data-caption]");
 		if (!caption) continue;
 		for (const logo of row.querySelectorAll<HTMLElement>("[data-skill]")) {
-			const show = () => (caption.textContent = logo.dataset.skill!);
-			const hide = () => (caption.textContent = "");
+			// The name slides in at the site's hover pace and fades out again (CSS, .is-shown).
+			const show = () => {
+				caption.textContent = logo.dataset.skill!;
+				caption.classList.add("is-shown");
+			};
+			const hide = () => caption.classList.remove("is-shown");
 			logo.addEventListener("pointerenter", show);
 			logo.addEventListener("focus", show);
 			logo.addEventListener("pointerleave", hide);

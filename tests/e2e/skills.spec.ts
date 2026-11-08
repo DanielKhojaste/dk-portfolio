@@ -102,6 +102,14 @@ test.describe("skills", () => {
 				.locator("#skills [data-skill-row]", { has: page.locator('[data-skill="React"]') })
 				.locator("[data-caption]"),
 		).toHaveText("React");
+		// It slides in rather than appearing at once.
+		const caption = page
+			.locator("#skills [data-skill-row]", { has: page.locator('[data-skill="React"]') })
+			.locator("[data-caption]");
+		expect(await caption.evaluate((el) => getComputedStyle(el).transitionProperty)).toContain(
+			"opacity",
+		);
+		await expect.poll(() => caption.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
 	});
 
 	test("rows don't overlap at tablet and desktop sizes", async ({ page }) => {

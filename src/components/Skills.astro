@@ -217,6 +217,7 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		font-weight: 900;
 		font-size: clamp(20px, 2.2vw, 32px);
 		line-height: 1;
+		letter-spacing: 0.02em;
 		white-space: nowrap;
 		text-transform: uppercase;
 		color: transparent;
@@ -245,6 +246,16 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		text-transform: uppercase;
 		text-align: right;
 		color: var(--color-accent-soft);
+		opacity: 0;
+		translate: 8px 0;
+		transition:
+			opacity var(--text-hover-duration) var(--text-hover-ease),
+			translate var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.skills__caption.is-shown {
+		opacity: 1;
+		translate: 0 0;
 	}
 
 	.skills__logos {
