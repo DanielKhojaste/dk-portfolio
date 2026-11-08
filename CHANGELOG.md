@@ -42,9 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   design, Back end & data, Apps, Tools, AI) with the group's name in big outlined type and its
   tools as logos, with no lines between rows. A filter (All, Lineup, ApotheonAI, ToDone, Portfolio)
   lights up the tools a project uses and fades the rest, and fills the names of the groups they're
-  in; hovering a row fills its name, and hovering a logo turns it red and slides its name in beside
-  the logos. Group
-  names have the same touch of letter-spacing as the Work section's project names. Tools and which project uses
+  in; hovering a row fills its name, and hovering a logo turns it red and slides its name in under
+  the logos. Group names are the same size as the Work section's project names, with the same touch
+  of letter-spacing. All rows share one grid, so the names' column is as wide as the longest name and
+  the logos never run into it at any screen size (a little smaller between phone and wide screens,
+  so each row's logos stay on one line). Tools and which project uses
   them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
   `src/assets/tech`, drawn by `TechIcon`.
 - Side nav on desktop, in place of the menu button: the sections down the left in grey caps.
@@ -96,6 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The hero's "View my work" and "Get in touch" buttons are gone; the scroll prompt takes their place.
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
+- The placeholder Contact section's title column is at least as wide as the title, so the text
+  beside it no longer runs under it.
 - Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
   section headings no longer have numbers.
 - The side nav fill and About's red-word wipe start on the first letter: the wipe no longer crosses

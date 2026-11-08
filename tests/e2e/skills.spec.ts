@@ -117,11 +117,16 @@ test.describe("skills", () => {
 		expect(await react.evaluate((el) => getComputedStyle(el).translate)).toBe("none");
 	});
 
-	test("rows don't overlap at tablet and desktop sizes", async ({ page }) => {
+	test("names and logos don't overlap at tablet and desktop sizes", async ({ page }) => {
 		for (const size of [
+			{ width: 768, height: 1024 },
 			{ width: 820, height: 695 },
 			{ width: 1024, height: 768 },
+			{ width: 1100, height: 800 },
+			{ width: 1180, height: 820 },
+			{ width: 1316, height: 840 },
 			{ width: 1440, height: 900 },
+			{ width: 1920, height: 1080 },
 		]) {
 			await page.setViewportSize(size);
 			await page.goto("/");
@@ -137,5 +142,15 @@ test.describe("skills", () => {
 			});
 			expect(overlaps, `${size.width}x${size.height}`).toBe(0);
 		}
+	});
+
+	test("the group names are the Work section's project-name size", async ({ page }) => {
+		await page.goto("/");
+		const size = (selector: string) =>
+			page
+				.locator(selector)
+				.first()
+				.evaluate((el) => getComputedStyle(el).fontSize);
+		expect(await size("#skills .skills__name")).toBe(await size("#work .work__name"));
 	});
 });

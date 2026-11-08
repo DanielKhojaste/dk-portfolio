@@ -60,7 +60,6 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 						data-used={[...new Set(group.skills.flatMap((s) => s.usedIn))].join("|")}
 					>
 						<h3 class="skills__name">{group.title}</h3>
-						<span class="skills__caption" data-caption aria-hidden="true" />
 						<span class="skills__logos">
 							{group.skills.map((skill) => (
 								<TechIcon
@@ -72,6 +71,7 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 									data-used={skill.usedIn.join("|")}
 								/>
 							))}
+							<span class="skills__caption" data-caption aria-hidden="true" />
 						</span>
 					</li>
 				))
@@ -193,7 +193,12 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		box-shadow: inset 0 -2px 0 rgb(var(--shade-bright));
 	}
 
+	/* One grid for all the rows (each row borrows its columns), so the names' column is as wide as
+	   the longest name and the logos never run into it: when space runs short, the logos wrap onto
+	   more lines. */
 	.skills__rows {
+		display: grid;
+		grid-template-columns: max-content minmax(24px, 1fr) fit-content(470px);
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -202,9 +207,9 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 	/* No lines between rows. */
 	.skills__row {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 150px auto;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
 		align-items: center;
-		gap: 24px;
 		padding: clamp(10px, 1.7vh, 16px) 0;
 	}
 
@@ -215,7 +220,8 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		font-family: var(--font-display);
 		font-stretch: 125%;
 		font-weight: 900;
-		font-size: clamp(20px, 2.2vw, 32px);
+		/* The Work section's project names' size. */
+		font-size: clamp(24px, 2.95vw, 49px);
 		line-height: 1;
 		letter-spacing: 0.02em;
 		white-space: nowrap;
@@ -239,15 +245,20 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		}
 	}
 
+	/* The hovered logo's name, under the logos on the right. */
 	.skills__caption {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		white-space: nowrap;
 		font-size: 11px;
 		font-weight: 600;
 		letter-spacing: 0.24em;
 		text-transform: uppercase;
-		text-align: right;
 		color: var(--color-accent-soft);
 		opacity: 0;
 		translate: 8px 0;
+		pointer-events: none;
 		transition:
 			opacity var(--text-hover-duration) var(--text-hover-ease),
 			translate var(--text-hover-duration) var(--text-hover-ease);
@@ -259,11 +270,12 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 	}
 
 	.skills__logos {
+		position: relative;
+		grid-column: -2;
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: flex-end;
-		gap: 12px 18px;
-		max-width: 470px;
+		gap: 12px clamp(10px, 1vw, 18px);
 	}
 
 	.skills__logos :global(.skills__logo) {
@@ -292,13 +304,27 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		color: #fff;
 	}
 
-	@media (max-width: 1023px) {
-		.skills__row {
-			grid-template-columns: minmax(0, 1fr) auto;
+	/* Between phones and wide screens the logos shrink a little, so a row's logos stay on one line
+	   beside its name (or wrap evenly) rather than leaving one alone on a second line. */
+	@media (min-width: 768px) and (max-width: 1279px) {
+		.skills__logos {
+			column-gap: 9px;
 		}
 
-		.skills__caption {
-			display: none;
+		.skills__logos :global(.skills__logo) {
+			width: 22px;
+			height: 22px;
+		}
+	}
+
+	@media (min-width: 768px) and (max-width: 1099px) {
+		.skills__logos {
+			column-gap: 7px;
+		}
+
+		.skills__logos :global(.skills__logo) {
+			width: 20px;
+			height: 20px;
 		}
 	}
 
@@ -313,14 +339,26 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 			font-size: clamp(24px, 7.4vw, 32px);
 		}
 
+		.skills__rows {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
 		.skills__row {
-			grid-template-columns: 1fr;
-			gap: 12px;
+			row-gap: 12px;
 			padding: 14px 0;
 		}
 
+		.skills__name {
+			font-size: clamp(20px, 6.1vw, 26px);
+		}
+
 		.skills__logos {
+			grid-column: auto;
 			justify-content: flex-start;
+		}
+
+		.skills__caption {
+			display: none;
 		}
 	}
 </style>

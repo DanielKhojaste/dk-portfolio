@@ -29,7 +29,8 @@ const { id, title } = Astro.props;
 
 	.section__inner {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+		/* The title's column is at least as wide as the title, so the text never runs under it. */
+		grid-template-columns: minmax(max-content, 1fr) minmax(0, 2fr);
 		gap: clamp(24px, 5vw, 80px);
 		width: 100%;
 		max-width: calc(1280px + var(--side-nav-w));
