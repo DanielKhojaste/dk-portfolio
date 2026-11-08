@@ -189,19 +189,19 @@ export const work = {
 /** A tool in the Skills section: its logo (by name, see components/TechIcon.astro) and where it's used. */
 export interface Skill {
 	name: string;
-	/** Projects that use it: names from `work.projects`, or "This site". */
+	/** Projects that use it: names from `work.projects`, or "Portfolio" (this site). */
 	usedIn: readonly string[];
 }
 
-const everywhere = ["Lineup", "ApotheonAI", "ToDone", "This site"];
+const everywhere = ["Lineup", "ApotheonAI", "ToDone", "Portfolio"];
 
 /** The Skills section, after Work: one row per group of tools, filtered by project. */
 export const skills = {
 	eyebrow: "Skills",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "What I [build] with",
-	/** The filter: every project in the Work section, plus this site. */
-	projects: [...work.projects.map((p) => p.name), "This site"] as readonly string[],
+	/** The filter: every project in the Work section, plus this site ("Portfolio"). */
+	projects: [...work.projects.map((p) => p.name), "Portfolio"] as readonly string[],
 	groups: [
 		{
 			title: "Languages",
@@ -221,11 +221,11 @@ export const skills = {
 			skills: [
 				{ name: "React", usedIn: ["Lineup"] },
 				{ name: "Next.js", usedIn: [] },
-				{ name: "Astro", usedIn: ["ApotheonAI", "This site"] },
-				{ name: "HTML", usedIn: ["Lineup", "ApotheonAI", "This site"] },
-				{ name: "CSS", usedIn: ["Lineup", "ApotheonAI", "This site"] },
+				{ name: "Astro", usedIn: ["ApotheonAI", "Portfolio"] },
+				{ name: "HTML", usedIn: ["Lineup", "ApotheonAI", "Portfolio"] },
+				{ name: "CSS", usedIn: ["Lineup", "ApotheonAI", "Portfolio"] },
 				{ name: "Tailwind CSS", usedIn: ["ApotheonAI"] },
-				{ name: "GSAP", usedIn: ["ApotheonAI", "This site"] },
+				{ name: "GSAP", usedIn: ["ApotheonAI", "Portfolio"] },
 				{ name: "Figma", usedIn: [] },
 				{ name: "Illustrator", usedIn: [] },
 			],
@@ -256,7 +256,7 @@ export const skills = {
 			skills: [
 				{ name: "Git", usedIn: everywhere },
 				{ name: "Docker", usedIn: [] },
-				{ name: "Playwright", usedIn: ["ApotheonAI", "This site"] },
+				{ name: "Playwright", usedIn: ["ApotheonAI", "Portfolio"] },
 			],
 		},
 		{

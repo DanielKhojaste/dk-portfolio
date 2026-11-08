@@ -83,7 +83,7 @@ describe("Skills settings", () => {
 	const all = skills.groups.flatMap((g) => g.skills);
 
 	it("filters by every Work project, plus this site", () => {
-		expect(skills.projects).toEqual([...work.projects.map((p) => p.name), "This site"]);
+		expect(skills.projects).toEqual([...work.projects.map((p) => p.name), "Portfolio"]);
 		for (const s of all) for (const p of s.usedIn) expect(skills.projects).toContain(p);
 	});
 

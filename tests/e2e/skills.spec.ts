@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { skills } from "../../src/site.config";
+import { shades, skills } from "../../src/site.config";
 
 const all = skills.groups.flatMap((g) => g.skills);
 
@@ -110,6 +110,11 @@ test.describe("skills", () => {
 			"opacity",
 		);
 		await expect.poll(() => caption.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+		// The logo turns the site's red, and stays where it is.
+		await expect
+			.poll(() => react.evaluate((el) => getComputedStyle(el).color))
+			.toBe(`rgb(${shades.bright.join(", ")})`);
+		expect(await react.evaluate((el) => getComputedStyle(el).translate)).toBe("none");
 	});
 
 	test("rows don't overlap at tablet and desktop sizes", async ({ page }) => {

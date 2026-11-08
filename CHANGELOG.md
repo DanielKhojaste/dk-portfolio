@@ -40,9 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `animation.work`).
 - Skills section, after Work: "What I build with", one row per group (Languages, Front end &
   design, Back end & data, Apps, Tools, AI) with the group's name in big outlined type and its
-  tools as logos, with no lines between rows. A filter (All, Lineup, ApotheonAI, ToDone, This site)
+  tools as logos, with no lines between rows. A filter (All, Lineup, ApotheonAI, ToDone, Portfolio)
   lights up the tools a project uses and fades the rest, and fills the names of the groups they're
-  in; hovering a row fills its name, and hovering a logo slides its name in beside the logos. Group
+  in; hovering a row fills its name, and hovering a logo turns it red and slides its name in beside
+  the logos. Group
   names have the same touch of letter-spacing as the Work section's project names. Tools and which project uses
   them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
   `src/assets/tech`, drawn by `TechIcon`.

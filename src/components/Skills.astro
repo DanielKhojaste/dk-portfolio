@@ -271,14 +271,15 @@ const headline = skills.headline.replace(/[[\]]/g, "");
 		outline-offset: 4px;
 		transition:
 			color var(--text-hover-duration) var(--text-hover-ease),
-			opacity 0.35s var(--ease-out),
-			translate var(--text-hover-duration) var(--text-hover-ease);
+			opacity 0.35s var(--ease-out);
 	}
 
+	/* Hover: the logo turns the site's red; it doesn't move. (Tried on preview/polish: each tool's
+	   own brand colour, and the old lift: translate 0 -2px, in white.) */
 	.skills__logos :global(.skills__logo:hover),
 	.skills__logos :global(.skills__logo:focus-visible) {
-		color: #fff;
-		translate: 0 -2px;
+		color: rgb(var(--shade-bright));
+		opacity: 1;
 	}
 
 	/* A project is picked: its tools light up white, the rest fade back. */
