@@ -49,6 +49,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so each row's logos stay on one line). Tools and which project uses
   them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
   `src/assets/tech`, drawn by `TechIcon`.
+- Contact section, last on the page: "Two ways to work together". Two cards side by side:
+  "Hiring?" (a full-time role) and "Need a site?" (websites, web apps and redesigns, each with a
+  line on what it covers). Each card's button glides down to the form with its choice already
+  picked. The form asks for a name, an email, what you need (A website, A web app, A redesign, A
+  full-time role, Something else) and a few words. With a Web3Forms access key
+  (`contact.form.accessKey`, free for 250 messages a month) it sends from the page and says whether
+  it went; without one it opens the visitor's email app with the message filled in. A hidden field
+  catches spam bots. Beside the form, "Or reach me directly": Email, GitHub and LinkedIn as logos
+  with their names (LinkedIn shows once its address is set), without spelling out the email
+  address. On arrival the red word wipes in and the cards and form rise in
+  (`animation.contact`). Copy is in `site.config.ts` (`contact`).
 - Side nav on desktop, in place of the menu button: the sections down the left in grey caps.
   Hovering one lights it up white with a glow in the main colour, slides it right a little and turns
   its marker white (`animation.textHover`, `colors.textHover`, `animation.sideNav.nudge`). The
@@ -98,8 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The hero's "View my work" and "Get in touch" buttons are gone; the scroll prompt takes their place.
 - Menu underline settings: no tail sway, faster glide (`travelSpeed` 6) and 30 sparkles.
-- The placeholder Contact section's title column is at least as wide as the title, so the text
-  beside it no longer runs under it.
+- The placeholder Contact section is gone, replaced by the real one.
 - Sections run Intro, About, Work, Skills, Contact; every section is at least one screen tall and
   section headings no longer have numbers.
 - The side nav fill and About's red-word wipe start on the first letter: the wipe no longer crosses

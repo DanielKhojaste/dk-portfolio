@@ -271,6 +271,60 @@ export const skills = {
 	] as readonly { title: string; skills: readonly Skill[] }[],
 };
 
+/** The Contact section, last on the page: two ways to work together, and one form for both. */
+export const contact = {
+	eyebrow: "Contact",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "Two ways to [work] together",
+	email: "danielkhojaste101@gmail.com",
+	/** Links under the form, as logos with their names (logos: components/TechIcon.astro). */
+	links: [
+		{ label: "Email", href: "mailto:danielkhojaste101@gmail.com" },
+		{ label: "GitHub", href: "https://github.com/DanielKhojaste" },
+		/** Leave the address empty to hide it. */
+		{ label: "LinkedIn", href: "" },
+	] as readonly LinkItem[],
+	hiring: {
+		title: "Hiring?",
+		text: "I'm looking for a full-time role as a software developer, on the web or beyond. In Canada, or remote.",
+		/** The button jumps to the form with this choice picked. */
+		cta: "Talk about a role",
+		need: "A full-time role",
+	},
+	projects: {
+		title: "Need a site?",
+		services: [
+			{
+				title: "Websites",
+				text: "A site for your business or project, designed and built from scratch, that looks sharp and loads fast on any screen.",
+			},
+			{
+				title: "Web apps",
+				text: "Tools your customers or team log into: booking, dashboards, internal tools. Front end to database.",
+			},
+			{
+				title: "Redesigns",
+				text: "An old site brought up to date: new look, faster pages, easier to find on Google.",
+			},
+		],
+		cta: "Start a project",
+		need: "A website",
+	},
+	form: {
+		/** The "What do you need?" choices; the first is picked to start with. */
+		needs: ["A website", "A web app", "A redesign", "A full-time role", "Something else"],
+		/**
+		 * Web3Forms access key (free: web3forms.com, enter your email to get one). With a key, the
+		 * form sends messages straight to your inbox. Without one, Send opens the visitor's email
+		 * app with the message filled in.
+		 */
+		accessKey: "",
+		sent: "Thanks! Your message is on its way. I'll get back to you soon.",
+		failed: "That didn't send. Please try again, or email me directly.",
+	},
+	linksTitle: "Or reach me directly",
+};
+
 /* ------------------------------------------------------------------------------------------------
  * 2. Animation (seconds). Eases are GSAP ease names: https://gsap.com/docs/v3/Eases
  *    Everything is skipped for visitors who prefer reduced motion.
@@ -423,6 +477,13 @@ export const animation = {
 		/** The rows rising in on arrival, one after another. */
 		rows: 0.8,
 		rowStagger: 0.08,
+	},
+
+	/** The Contact section: the headline's red word, and the cards and form rising in. */
+	contact: {
+		highlight: motion.draw,
+		rows: 0.8,
+		rowStagger: 0.1,
 	},
 
 	/** The hero's scroll prompt. */

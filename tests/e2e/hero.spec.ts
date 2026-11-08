@@ -429,7 +429,7 @@ test.describe("header", () => {
 	});
 });
 
-test.describe("placeholder sections", () => {
+test.describe("page sections", () => {
 	test("give the page room to scroll and the hero links somewhere to go", async ({ page }) => {
 		await page.goto("/");
 		for (const id of ["work", "skills", "contact"]) {
