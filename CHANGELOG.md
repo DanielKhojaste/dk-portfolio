@@ -50,8 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   them are in `site.config.ts` (`skills`, `animation.skills`); every logo is an SVG in
   `src/assets/tech`, drawn by `TechIcon`.
 - Urlocker Consulting in the Work section, second after Lineup: the website of an Ontario craft
-  brewery consultancy, built on Squarespace for the client (Mar to Jul 2025), with custom CSS and
-  JavaScript, cross-browser checks and SEO tracked in Google Search Console. It shows the site's
+  brewery consultancy, built on Squarespace for the client (Mar to Jul 2025), with custom HTML, CSS
+  and JavaScript, cross-browser checks and SEO tracked in Google Search Console. It shows the site's
   Sell page and links to the live site (a client site, so no GitHub repo). Its tools are in the
   Skills filter, with Squarespace and Google Search Console added to Tools.
 - Background section, between Skills and Contact: "How I got here", in two parts, Experience

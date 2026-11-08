@@ -158,11 +158,11 @@ export const work = {
 				"The website of an Ontario consultancy that helps craft breweries sell, grow or buy, built for the client (Mar to Jul 2025).",
 			features: [
 				"Built on Squarespace to the client's brief",
-				"Custom CSS and JavaScript for the layout, look and behaviour",
+				"Custom HTML, CSS and JavaScript for the layout, look and behaviour",
 				"Checked on every browser and screen size before each update went live",
 				"SEO best practices, with search performance tracked in Google Search Console",
 			],
-			stack: ["Squarespace", "CSS", "JavaScript", "Google Search Console"],
+			stack: ["Squarespace", "HTML", "CSS", "JavaScript", "Google Search Console"],
 			links: [{ label: "Live site", href: "https://www.urlockerconsulting.com/" }],
 			image: "urlocker-consulting.jpg",
 			alt: "Urlocker Consulting's Sell page: a warmly lit brewery bar under the words Sell Your Ontario Craft Brewery.",
@@ -347,7 +347,7 @@ export const backgroundSection = {
 					summary: "Built and maintained the company's public website, and handled its SEO.",
 					points: [
 						"Built and customized the website on Squarespace, to the client's brief",
-						"Wrote custom CSS and JavaScript for the layout and features",
+						"Wrote custom HTML, CSS and JavaScript for the layout and features",
 						"Checked every change across browsers and screen sizes before it went live",
 						"Applied SEO best practices and tracked search performance in Google Search Console",
 					],
