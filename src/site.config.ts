@@ -181,8 +181,8 @@ export const work = {
 			status: "Live",
 			summary: "The website of a made-up AI security company, built as if for a real client.",
 			features: [
-				"Designed in Figma, from the brand and type to every responsive layout",
-				"Built with Astro, TypeScript and Tailwind CSS from reusable components",
+				"Designed the hero and key components in Figma before building them",
+				"Built from reusable components and layouts that keep every page consistent",
 				"A blog run from Sanity CMS: posts go live without touching the code",
 				"Animated GSAP menu, keyboard-friendly navigation and end-to-end tests",
 			],
@@ -200,7 +200,7 @@ export const work = {
 			status: "Published",
 			summary: "To-do lists kept as simple text files, right inside the code editor VS Code.",
 			features: [
-				"Brings the Sublime Text ToDone format to VS Code, so the same files open in both",
+				"A VS Code port of the ToDone extension for Sublime Text, so the same files open in both",
 				"Five priority levels, plus emergency, done and cancelled states that carry to subtasks",
 				"Keyboard commands that work across multiple cursors and keep your notation",
 				"Tasks in the Outline view and Go to Symbol, in colours that work with any theme",
@@ -260,7 +260,7 @@ export const skills = {
 				{ name: "CSS", usedIn: ["Lineup", "Urlocker Consulting", "ApotheonAI", "Portfolio"] },
 				{ name: "Tailwind CSS", usedIn: ["ApotheonAI"] },
 				{ name: "GSAP", usedIn: ["ApotheonAI", "Portfolio"] },
-				{ name: "Figma", usedIn: [] },
+				{ name: "Figma", usedIn: ["Lineup", "Urlocker Consulting", "ApotheonAI", "Portfolio"] },
 				{ name: "Illustrator", usedIn: [] },
 			],
 		},
@@ -298,9 +298,9 @@ export const skills = {
 		{
 			title: "AI",
 			skills: [
-				{ name: "Codex", usedIn: [] },
-				{ name: "Claude Code", usedIn: [] },
-				{ name: "Cursor", usedIn: [] },
+				{ name: "Codex", usedIn: ["ApotheonAI"] },
+				{ name: "Claude Code", usedIn: ["Lineup", "ToDone", "Portfolio"] },
+				{ name: "Cursor", usedIn: ["ApotheonAI"] },
 				{ name: "GitHub Copilot", usedIn: [] },
 			],
 		},
@@ -355,8 +355,7 @@ export const backgroundSection = {
 					when: "Mar – Jul 2025",
 					summary: "Built and maintained the company's public website, and managed its SEO.",
 					points: [
-						"Designed the logo, the brand and every page, and built the site on Squarespace",
-						"Wrote custom HTML, CSS and JavaScript for the layout and features",
+						"Designed the logo and every page, and built the site on Squarespace",
 						"Performed cross-browser and responsive testing before every release",
 						"Implemented SEO best practices and monitored search performance with Google Search Console",
 						"Set up a newsletter that grew the client's outreach",
@@ -372,7 +371,7 @@ export const backgroundSection = {
 					role: "College diploma",
 					when: "Jan 2024 – Aug 2025",
 					summary:
-						"Web Development and Internet Applications: web programming, web app development, databases, web security and project management, ending with a capstone project.",
+						"Web Development and Internet Applications: web programming, web app development, databases, web security and project management, with a final project built for a real stakeholder.",
 					points: ["Dean's Honours List: Winter 2024, Fall 2024 and Spring 2025"],
 				},
 			],
@@ -410,7 +409,7 @@ export const contact = {
 			{
 				title: "Web apps",
 				icon: "web-app",
-				text: "Tools your customers or team log into: booking, dashboards, internal tools. Front end to database.",
+				text: "Any web app your customers or team need, from booking systems and dashboards to custom tools, built from the front end to the database.",
 			},
 			{
 				title: "Redesigns",

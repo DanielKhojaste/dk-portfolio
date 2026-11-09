@@ -160,14 +160,18 @@ Cloudflare hosting.
   - The side nav and menu call the hero "Home".
   - Projects: Lineup's summary and points (it works for soccer, volleyball, basketball and other
     team sports), "In development"; Urlocker Consulting's summary (the full brand and site, and
-    its newsletter) and points; ApotheonAI is a "Concept website" with new points (designed in
-    Figma, built with Astro, TypeScript and Tailwind CSS, a Sanity blog, GSAP and tests); ToDone's
-    points (the Sublime Text format in VS Code, priorities and states, multi-cursor commands, the
+    its newsletter) and points; ApotheonAI is a "Concept website" with new points (the hero and key
+    components designed in Figma, reusable components and layouts, a Sanity blog, GSAP and tests);
+    ToDone's points (a VS Code port of the Sublime Text extension, priorities and states, multi-cursor commands, the
     Outline view and theme-proof colours).
   - Prompts: "Hover over a project for details" ("Tap a project for details" on touch screens);
     Background says "an item".
   - Background: Freelancer "Present" and "Accepting new projects"; Urlocker's design and
-    newsletter; Algonquin's coursework from the transcript.
+    newsletter, in four points; Algonquin's coursework from the transcript, with a final project
+    for a real stakeholder.
+  - Contact: web apps are "any web app your customers or team need", not just the examples.
+  - Skills: Figma for every project but ToDone; Claude Code for Lineup, ToDone and the
+    portfolio; Codex and Cursor for ApotheonAI.
   - Search: the description says npm packages instead of editor extensions.
 - My legal name: the footer reads © Aref "Daniel" Khojaste, the search description starts with it,
   and search engines get all three names (Daniel Khojaste, Aref Khojaste, Aref "Daniel" Khojaste)
