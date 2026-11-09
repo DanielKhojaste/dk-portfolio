@@ -413,7 +413,7 @@ export const contact = {
 			{
 				title: "Redesigns",
 				icon: "redesign",
-				text: "An old site brought up to date: a new look, faster pages and better SEO.",
+				text: "A modern refresh for your site: cleaner, faster and easier for customers to find.",
 			},
 		],
 	},
