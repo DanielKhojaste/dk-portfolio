@@ -144,9 +144,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- About: the middle fact ("Focus") sits halfway between the other two, with equal gaps either side,
+  while the first and last stay where they were. Phones keep the stacked list.
 - Contact: what I can build is now three services side by side, straight on the page (an icon,
   the name and its line, with generous gaps), in place of the "Need a site?" card. The services' text
-  is bigger (16px). Copy in `contact.services`.
+  is bigger (16px), and websites now "look sharp and run smoothly on any screen". Copy in `contact.services`.
 - Copy pass across the site, from `notes/site-copy.md`:
   - About: "I build web apps that are fast, reliable and built to scale."
   - The side nav and menu call the hero "Home".

@@ -157,11 +157,26 @@ const headline = about.headline.replace(/[[\]]/g, "");
 		color: var(--color-text-soft);
 	}
 
+	/* The first and last facts sit where three equal columns would put them; the middle one sits
+	   halfway between the end of the first and the start of the last, so the gaps either side
+	   match however long its text is. Five tracks: first fact, flexible space, middle fact,
+	   flexible space, and the last column (a third of the row, less the gaps). */
 	.about__facts {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 24px;
+		grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr) calc((100% - 48px) / 3);
 		margin: 0;
+	}
+
+	.about__fact:nth-child(1) {
+		grid-column: 1;
+	}
+
+	.about__fact:nth-child(2) {
+		grid-column: 3;
+	}
+
+	.about__fact:nth-child(3) {
+		grid-column: 5;
 	}
 
 	.about__fact {
@@ -198,6 +213,10 @@ const headline = about.headline.replace(/[[\]]/g, "");
 		.about__facts {
 			grid-template-columns: 1fr;
 			gap: 10px;
+		}
+
+		.about__fact:nth-child(n) {
+			grid-column: auto;
 		}
 
 		.about__fact {

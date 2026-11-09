@@ -373,3 +373,48 @@ test.describe("main colour", () => {
 		expect(bright).toBe(shades.bright.join(" "));
 	});
 });
+
+test.describe("about facts", () => {
+	test("the middle fact sits halfway between the other two, and the last one stays put", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "phones stack the facts");
+		for (const width of [768, 1024, 1280, 1440]) {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto("/");
+			const m = await page.evaluate(() => {
+				const box = (el: Element) => {
+					const r = document.createRange();
+					r.selectNodeContents(el);
+					return r.getBoundingClientRect();
+				};
+				const facts = [...document.querySelectorAll(".about__fact")].map((f) => {
+					const parts = [box(f.querySelector("dt")!), box(f.querySelector("dd")!)];
+					return {
+						left: Math.min(...parts.map((p) => p.left)),
+						right: Math.max(...parts.map((p) => p.right)),
+					};
+				});
+				const row = document.querySelector(".about__facts")!.getBoundingClientRect();
+				return {
+					gap1: facts[1]!.left - facts[0]!.right,
+					gap2: facts[2]!.left - facts[1]!.right,
+					// Where three equal columns (24px gaps) would start the last one.
+					lastStart: facts[2]!.left - row.left,
+					expected: row.width - (row.width - 48) / 3,
+				};
+			});
+			expect(Math.abs(m.gap1 - m.gap2), `${width}px`).toBeLessThan(3);
+			expect(Math.abs(m.lastStart - m.expected), `${width}px`).toBeLessThan(2);
+		}
+	});
+
+	test("on phones the facts stack in one column", async ({ page }, info) => {
+		test.skip(info.project.name !== "mobile", "phones only");
+		await page.goto("/");
+		const lefts = await page
+			.locator(".about__fact")
+			.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().left)));
+		expect(new Set(lefts).size).toBe(1);
+	});
+});

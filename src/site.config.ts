@@ -405,7 +405,7 @@ export const contact = {
 			{
 				title: "Websites",
 				icon: "website",
-				text: "A site for your business or project, designed and built from scratch, that looks sharp and loads fast on any screen.",
+				text: "A site for your business or project, designed and built from scratch, that looks sharp and runs smoothly on any screen.",
 			},
 			{
 				title: "Web apps",
