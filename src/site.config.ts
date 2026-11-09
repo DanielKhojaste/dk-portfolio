@@ -22,7 +22,13 @@ export interface LinkItem {
 }
 
 export const profile = {
+	/** The name I go by, used across the site. */
 	name: "Daniel Khojaste",
+	/** My legal name, and both together: in the footer and for search engines. */
+	legalName: "Aref Khojaste",
+	fullName: 'Aref "Daniel" Khojaste',
+	/** The names people might search for me by (search engines' keywords and "also known as"). */
+	searchNames: ["Daniel Khojaste", "Aref Khojaste", 'Aref "Daniel" Khojaste'],
 	/** Hero: the big claim on the left. */
 	role: "Software Developer",
 	/** Hero: "Based in <location>". */
@@ -38,7 +44,7 @@ export const profile = {
 export const seo = {
 	title: "Daniel Khojaste | Software Developer",
 	description:
-		"Daniel Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and editor extensions.",
+		'Aref "Daniel" Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and editor extensions.',
 	/**
 	 * The site's address once it's hosted, e.g. "https://danielkhojaste.com" (no trailing slash).
 	 * Until then it's empty, and the canonical link and absolute share-image address are left out.

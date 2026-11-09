@@ -144,6 +144,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- My legal name: the footer reads © Aref "Daniel" Khojaste, the search description starts with it,
+  and search engines get all three names (Daniel Khojaste, Aref Khojaste, Aref "Daniel" Khojaste)
+  as keywords, the author and the person's "also known as" names (`profile.legalName`,
+  `profile.fullName`, `profile.searchNames`).
 - Contact no longer has the "Hiring?" card. Under its headline, now "Let's work together", two
   lines with a pulsing dot say what I'm open to: full-time software developer roles (in Canada or
   remote) and freelance projects. Background says "Open to full-time roles" the same way, under its

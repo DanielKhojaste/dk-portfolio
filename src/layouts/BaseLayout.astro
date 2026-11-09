@@ -23,6 +23,8 @@ const person = {
 	"@context": "https://schema.org",
 	"@type": "Person",
 	name: profile.name,
+	legalName: profile.legalName,
+	alternateName: profile.searchNames.filter((n) => n !== profile.name),
 	jobTitle: profile.role,
 	address: { "@type": "PostalAddress", addressCountry: profile.location },
 	...(seo.url ? { url: seo.url } : {}),
@@ -82,6 +84,8 @@ const timings = {
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content={hex(shades.bg)} />
 		<meta name="description" content={description} />
+		<meta name="author" content={profile.fullName} />
+		<meta name="keywords" content={profile.searchNames.join(", ")} />
 		{canonical && <link rel="canonical" href={canonical} />}
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content={profile.name} />

@@ -437,7 +437,7 @@ test.describe("page sections", () => {
 		}
 		const height = await page.evaluate(() => document.documentElement.scrollHeight);
 		expect(height).toBeGreaterThan(page.viewportSize()!.height * 2);
-		await expect(page.locator("footer")).toContainText("Daniel Khojaste");
+		await expect(page.locator("footer")).toContainText("Khojaste");
 	});
 
 	test("the scroll prompt takes you to About", async ({ page }) => {

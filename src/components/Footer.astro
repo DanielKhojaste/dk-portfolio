@@ -1,5 +1,9 @@
+---
+import { profile } from "../site.config";
+---
+
 <footer class="site-footer">
-	<p>© {new Date().getFullYear()} Daniel Khojaste</p>
+	<p>© {new Date().getFullYear()} {profile.fullName}</p>
 </footer>
 
 <style>

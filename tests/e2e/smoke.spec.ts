@@ -39,3 +39,26 @@ test("serves the tab icon and the app icons", async ({ page, request }) => {
 		expect(response.headers()["content-type"]).toContain(type);
 	}
 });
+
+test("names both of Daniel's names: in the footer and for search engines", async ({ page }) => {
+	await page.goto("/");
+	await expect(page.locator("footer")).toContainText('Aref "Daniel" Khojaste');
+	await expect(page.locator('meta[name="keywords"]')).toHaveAttribute(
+		"content",
+		'Daniel Khojaste, Aref Khojaste, Aref "Daniel" Khojaste',
+	);
+	await expect(page.locator('meta[name="author"]')).toHaveAttribute(
+		"content",
+		'Aref "Daniel" Khojaste',
+	);
+	const person = JSON.parse(
+		(await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}",
+	);
+	expect(person.name).toBe("Daniel Khojaste");
+	expect(person.legalName).toBe("Aref Khojaste");
+	expect(person.alternateName).toEqual(["Aref Khojaste", 'Aref "Daniel" Khojaste']);
+	await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+		"content",
+		/^Aref "Daniel" Khojaste is/,
+	);
+});
