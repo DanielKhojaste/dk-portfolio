@@ -163,7 +163,7 @@ export const work = {
 			status: "Live",
 			summary: "Designed and built the site for an Ontario craft brewery consultant.",
 			features: [
-				"Built on Squarespace to the client's brief",
+				"Turned the client's goals into a clear, easy-to-navigate site on Squarespace",
 				"Wrote custom code to achieve the exact layout and behaviour",
 				"Tested across browsers and devices before each update",
 				"Implemented SEO best practices and monitored search performance in Google Search Console",
