@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- README: new screenshots of the whole site, a table of the sections, an "Under the hood" list (one
+  config file, contact form, security, accessibility, speed, search), the `lighthouse` script, an
+  updated project layout and a Hosting section for Cloudflare Workers.
+- `SCREENSHOTS.md`: every section on desktop, tablet and phone, the contact form, and the menu on
+  phones and tablets (the desktop menu is gone: desktop has the side nav). Screenshots are WebP now,
+  about a third of the size.
+
 ## [1.0.0] - 2026-11-09
 
 The portfolio goes live: every section (Projects, Skills, Background and Contact join the hero and
