@@ -73,7 +73,7 @@ const okFetch = () =>
 describe("compose and mailtoFor", () => {
 	it("puts the need and name in the subject and signs the body", () => {
 		expect(mod.compose(msg)).toEqual({
-			subject: "A web app – Ada Lovelace",
+			subject: "A web app | Ada Lovelace",
 			body: "Booking for my studio.\n\nAda Lovelace (ada@example.com)",
 		});
 	});
@@ -82,7 +82,7 @@ describe("compose and mailtoFor", () => {
 		const url = mod.mailtoFor("me@example.com", msg);
 		expect(url.startsWith("mailto:me@example.com?subject=")).toBe(true);
 		const params = new URLSearchParams(url.split("?")[1]);
-		expect(params.get("subject")).toBe("A web app – Ada Lovelace");
+		expect(params.get("subject")).toBe("A web app | Ada Lovelace");
 		expect(params.get("body")).toContain("Booking for my studio.");
 	});
 });
@@ -96,7 +96,7 @@ describe("sendWithWeb3Forms", () => {
 		expect(init.method).toBe("POST");
 		expect(JSON.parse(String(init.body))).toMatchObject({
 			access_key: "key-123",
-			subject: "A web app – Ada Lovelace",
+			subject: "A web app | Ada Lovelace",
 			email: msg.email,
 			need: msg.need,
 			message: msg.message,

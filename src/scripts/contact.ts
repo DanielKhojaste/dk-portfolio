@@ -79,7 +79,7 @@ export function isValid(msg: Message) {
 /** Subject and body for an email about a message. */
 export function compose({ name, email, need, message }: Message) {
 	return {
-		subject: `${need} – ${name}`,
+		subject: `${need} | ${name}`,
 		body: `${message}\n\n${name} (${email})`,
 	};
 }
