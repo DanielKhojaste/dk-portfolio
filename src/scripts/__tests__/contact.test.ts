@@ -181,7 +181,7 @@ describe("setupPicks", () => {
 	});
 
 	it("each card's choice is one of the form's", () => {
-		expect(contact.form.needs).toContain(contact.hiring.need);
+		expect(contact.form.needs).toContain("A full-time role");
 		expect(contact.form.needs).toContain(contact.projects.need);
 	});
 });

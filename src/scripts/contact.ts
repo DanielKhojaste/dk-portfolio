@@ -1,8 +1,8 @@
 /**
- * The Contact section's form, and the buttons on the two cards that jump to it with the right
- * choice picked. With a Web3Forms access key the form posts there and says whether it sent; without
+ * The Contact section's form, and the card's button that jumps to it with the right choice
+ * picked. With a Web3Forms access key the form posts there and says whether it sent; without
  * one, it opens the visitor's email app with the message filled in. On arrival the headline's red
- * word wipes in and the cards and form rise in.
+ * word wipes in and the card and form rise in.
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";

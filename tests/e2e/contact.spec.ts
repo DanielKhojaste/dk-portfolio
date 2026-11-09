@@ -22,10 +22,13 @@ test.describe("contact", () => {
 		await expect(page.locator("#contact-title")).toHaveAccessibleName(
 			contact.headline.replace(/[[\]]/g, ""),
 		);
-		await expect(page.locator("#contact h3")).toHaveText([
-			contact.hiring.title,
-			contact.projects.title,
-		]);
+		await expect(page.locator("#contact h3")).toHaveText([contact.projects.title]);
+		// What I'm open to, under the headline: one line each, with a dot.
+		const open = page.locator("#contact .availability li");
+		await expect(open).toHaveText([...contact.availability]);
+		await expect(page.locator("#contact .availability__dot")).toHaveCount(
+			contact.availability.length,
+		);
 		for (const s of contact.projects.services) {
 			await expect(page.locator("#contact .contact__service", { hasText: s.title })).toBeVisible();
 		}
@@ -49,22 +52,20 @@ test.describe("contact", () => {
 		await expect(page.locator("#contact")).not.toContainText(contact.email);
 	});
 
-	test("each card's button picks its choice in the form and takes you there", async ({ page }) => {
+	test("the card's button picks its choice in the form and takes you there", async ({ page }) => {
 		await page.goto("/");
 		await page.locator("#contact").scrollIntoViewIfNeeded();
 		const checked = () => page.locator('#contact input[name="need"]:checked');
-
-		await expect(async () => {
-			await page.getByRole("link", { name: contact.hiring.cta }).click();
-			await expect(checked()).toHaveValue(contact.hiring.need, { timeout: 500 });
-		}).toPass();
-		await expect(page.locator("#contact-form")).toBeInViewport();
-		await expect(page.locator('#contact input[name="name"]')).toBeFocused({ timeout: 3000 });
+		// Pick something else first, so the button has something to change.
+		await page.locator("#contact-form").getByText("Something else").click();
+		await expect(checked()).toHaveValue("Something else");
 
 		await expect(async () => {
 			await page.getByRole("link", { name: contact.projects.cta }).click();
 			await expect(checked()).toHaveValue(contact.projects.need, { timeout: 500 });
 		}).toPass();
+		await expect(page.locator("#contact-form")).toBeInViewport();
+		await expect(page.locator('#contact input[name="name"]')).toBeFocused({ timeout: 3000 });
 	});
 
 	test("sending posts nothing for real: it either sends (faked here) or opens the email app", async ({

@@ -1,14 +1,15 @@
 ---
 /**
- * The Contact section: "Hiring?" and "Need a site?" side by side (the second lists what I offer),
- * then one form for both, with the links beside it. Each card's button jumps to the form with the
- * right choice already picked. The form sends through Web3Forms when `contact.form.accessKey` is
+ * The Contact section: the headline with what I'm open to under it (full-time roles and freelance
+ * projects), a "Need a site?" card listing what I offer, then the form, with the links beside it.
+ * The card's button jumps to the form with "A website" already picked. The form sends through Web3Forms when `contact.form.accessKey` is
  * set, and otherwise opens the visitor's email app. Copy lives in site.config.ts (`contact`);
  * behaviour in scripts/contact.ts.
  */
 import { contact } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
 import TechIcon from "./TechIcon.astro";
+import Availability from "./Availability.astro";
 import { LIMITS } from "../scripts/contact-limits";
 
 const words = splitHighlights(contact.headline);
@@ -39,17 +40,10 @@ const links = contact.links.filter((l) => l.href);
 					)
 				}
 			</h2>
+			<Availability items={contact.availability} class="contact__availability" />
 		</div>
 
 		<div class="contact__paths">
-			<div class="contact__path" data-contact-rise>
-				<h3 class="contact__title">{contact.hiring.title}</h3>
-				<p class="contact__text">{contact.hiring.text}</p>
-				<a class="contact__cta" href="#contact-form" data-pick-need={contact.hiring.need}>
-					{contact.hiring.cta}
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 13l5 5 5-5M12 6v12"></path></svg>
-				</a>
-			</div>
 			<div class="contact__path" data-contact-rise>
 				<h3 class="contact__title">{contact.projects.title}</h3>
 				<ul class="contact__services">
@@ -180,8 +174,11 @@ const links = contact.links.filter((l) => l.href);
 
 	.contact__paths {
 		display: grid;
-		grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
 		gap: 18px;
+	}
+
+	.contact__heading :global(.contact__availability) {
+		margin-top: 4px;
 	}
 
 	.contact__path {

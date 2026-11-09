@@ -323,6 +323,8 @@ export const backgroundSection = {
 	eyebrow: "Background",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "How I [got] here",
+	/** What I'm open to: a line with a pulsing dot under the headline. */
+	availability: ["Open to full-time roles"] as readonly string[],
 	prompt: {
 		hover: "Hover over an item for more details",
 		click: "Click an item for more details",
@@ -374,7 +376,7 @@ export const backgroundSection = {
 export const contact = {
 	eyebrow: "Contact",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
-	headline: "Two ways to [work] together",
+	headline: "Let's [work] together",
 	email: "danielkhojaste101@gmail.com",
 	/** Links under the form, as logos with their names (logos: components/TechIcon.astro). */
 	links: [
@@ -383,13 +385,11 @@ export const contact = {
 		/** Leave an address empty to hide it. */
 		{ label: "LinkedIn", href: "https://www.linkedin.com/in/aref-khojaste/" },
 	] as readonly LinkItem[],
-	hiring: {
-		title: "Hiring?",
-		text: "I'm looking for a full-time role as a software developer, on the web or beyond. In Canada, or remote.",
-		/** The button jumps to the form with this choice picked. */
-		cta: "Talk about a role",
-		need: "A full-time role",
-	},
+	/** What I'm open to: lines with a pulsing dot under the headline. */
+	availability: [
+		"Open to full-time software developer roles, in Canada or remote",
+		"Available for freelance projects",
+	] as readonly string[],
 	projects: {
 		title: "Need a site?",
 		services: [
