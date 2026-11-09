@@ -25,3 +25,40 @@ test.describe("smoke", () => {
 		expect(fontsLoaded).toBe(true);
 	});
 });
+
+test("serves the tab icon and the app icons", async ({ page, request }) => {
+	await page.goto("/");
+	for (const [rel, href, type] of [
+		["icon", "/favicon.svg", "image/svg+xml"],
+		["icon", "/favicon-32.png", "image/png"],
+		["apple-touch-icon", "/apple-touch-icon.png", "image/png"],
+	]) {
+		await expect(page.locator(`link[rel="${rel}"][href="${href}"]`)).toHaveCount(1);
+		const response = await request.get(href!);
+		expect(response.ok(), href).toBe(true);
+		expect(response.headers()["content-type"]).toContain(type);
+	}
+});
+
+test("names both of Daniel's names: in the footer and for search engines", async ({ page }) => {
+	await page.goto("/");
+	await expect(page.locator("footer")).toContainText('Aref "Daniel" Khojaste');
+	await expect(page.locator('meta[name="keywords"]')).toHaveAttribute(
+		"content",
+		'Daniel Khojaste, Aref Khojaste, Aref "Daniel" Khojaste',
+	);
+	await expect(page.locator('meta[name="author"]')).toHaveAttribute(
+		"content",
+		'Aref "Daniel" Khojaste',
+	);
+	const person = JSON.parse(
+		(await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}",
+	);
+	expect(person.name).toBe("Daniel Khojaste");
+	expect(person.legalName).toBe("Aref Khojaste");
+	expect(person.alternateName).toEqual(["Aref Khojaste", 'Aref "Daniel" Khojaste']);
+	await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+		"content",
+		/^Aref "Daniel" Khojaste is/,
+	);
+});

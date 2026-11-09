@@ -1,0 +1,533 @@
+---
+/**
+ * The Contact section: the headline with what I'm open to under it (roles and freelance
+ * projects), then what I can build (websites, web apps, redesigns), then the form, with the links
+ * beside it. The form sends through Web3Forms when `contact.form.accessKey` is
+ * set, and otherwise opens the visitor's email app. Copy lives in site.config.ts (`contact`);
+ * behaviour in scripts/contact.ts.
+ */
+import { contact } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+import TechIcon from "./TechIcon.astro";
+import Availability from "./Availability.astro";
+import { LIMITS } from "../scripts/contact-limits";
+
+const words = splitHighlights(contact.headline);
+const headline = contact.headline.replace(/[[\]]/g, "");
+const links = contact.links.filter((l) => l.href);
+
+/** Line icons for the services (drawn in the main colour, 24 × 24). */
+const ICONS: Record<string, string> = {
+	website:
+		'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>',
+	"web-app":
+		'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+	redesign:
+		'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/></svg>',
+};
+---
+
+<section class="contact" id="contact" aria-labelledby="contact-title" data-contact>
+	<div class="contact__inner">
+		<div class="contact__heading">
+			<p class="contact__eyebrow">{contact.eyebrow}</p>
+			<h2 class="contact__headline" id="contact-title" aria-label={headline}>
+				{
+					words.map((word) =>
+						word.highlight ? (
+							<span aria-hidden="true">
+								<span class="contact__highlight">
+									{word.text}
+									<span class="contact__fill" data-fill>
+										{word.text}
+									</span>
+								</span>
+								{word.tail}{" "}
+							</span>
+						) : (
+							<span aria-hidden="true">{word.text} </span>
+						),
+					)
+				}
+			</h2>
+			<Availability items={contact.availability} class="contact__availability" />
+		</div>
+
+		<div class="contact__services">
+			<p class="contact__services-label">{contact.services.label}</p>
+			<ul class="contact__offers">
+				{
+					contact.services.items.map((o) => (
+						<li class="contact__offer" data-contact-rise>
+							<span class="contact__icon" set:html={ICONS[o.icon]} />
+							<h3 class="contact__offer-title">{o.title}</h3>
+							<p class="contact__offer-text">{o.text}</p>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="contact__bottom">
+			<form
+				class="contact__form contact__form--compact"
+				id="contact-form"
+				data-contact-form
+				data-contact-rise
+			>
+				<div class="contact__form-row">
+					<label class="contact__form-field">
+						<span>Name</span>
+						<input name="name" autocomplete="name" maxlength={LIMITS.name} required />
+					</label>
+					<label class="contact__form-field">
+						<span>Email</span>
+						<input
+							name="email"
+							type="email"
+							autocomplete="email"
+							maxlength={LIMITS.email}
+							required
+						/>
+					</label>
+				</div>
+				<fieldset class="contact__form-needs">
+					<legend>What do you need?</legend>
+					<div>
+						{
+							contact.form.needs.map((need, i) => (
+								<label class="contact__form-chip">
+									<input type="radio" name="need" value={need} checked={i === 0} />
+									<span>{need}</span>
+								</label>
+							))
+						}
+					</div>
+				</fieldset>
+				<label class="contact__form-field">
+					<span>A few words about it</span>
+					<textarea name="message" rows="3" maxlength={LIMITS.message} required></textarea>
+				</label>
+				<!-- Spam trap: hidden from people, filled in by bots. -->
+				<input
+					class="contact__trap"
+					type="checkbox"
+					name="botcheck"
+					tabindex="-1"
+					aria-hidden="true"
+				/>
+				<div class="contact__form-end">
+					<button type="submit" class="contact__form-send">
+						Send
+						<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"></path></svg>
+					</button>
+					<p class="contact__form-status" data-form-status role="status" aria-live="polite"></p>
+				</div>
+			</form>
+			<div class="contact__links" data-contact-rise>
+				<p class="contact__links-title">{contact.linksTitle}</p>
+				<ul class="contact__socials">
+					{
+						links.map((l) =>
+							l.href.startsWith("mailto:") ? (
+								<li>
+									<a href={l.href} title={l.href.slice(7)}>
+										<TechIcon name={l.label} size={18} />
+										<span>{l.label}</span>
+									</a>
+								</li>
+							) : (
+								<li>
+									<a href={l.href} target="_blank" rel="noopener noreferrer">
+										<TechIcon name={l.label} size={18} />
+										<span>{l.label}</span>
+										<span class="sr-only">(opens in a new tab)</span>
+									</a>
+								</li>
+							),
+						)
+					}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { animation, contact } from "../site.config";
+	import { setupContact } from "../scripts/contact";
+
+	const section = document.querySelector<HTMLElement>("[data-contact]");
+	if (section) setupContact(section, { email: contact.email, ...contact.form }, animation.contact);
+</script>
+
+<style>
+	.contact {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.contact__inner {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(24px, 4vh, 40px);
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.contact__heading :global(.contact__availability) {
+		margin-top: 4px;
+	}
+
+	/* What I can build: three side by side, straight on the page (no cards). */
+	.contact__services {
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+	}
+
+	.contact__services-label {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.contact__offers {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: clamp(36px, 5vw, 72px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.contact__offer {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	.contact__icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: rgb(var(--shade-accent) / 0.14);
+	}
+
+	.contact__icon :global(svg) {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: rgb(var(--shade-bright));
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.contact__offer-title {
+		margin: 6px 0 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: 20px;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	.contact__offer-text {
+		flex: 1;
+		margin: 0;
+		font-size: 16px;
+		line-height: 1.55;
+		color: var(--color-text-soft);
+	}
+
+	.contact__bottom {
+		display: grid;
+		grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+		gap: clamp(24px, 4vw, 56px);
+		align-items: center;
+	}
+
+	.contact__links {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.contact__links-title {
+		margin: 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.contact__links .contact__socials {
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	@media (max-width: 1023px) {
+		.contact__bottom,
+		.contact__offers {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.contact__heading {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(14px, 2.4vh, 22px);
+	}
+
+	.contact__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.contact__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(28px, 3.6vw, 60px);
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* The red word: outlined, with a solid copy on top wiped in on arrival (like About's). */
+	.contact__highlight {
+		position: relative;
+		display: inline-block;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
+	}
+
+	.contact__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: rgb(var(--shade-bright));
+		text-shadow:
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.contact__highlight {
+			color: rgb(var(--shade-bright));
+		}
+	}
+
+	.contact__form {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+		padding: clamp(22px, 3vw, 36px);
+		border-radius: 14px;
+		border: 1px solid rgb(var(--shade-text) / 0.1);
+		background: rgb(var(--shade-text) / 0.025);
+	}
+
+	.contact__form--compact {
+		gap: 24px;
+	}
+
+	.contact__form-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 24px 20px;
+	}
+
+	.contact__form-field,
+	.contact__form-needs {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+
+	.contact__form-field > span,
+	.contact__form-needs legend {
+		padding: 0;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.contact__form-needs legend {
+		margin-bottom: 8px;
+	}
+
+	.contact__form-field input,
+	.contact__form-field textarea {
+		width: 100%;
+		padding: 12px 0;
+		border: 0;
+		border-bottom: 1px solid rgb(var(--shade-text) / 0.2);
+		background: none;
+		font: inherit;
+		font-size: 16px;
+		color: #fff;
+		resize: vertical;
+		transition: border-color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.contact__form-field input:focus-visible,
+	.contact__form-field textarea:focus-visible {
+		outline: none;
+		border-color: rgb(var(--shade-bright));
+	}
+
+	.contact__form-needs > div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.contact__form-chip input {
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.contact__form-chip span {
+		display: inline-block;
+		padding: 8px 14px;
+		border-radius: 999px;
+		border: 1px solid rgb(var(--shade-text) / 0.16);
+		font-size: 13px;
+		color: var(--color-text-soft);
+		cursor: pointer;
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			border-color var(--text-hover-duration) var(--text-hover-ease),
+			background var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.contact__form-chip input:checked + span {
+		color: #fff;
+		border-color: rgb(var(--shade-bright) / 0.7);
+		background: rgb(var(--shade-accent) / 0.18);
+	}
+
+	.contact__form-chip input:focus-visible + span {
+		outline: 2px solid var(--color-accent-soft);
+		outline-offset: 2px;
+	}
+
+	.contact__form-send {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 13px 22px;
+		border-radius: 999px;
+		border: 0;
+		background: rgb(var(--shade-accent));
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: #fff;
+		cursor: pointer;
+		transition: background var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.contact__form-send:hover {
+		background: rgb(var(--shade-accent-hover));
+	}
+
+	.contact__form-send svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.6;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	@media (max-width: 767px) {
+		.contact__form-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.contact__socials {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 26px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.contact__socials a {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-text-soft);
+		text-decoration: none;
+		transition: color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.contact__socials a:is(:hover, :focus-visible) {
+		color: rgb(var(--shade-bright));
+	}
+
+	.contact__trap {
+		position: absolute;
+		left: -9999px;
+		opacity: 0;
+	}
+
+	/* Some room between the message field and the Send button. */
+	.contact__form-end {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px 20px;
+		margin-top: 10px;
+	}
+
+	.contact__form-status {
+		margin: 0;
+		font-size: 14px;
+		color: var(--color-text-soft);
+	}
+
+	.contact__form:is([data-state="failed"], [data-state="invalid"]) .contact__form-status {
+		color: var(--color-accent-soft);
+	}
+
+	.contact__form-send[disabled] {
+		opacity: 0.6;
+		cursor: progress;
+	}
+</style>

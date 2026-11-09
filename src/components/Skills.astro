@@ -1,0 +1,363 @@
+---
+/**
+ * The Skills section: one row per group of tools, with the group's name in big outlined type and
+ * its logos on the right. The filter at the top (one button per project, plus All) lights up the
+ * tools a project uses and fills the names of the groups they're in; hovering a row fills its name,
+ * and hovering a logo names it. Copy and tools live in site.config.ts (`skills`); behaviour in
+ * scripts/skills.ts; logos in src/assets/tech.
+ */
+import { skills } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+import TechIcon from "./TechIcon.astro";
+
+const words = splitHighlights(skills.headline);
+const headline = skills.headline.replace(/[[\]]/g, "");
+---
+
+<section class="skills" id="skills" aria-labelledby="skills-title" data-skills>
+	<div class="skills__inner">
+		<div class="skills__top">
+			<div class="skills__heading">
+				<p class="skills__eyebrow">{skills.eyebrow}</p>
+				<h2 class="skills__headline" id="skills-title" aria-label={headline}>
+					{
+						words.map((word) =>
+							word.highlight ? (
+								<span aria-hidden="true">
+									<span class="skills__highlight">
+										{word.text}
+										<span class="skills__fill" data-fill>
+											{word.text}
+										</span>
+									</span>
+									{word.tail}{" "}
+								</span>
+							) : (
+								<span aria-hidden="true">{word.text} </span>
+							),
+						)
+					}
+				</h2>
+			</div>
+			<div class="skills__filter" role="group" aria-label="Show the tools used in a project">
+				<button type="button" data-pick="" aria-pressed="true">All</button>
+				{
+					skills.projects.map((project) => (
+						<button type="button" data-pick={project} aria-pressed="false">
+							{project}
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<ul class="skills__rows">
+			{
+				skills.groups.map((group) => (
+					<li
+						class="skills__row"
+						data-skill-row
+						data-used={[...new Set(group.skills.flatMap((s) => s.usedIn))].join("|")}
+					>
+						<h3 class="skills__name">{group.title}</h3>
+						<span class="skills__logos">
+							{group.skills.map((skill) => (
+								<TechIcon
+									name={skill.name}
+									size={26}
+									class="skills__logo"
+									data-skill={skill.name}
+									data-used={skill.usedIn.join("|")}
+								/>
+							))}
+							<span class="skills__caption" data-caption aria-hidden="true" />
+						</span>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</section>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupSkills } from "../scripts/skills";
+
+	const section = document.querySelector<HTMLElement>("[data-skills]");
+	if (section) setupSkills(section, animation.skills);
+</script>
+
+<style>
+	.skills {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.skills__inner {
+		width: 100%;
+		max-width: 1180px;
+	}
+
+	.skills__top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		flex-wrap: wrap;
+		gap: 20px 32px;
+		margin-bottom: clamp(20px, 4vh, 40px);
+	}
+
+	.skills__heading {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(14px, 2.4vh, 22px);
+	}
+
+	.skills__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.skills__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(28px, 3.6vw, 60px);
+		line-height: 1.04;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* The red word: outlined, with a solid copy on top wiped in on arrival (like About's). */
+	.skills__highlight {
+		position: relative;
+		display: inline-block;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
+	}
+
+	.skills__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: rgb(var(--shade-bright));
+		text-shadow:
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.skills__highlight {
+			color: rgb(var(--shade-bright));
+		}
+	}
+
+	/* The filter: small spaced caps, the picked one white with a red line under it. */
+	.skills__filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 20px;
+	}
+
+	.skills__filter button {
+		padding: 4px 0;
+		border: 0;
+		background: none;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.26em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			box-shadow var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.skills__filter button:hover,
+	.skills__filter button:focus-visible,
+	.skills__filter button[aria-pressed="true"] {
+		color: #fff;
+	}
+
+	.skills__filter button[aria-pressed="true"] {
+		box-shadow: inset 0 -2px 0 rgb(var(--shade-bright));
+	}
+
+	/* One grid for all the rows (each row borrows its columns), so the names' column is as wide as
+	   the longest name and the logos never run into it: when space runs short, the logos wrap onto
+	   more lines. */
+	.skills__rows {
+		display: grid;
+		grid-template-columns: max-content minmax(24px, 1fr) fit-content(470px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* No lines between rows. */
+	.skills__row {
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+		align-items: center;
+		padding: clamp(10px, 1.7vh, 16px) 0;
+	}
+
+	/* Outlined until hovered, or until the picked project uses something in it; then it fills white
+	   at the side nav's hover pace, like the Work section's names. */
+	.skills__name {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 900;
+		/* The Work section's project names' size. */
+		font-size: clamp(24px, 2.95vw, 49px);
+		line-height: 1;
+		letter-spacing: 0.02em;
+		white-space: nowrap;
+		text-transform: uppercase;
+		color: transparent;
+		-webkit-text-stroke: 1px rgb(var(--shade-text) / 0.45);
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			-webkit-text-stroke-color var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.skills__row:hover .skills__name,
+	.skills__row.is-lit .skills__name {
+		color: #fff;
+		-webkit-text-stroke-color: #fff;
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.skills__name {
+			color: var(--color-text-muted);
+		}
+	}
+
+	/* The hovered logo's name, under the logos on the right. */
+	.skills__caption {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		white-space: nowrap;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+		opacity: 0;
+		translate: 8px 0;
+		pointer-events: none;
+		transition:
+			opacity var(--text-hover-duration) var(--text-hover-ease),
+			translate var(--text-hover-duration) var(--text-hover-ease);
+	}
+
+	.skills__caption.is-shown {
+		opacity: 1;
+		translate: 0 0;
+	}
+
+	.skills__logos {
+		position: relative;
+		grid-column: -2;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 12px clamp(10px, 1vw, 18px);
+	}
+
+	.skills__logos :global(.skills__logo) {
+		color: var(--color-text-soft);
+		outline-offset: 4px;
+		transition:
+			color var(--text-hover-duration) var(--text-hover-ease),
+			opacity 0.35s var(--ease-out);
+	}
+
+	/* Hover: the logo turns the site's red; it doesn't move. (Tried on preview/polish: each tool's
+	   own brand colour, and the old lift: translate 0 -2px, in white.) */
+	.skills__logos :global(.skills__logo:hover),
+	.skills__logos :global(.skills__logo:focus-visible) {
+		color: rgb(var(--shade-bright));
+		opacity: 1;
+	}
+
+	/* A project is picked: its tools light up white, the rest fade back. */
+	.skills:not([data-filter=""]) :global(.skills__logo) {
+		opacity: 0.16;
+	}
+
+	.skills:not([data-filter=""]) :global(.skills__logo.is-lit) {
+		opacity: 1;
+		color: #fff;
+	}
+
+	/* Between phones and wide screens the logos shrink a little, so a row's logos stay on one line
+	   beside its name (or wrap evenly) rather than leaving one alone on a second line. */
+	@media (min-width: 768px) and (max-width: 1279px) {
+		.skills__logos {
+			column-gap: 9px;
+		}
+
+		.skills__logos :global(.skills__logo) {
+			width: 22px;
+			height: 22px;
+		}
+	}
+
+	@media (min-width: 768px) and (max-width: 1099px) {
+		.skills__logos {
+			column-gap: 7px;
+		}
+
+		.skills__logos :global(.skills__logo) {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	@media (max-width: 767px) {
+		.skills__top {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 16px;
+		}
+
+		.skills__headline {
+			font-size: clamp(24px, 7.4vw, 32px);
+		}
+
+		.skills__rows {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.skills__row {
+			row-gap: 12px;
+			padding: 14px 0;
+		}
+
+		.skills__name {
+			font-size: clamp(20px, 6.1vw, 26px);
+		}
+
+		.skills__logos {
+			grid-column: auto;
+			justify-content: flex-start;
+		}
+
+		.skills__caption {
+			display: none;
+		}
+	}
+</style>

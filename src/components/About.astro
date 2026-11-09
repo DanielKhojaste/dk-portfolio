@@ -1,0 +1,257 @@
+---
+/**
+ * About: one short headline, a line of text and three facts, in a single screen. When it comes into
+ * view the headline's words light up one after another, then the red words fill in, then the facts
+ * slide in (GSAP; scripts/about.ts). The text under the headline is there from the start. Copy lives in site.config.ts.
+ */
+import { about } from "../site.config";
+import { splitHighlights } from "../scripts/highlights";
+
+const words = splitHighlights(about.headline);
+/** The headline as plain text, for screen readers: the words are split into spans for the animation. */
+const headline = about.headline.replace(/[[\]]/g, "");
+---
+
+<section class="about" id="about" aria-labelledby="about-title" data-about>
+	<div class="about__inner">
+		<p class="about__eyebrow">{about.eyebrow}</p>
+		<h2 class="about__headline" id="about-title" aria-label={headline}>
+			{
+				words.map((word) => (
+					<>
+						<span class="about__word">
+							{word.highlight ? (
+								<span class="about__highlight" data-highlight>
+									{word.text}
+									<span class="about__fill" aria-hidden="true" data-fill>
+										{word.text}
+									</span>
+								</span>
+							) : (
+								word.text
+							)}
+							{word.tail}
+						</span>{" "}
+					</>
+				))
+			}
+		</h2>
+		<p class="about__text">{about.text}</p>
+		<dl class="about__facts" data-about-rest>
+			{
+				about.facts.map((fact) => (
+					<div class="about__fact">
+						<dt>{fact.label}</dt>
+						<dd>
+							{fact.href ? (
+								<a class="about__link" href={fact.href} target="_blank" rel="noopener noreferrer">
+									{fact.value}
+									<svg
+										class="about__arrow"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2.6"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<path d="M7 17L17 7" />
+										<path d="M8 7h9v9" />
+									</svg>
+									<span class="sr-only">(opens in a new tab)</span>
+								</a>
+							) : (
+								fact.value
+							)}
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>
+
+<script>
+	import { animation } from "../site.config";
+	import { revealAbout } from "../scripts/about";
+
+	const section = document.querySelector<HTMLElement>("[data-about]");
+	if (section) revealAbout(section, animation.about);
+</script>
+
+<style>
+	/* One screen tall, content centred, starting right of the side nav on desktop. */
+	.about {
+		display: flex;
+		align-items: center;
+		min-height: 100svh;
+		padding: clamp(96px, 13vh, 130px) var(--gutter) clamp(40px, 8vh, 80px) var(--content-left);
+	}
+
+	.about__inner {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(22px, 4vh, 40px);
+		width: 100%;
+		max-width: 1120px;
+	}
+
+	.about__eyebrow {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-accent-soft);
+	}
+
+	.about__headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: clamp(30px, 4.3vw, 72px);
+		line-height: 1.06;
+		text-transform: uppercase;
+		color: #fff;
+	}
+
+	/* Each word lights up on its own (scripts/about.ts sets the start state). */
+	.about__word {
+		display: inline-block;
+	}
+
+	/* Red words: the word outlined, with a solid red copy on top that GSAP wipes in from the left with
+	   a clip-path (scripts/about.ts). The clip reaches a little past the word's box, so letters that
+	   overhang it (the F's stem) are covered too. Without JS the copy simply shows. */
+	.about__highlight {
+		position: relative;
+		color: transparent;
+		-webkit-text-stroke: clamp(1px, 0.1vw, 1.6px) rgb(var(--shade-bright));
+	}
+
+	.about__fill {
+		position: absolute;
+		inset: 0;
+		white-space: nowrap;
+		color: rgb(var(--shade-bright));
+		-webkit-text-stroke: inherit;
+		text-shadow:
+			0 0 22px rgb(var(--shade-halo) / 0.55),
+			0 0 4px rgb(var(--shade-bright) / 0.35);
+		clip-path: inset(-30% -8% -30% -8%);
+	}
+
+	@supports not (-webkit-text-stroke: 1px) {
+		.about__highlight {
+			color: rgb(var(--shade-bright));
+		}
+	}
+
+	.about__text {
+		max-width: 56ch;
+		margin: 0;
+		font-size: clamp(16px, 1.25vw, 19px);
+		line-height: 1.7;
+		color: var(--color-text-soft);
+	}
+
+	/* The first and last facts sit where three equal columns would put them; the middle one sits
+	   halfway between the end of the first and the start of the last, so the gaps either side
+	   match however long its text is. Five tracks: first fact, flexible space, middle fact,
+	   flexible space, and the last column (a third of the row, less the gaps). */
+	.about__facts {
+		display: grid;
+		grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr) calc((100% - 48px) / 3);
+		margin: 0;
+	}
+
+	.about__fact:nth-child(1) {
+		grid-column: 1;
+	}
+
+	.about__fact:nth-child(2) {
+		grid-column: 3;
+	}
+
+	.about__fact:nth-child(3) {
+		grid-column: 5;
+	}
+
+	.about__fact {
+		padding-top: 14px;
+	}
+
+	.about__fact dt {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.about__fact dd {
+		margin: 8px 0 0;
+		font-family: var(--font-display);
+		font-stretch: 125%;
+		font-weight: 800;
+		font-size: 15px;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	@media (max-width: 767px) {
+		.about__headline {
+			font-size: clamp(26px, 8vw, 34px);
+		}
+
+		.about__text {
+			font-size: 15px;
+		}
+
+		.about__facts {
+			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		.about__fact:nth-child(n) {
+			grid-column: auto;
+		}
+
+		.about__fact {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			padding-top: 10px;
+		}
+
+		.about__fact dd {
+			margin: 0;
+			font-size: 13px;
+		}
+	}
+
+	/* Same hover as the hero's Lineup link: the arrow nudges up and right, no glow. */
+	.about__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		color: inherit;
+		text-decoration: none;
+		border-radius: 4px;
+	}
+
+	.about__arrow {
+		width: 0.7em;
+		height: 0.7em;
+		flex: none;
+		color: var(--color-accent-soft);
+		transition: translate var(--hover-duration) var(--ease-out);
+	}
+
+	.about__link:hover .about__arrow,
+	.about__link:focus-visible .about__arrow {
+		translate: 0.08em -0.08em;
+	}
+</style>

@@ -1,11 +1,23 @@
 ---
 import Logo from "./Logo.astro";
 import Menu from "./Menu.astro";
+import LogoUnderline from "./LogoUnderline.astro";
+import { animation } from "../site.config";
+
+const underline = animation.logoUnderline.style !== "off";
 ---
 
 <header class="site-header">
-	<a class="site-header__home" href="/" aria-label="Daniel Khojaste, home">
-		<Logo draw />
+	<a
+		class="site-header__home"
+		href="/"
+		aria-label="Daniel Khojaste, home"
+		data-underline={underline ? "" : undefined}
+	>
+		<span class="site-header__mark">
+			<Logo draw />
+			<LogoUnderline />
+		</span>
 	</a>
 
 	<button
@@ -43,9 +55,12 @@ import Menu from "./Menu.astro";
 	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
 	import { setupMenu } from "../scripts/menu";
+	import { setupLogoHide } from "../scripts/logo-hide";
 
 	drawLogos(document, animation.logo);
 	setupMenu();
+	const home = document.querySelector<HTMLElement>(".site-header__home");
+	if (home) setupLogoHide(home);
 </script>
 
 <style>
@@ -67,12 +82,46 @@ import Menu from "./Menu.astro";
 		pointer-events: auto;
 	}
 
+	/* Hover: a brush stroke is written under the logo (LogoUnderline, animation.logoUnderline). With
+	   the underline off, the logo glows in the main colour instead; it never grows. Colour, glow and
+	   timing come from site.config.ts (colors.logoHover, animation.logoHover) via BaseLayout. */
 	.site-header__home {
 		display: flex;
 		align-items: center;
 		height: 48px;
 		padding-block: 5px;
 		color: var(--color-text);
+		transition:
+			color var(--logo-hover-duration) var(--logo-hover-ease),
+			filter var(--logo-hover-duration) var(--logo-hover-ease),
+			opacity 0.35s var(--ease-out),
+			translate 0.35s var(--ease-out),
+			visibility 0s linear 0s;
+	}
+
+	/* Phones and tablets, scrolling down: tucked away so it doesn't sit on the text
+	   (scripts/logo-hide.ts). Scrolling up brings it back. */
+	.site-header__home:global(.is-tucked) {
+		opacity: 0;
+		translate: 0 -14px;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			opacity 0.3s var(--ease-out),
+			translate 0.3s var(--ease-out),
+			visibility 0s linear 0.3s;
+	}
+
+	.site-header__mark {
+		position: relative;
+		display: block;
+		height: 100%;
+	}
+
+	.site-header__home:not([data-underline]):is(:hover, :focus-visible) {
+		color: var(--logo-hover-color);
+		filter: drop-shadow(0 0 var(--logo-hover-glow-size) var(--logo-hover-glow))
+			drop-shadow(0 0 3px var(--logo-hover-core));
 	}
 
 	.menu-button {
@@ -83,7 +132,7 @@ import Menu from "./Menu.astro";
 		padding: 0 6px 0 18px;
 		border: 1px solid var(--color-line);
 		border-radius: var(--radius-pill);
-		background: rgb(8 4 5 / 0.55);
+		background: rgb(var(--shade-bg) / 0.55);
 		color: var(--color-text);
 		font-size: 14px;
 		font-weight: 600;
@@ -95,9 +144,16 @@ import Menu from "./Menu.astro";
 			background-color var(--hover-duration) var(--ease-out);
 	}
 
+	/* Desktop has the side nav instead (same breakpoint as components/SideNav.astro). */
+	@media (min-width: 1024px) and (min-height: 600px) {
+		.menu-button {
+			display: none;
+		}
+	}
+
 	.menu-button:hover {
 		border-color: var(--color-line-strong);
-		background: rgb(245 236 236 / 0.06);
+		background: rgb(var(--shade-text) / 0.06);
 	}
 
 	/* "Menu" and "Close" share one cell so swapping them never changes the button's width. */

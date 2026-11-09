@@ -1,0 +1,115 @@
+---
+/**
+ * A tool's logo (an SVG in src/assets/tech), in the current text colour, with its name as a tooltip
+ * and for screen readers. Tools without a logo there show their name as small text instead.
+ */
+const files = import.meta.glob<string>("../assets/tech/*.svg", {
+	query: "?raw",
+	import: "default",
+	eager: true,
+});
+
+/** Tool name (as written in site.config.ts) → its SVG file in src/assets/tech. */
+export const TECH: Record<string, string> = {
+	".NET": "dotnet",
+	Astro: "astro",
+	"C#": "csharp",
+	"Claude Code": "claude",
+	Codex: "codex",
+	CSS: "css",
+	Cursor: "cursor",
+	Dart: "dart",
+	Docker: "docker",
+	Express: "express",
+	Figma: "figma",
+	Flutter: "flutter",
+	Email: "mail",
+	Git: "git",
+	"Google Search Console": "googlesearchconsole",
+	GitHub: "github",
+	LinkedIn: "linkedin",
+	"GitHub Copilot": "githubcopilot",
+	GSAP: "gsap",
+	HTML: "html5",
+	Illustrator: "illustrator",
+	Java: "java",
+	JavaScript: "javascript",
+	MariaDB: "mariadb",
+	MySQL: "mysql",
+	"Next.js": "nextdotjs",
+	"Node.js": "nodedotjs",
+	PHP: "php",
+	Playwright: "playwright",
+	PostgreSQL: "postgresql",
+	PyQt: "qt",
+	Python: "python",
+	React: "react",
+	Rust: "rust",
+	Sanity: "sanity",
+	Squarespace: "squarespace",
+	"Spring Boot": "springboot",
+	Tailwind: "tailwindcss",
+	"Tailwind CSS": "tailwindcss",
+	Tauri: "tauri",
+	TypeScript: "typescript",
+	"VS Code": "vscode",
+};
+
+interface Props {
+	name: string;
+	/** Logo size in px. */
+	size?: number;
+	class?: string;
+	/** Extra attributes for the wrapper (data-*, tabindex). */
+	[attr: string]: unknown;
+}
+
+const { name, size = 18, class: className, ...rest } = Astro.props;
+const svg = TECH[name] ? files[`../assets/tech/${TECH[name]}.svg`] : undefined;
+// Only the shapes and the viewBox: the title and role come from the wrapper, so the name isn't read
+// twice, and the colour comes from the text (any fill in the file is dropped).
+const paths = [...(svg ?? "").matchAll(/<path[^>]*\sd="([^"]+)"/g)].map((m) => m[1]!);
+const viewBox = svg?.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 24 24";
+---
+
+{
+	paths.length ? (
+		<span
+			class:list={["tech", className]}
+			title={name}
+			role="img"
+			aria-label={name}
+			style={`--tech-size: ${size}px`}
+			{...rest}
+		>
+			<svg viewBox={viewBox} fill="currentColor" aria-hidden="true">
+				{paths.map((d) => (
+					<path d={d} />
+				))}
+			</svg>
+		</span>
+	) : (
+		<span class:list={["tech", "tech--text", className]} {...rest}>
+			{name}
+		</span>
+	)
+}
+
+<style>
+	.tech {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.tech svg {
+		width: var(--tech-size, 18px);
+		height: var(--tech-size, 18px);
+	}
+
+	.tech--text {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		white-space: nowrap;
+	}
+</style>

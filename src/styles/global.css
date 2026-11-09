@@ -5,22 +5,73 @@
 :root {
 	color-scheme: dark;
 
+	/* Every colour, as "r g b", worked out from the main colour (brand in site.config.ts; BaseLayout
+	   sets these from it). These defaults are the original red. Use them as rgb(var(--shade-x)) or,
+	   see-through, rgb(var(--shade-x) / 0.5). */
+	--shade-bloom: 150 14 26;
+	--shade-glow: 186 24 38;
+	--shade-core: 255 200 200;
+	--shade-shimmer: 230 96 104;
+	--shade-sparkle: 255 236 236;
+	--shade-sparkle-halo: 214 60 72;
+	--shade-flare: 250 160 164;
+	--shade-speck: 196 44 56;
+	--shade-origin-inner: 214 44 56;
+	--shade-origin-outer: 100 8 18;
+	--shade-ember: 230 80 86;
+	--shade-accent: 200 32 43;
+	--shade-accent-hover: 176 26 36;
+	--shade-accent-soft: 240 122 130;
+	--shade-bright: 255 77 88;
+	--shade-halo: 230 40 55;
+	--shade-name-top: 130 16 28;
+	--shade-name-bottom: 60 6 12;
+	--shade-name-fill: 110 14 24;
+	--shade-name-stroke: 255 70 82;
+	--shade-hero-glow: 190 28 40;
+	--shade-hero-glow-edge: 120 14 22;
+	--shade-section-glow: 72 8 16;
+	--shade-section-shadow: 40 4 9;
+	--shade-bg: 8 4 5;
+	--shade-text: 245 236 236;
+	--shade-text-soft: 217 201 202;
+	--shade-text-muted: 168 151 154;
+
 	/* Timings. BaseLayout overrides these from src/site.config.ts; these are only fallbacks. */
 	--hover-duration: 0.2s;
 	--menu-fade: 0.45s;
 	--menu-links: 0.75s;
 	--menu-link-stagger: 0.06s;
 	--menu-button-duration: 0.4s;
+	--side-nav-nudge: 4px;
+	--side-nav-label-in: 1.1s;
+	--side-nav-label-out: 0.7s;
+	--side-nav-label-ease: cubic-bezier(0.65, 0, 0.35, 1);
+	--text-hover-duration: 0.45s;
+	--text-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--text-hover-color: rgb(var(--shade-text));
+	--text-hover-glow: 0 0 14px rgb(var(--shade-halo) / 0.85), 0 0 2px rgb(var(--shade-bright) / 0.6);
+	--logo-hover-duration: 0.45s;
+	--logo-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--logo-hover-color: rgb(var(--shade-text));
+	--logo-hover-glow: rgb(var(--shade-accent));
+	--logo-hover-glow-size: 14px;
+	--logo-hover-core: rgb(var(--shade-accent) / 0.95);
+
+	/* The sections' dark red glow. BaseLayout sets it from site.config.ts. */
+	--section-glow: rgb(var(--shade-section-glow) / 0.62);
+	/* Regrades the hero photo to the main colour; none for the original red. */
+	--photo-filter: none;
 
 	/* Colour */
-	--color-bg: #080405;
-	--color-text: #f5ecec;
-	--color-text-soft: #d9c9ca;
-	--color-text-muted: #a8979a;
-	--color-accent: #c8202b;
-	--color-accent-soft: #f07a82;
-	--color-line: rgb(245 236 236 / 0.22);
-	--color-line-strong: rgb(245 236 236 / 0.35);
+	--color-bg: rgb(var(--shade-bg));
+	--color-text: rgb(var(--shade-text));
+	--color-text-soft: rgb(var(--shade-text-soft));
+	--color-text-muted: rgb(var(--shade-text-muted));
+	--color-accent: rgb(var(--shade-accent));
+	--color-accent-soft: rgb(var(--shade-accent-soft));
+	--color-line: rgb(var(--shade-text) / 0.22);
+	--color-line-strong: rgb(var(--shade-text) / 0.35);
 
 	/* Type */
 	--font-display: "Archivo Variable", "Archivo", system-ui, sans-serif;
@@ -28,10 +79,21 @@
 
 	/* Layout */
 	--gutter: clamp(20px, 4.4vw, 64px);
+	/* Width the side nav takes up on desktop (0 where the menu button is used instead). Sections start
+	   their content at --content-left so it never runs under the nav. */
+	--side-nav-w: 0px;
+	--content-left: calc(var(--gutter) + var(--side-nav-w));
 	--radius-pill: 999px;
 
 	/* Motion */
 	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+	/* The site's shared pace (motion in site.config.ts; BaseLayout sets these from it). */
+	--motion-quick: 0.2s;
+	--motion-hover: 0.45s;
+	--motion-draw: 0.9s;
+	--motion-glide: 1.1s;
 }
 
 *,
@@ -53,6 +115,32 @@ html {
 body {
 	margin: 0;
 	min-height: 100svh;
+}
+
+/* Same breakpoint as the side nav (components/SideNav.astro). */
+@media (min-width: 1024px) and (min-height: 600px) {
+	:root {
+		--side-nav-w: 220px;
+	}
+}
+
+/*
+ * A dark red glow behind every section after the hero (the hero paints its own background over it).
+ * It's fixed, so it stays put while the page moves; a fixed layer instead of background-attachment,
+ * which mobile browsers ignore or repaint on every scroll.
+ */
+.page-glow {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse 85% 65% at 50% -8%, var(--section-glow), transparent 72%),
+		radial-gradient(
+			ellipse 60% 45% at 50% 108%,
+			rgb(var(--shade-section-shadow) / 0.35),
+			transparent 70%
+		);
 }
 
 img,
@@ -77,6 +165,33 @@ button {
 	outline-offset: 3px;
 }
 
+/* Sections and the main area take focus when a link jumps to them; no ring around a whole section. */
+[tabindex="-1"]:focus {
+	outline: none;
+}
+
+/* "Skip to content": the first thing Tab reaches, shown only while it has focus. */
+.skip-link {
+	position: fixed;
+	top: 12px;
+	left: 50%;
+	z-index: 1000;
+	padding: 10px 18px;
+	border-radius: 999px;
+	background: var(--color-bg);
+	border: 1px solid rgb(var(--shade-bright) / 0.7);
+	font-size: 14px;
+	font-weight: 600;
+	color: #fff;
+	text-decoration: none;
+	translate: -50% -200%;
+	transition: translate 0.2s var(--ease-out);
+}
+
+.skip-link:focus-visible {
+	translate: -50% 0;
+}
+
 .sr-only {
 	position: absolute;
 	width: 1px;
@@ -98,4 +213,22 @@ button {
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
 	}
+}
+
+/*
+ * Text links (like "Lineup ↗" in About): hovering lights the text up white with a glow in the main
+ * colour, the same as the side nav's labels (textHover in site.config.ts).
+ */
+.text-link {
+	color: inherit;
+	text-decoration: none;
+	transition:
+		color var(--text-hover-duration) var(--text-hover-ease),
+		text-shadow var(--text-hover-duration) var(--text-hover-ease);
+}
+
+.text-link:hover,
+.text-link:focus-visible {
+	color: var(--text-hover-color);
+	text-shadow: var(--text-hover-glow);
 }

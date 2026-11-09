@@ -1,0 +1,81 @@
+---
+/**
+ * What I'm open to, as short lines each with a softly pulsing red dot: under the Contact and
+ * Background headlines. The lines come from site.config.ts (`contact.availability`,
+ * `backgroundSection.availability`).
+ */
+interface Props {
+	items: readonly string[];
+	class?: string;
+}
+const { items, class: className, ...rest } = Astro.props;
+---
+
+<ul class:list={["availability", className]} {...rest}>
+	{
+		items.map((item) => (
+			<li>
+				<span class="availability__dot" aria-hidden="true" />
+				{item}
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.availability {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: clamp(15px, 1.2vw, 18px);
+		line-height: 1.5;
+		color: var(--color-text-soft);
+	}
+
+	.availability li {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+	}
+
+	/* The dot sits on the middle of the line's letters. */
+	.availability__dot {
+		position: relative;
+		flex: none;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: rgb(var(--shade-bright));
+		box-shadow: 0 0 10px rgb(var(--shade-halo));
+		translate: 0 -0.1em;
+	}
+
+	.availability__dot::after {
+		content: "";
+		position: absolute;
+		inset: -4px;
+		border-radius: 50%;
+		border: 1px solid rgb(var(--shade-bright) / 0.6);
+		animation: availability-pulse 2.2s var(--ease-out) infinite;
+	}
+
+	@keyframes availability-pulse {
+		from {
+			opacity: 1;
+			scale: 0.6;
+		}
+		to {
+			opacity: 0;
+			scale: 1.8;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.availability__dot::after {
+			animation: none;
+		}
+	}
+</style>

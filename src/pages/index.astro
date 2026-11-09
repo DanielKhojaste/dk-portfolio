@@ -2,7 +2,12 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
-import PlaceholderSections from "../components/PlaceholderSections.astro";
+import About from "../components/About.astro";
+import SideNav from "../components/SideNav.astro";
+import Work from "../components/Work.astro";
+import Skills from "../components/Skills.astro";
+import Background from "../components/Background.astro";
+import Contact from "../components/Contact.astro";
 import Footer from "../components/Footer.astro";
 import { throneAvifSrcset, throneSizes } from "../components/hero-image";
 
@@ -21,10 +26,28 @@ const throneSrcset = await throneAvifSrcset();
 		imagesizes={throneSizes}
 		fetchpriority="high"
 	/>
+	<a class="skip-link" href="#main">Skip to content</a>
 	<Header />
-	<main>
-		<Hero />
-		<PlaceholderSections />
-	</main>
-	<Footer />
+	<SideNav />
+	<!-- ScrollSmoother moves everything in here; fixed things (header, side nav) stay outside. -->
+	<div id="smooth-wrapper">
+		<div id="smooth-content">
+			<main id="main">
+				<Hero />
+				<About />
+				<Work />
+				<Skills />
+				<Background />
+				<Contact />
+			</main>
+			<Footer />
+		</div>
+	</div>
 </BaseLayout>
+
+<script>
+	import { animation } from "../site.config";
+	import { setupSmoothScroll } from "../scripts/smooth-scroll";
+
+	setupSmoothScroll(animation.scroll);
+</script>

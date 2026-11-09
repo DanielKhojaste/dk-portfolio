@@ -28,3 +28,7 @@ Thumbs.db
 
 # private planning notes
 notes/
+
+# Lighthouse CI
+.lighthouseci/
+lhci-report/

@@ -1,11 +1,15 @@
+---
+import { profile } from "../site.config";
+---
+
 <footer class="site-footer">
-	<p>© {new Date().getFullYear()} Daniel Khojaste</p>
+	<p>© {new Date().getFullYear()} {profile.fullName}</p>
 </footer>
 
 <style>
 	.site-footer {
 		padding: 32px var(--gutter);
-		border-top: 1px solid rgb(245 236 236 / 0.08);
+		border-top: 1px solid rgb(var(--shade-text) / 0.08);
 		font-size: 13px;
 		color: var(--color-text-muted);
 		text-align: center;
