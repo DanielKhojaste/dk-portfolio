@@ -55,9 +55,12 @@ const underline = animation.logoUnderline.style !== "off";
 	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
 	import { setupMenu } from "../scripts/menu";
+	import { setupLogoHide } from "../scripts/logo-hide";
 
 	drawLogos(document, animation.logo);
 	setupMenu();
+	const home = document.querySelector<HTMLElement>(".site-header__home");
+	if (home) setupLogoHide(home);
 </script>
 
 <style>
@@ -90,7 +93,23 @@ const underline = animation.logoUnderline.style !== "off";
 		color: var(--color-text);
 		transition:
 			color var(--logo-hover-duration) var(--logo-hover-ease),
-			filter var(--logo-hover-duration) var(--logo-hover-ease);
+			filter var(--logo-hover-duration) var(--logo-hover-ease),
+			opacity 0.35s var(--ease-out),
+			translate 0.35s var(--ease-out),
+			visibility 0s linear 0s;
+	}
+
+	/* Phones and tablets, scrolling down: tucked away so it doesn't sit on the text
+	   (scripts/logo-hide.ts). Scrolling up brings it back. */
+	.site-header__home:global(.is-tucked) {
+		opacity: 0;
+		translate: 0 -14px;
+		visibility: hidden;
+		pointer-events: none;
+		transition:
+			opacity 0.3s var(--ease-out),
+			translate 0.3s var(--ease-out),
+			visibility 0s linear 0.3s;
 	}
 
 	.site-header__mark {

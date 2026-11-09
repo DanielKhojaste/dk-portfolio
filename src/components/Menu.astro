@@ -19,6 +19,8 @@ const ruleHeight = underlineHeight(menuUnderlineFlow);
  * (same seed), so the colour and brightness never change from one link to the next.
  */
 const underline = underlineOptions(menuUnderlineFlow, colors.menuUnderline);
+// The longest section name, in letters: on phones the labels shrink so it always fits the width.
+const longest = Math.max(...sections.map((s) => s.label.length));
 ---
 
 <div
@@ -28,7 +30,7 @@ const underline = underlineOptions(menuUnderlineFlow, colors.menuUnderline);
 	aria-modal="true"
 	aria-label="Menu"
 	data-menu
-	style={`--rule-h: ${ruleHeight}px`}
+	style={`--rule-h: ${ruleHeight}px; --menu-longest: ${longest}`}
 >
 	<div class="menu__glow" aria-hidden="true"></div>
 
@@ -185,9 +187,11 @@ const underline = underlineOptions(menuUnderlineFlow, colors.menuUnderline);
 		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
 	}
 
+	/* Phones: as big as fits. A letter of this type is about 1em wide, so the longest name
+	   ("Background") sets the size, leaving the side gutters clear. */
 	@media (max-width: 767px) {
 		.menu__label {
-			font-size: clamp(36px, 12vw, 64px);
+			font-size: clamp(22px, min(12vw, calc((100vw - 48px) / var(--menu-longest))), 64px);
 		}
 	}
 </style>

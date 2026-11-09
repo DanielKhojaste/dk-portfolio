@@ -11,7 +11,13 @@ import {
 } from "./menu-underlines";
 import { trackSections } from "./sections";
 
-export function setupSideNav(root: Document, timing: UnderlineTiming, labelOut = timing.out) {
+export function setupSideNav(
+	root: Document,
+	timing: UnderlineTiming,
+	labelOut = timing.out,
+	/** Seconds a section must stay current before its underline draws (see site.config.ts). */
+	underlineDelay = 0,
+) {
 	const nav = root.querySelector<HTMLElement>("[data-side-nav]");
 	if (!nav) return null;
 	const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>("[data-side-nav-link]"));
@@ -30,6 +36,7 @@ export function setupSideNav(root: Document, timing: UnderlineTiming, labelOut =
 	const first = links[0]?.dataset.sideNavLink;
 
 	let active = "";
+	let pending = 0;
 	const leaving = new Map<HTMLElement, number>();
 	const select = (id: string) => {
 		for (const link of links) {
@@ -52,7 +59,14 @@ export function setupSideNav(root: Document, timing: UnderlineTiming, labelOut =
 		if (id === active) return;
 		underlines.get(active)?.hide();
 		active = id;
-		if (visible()) underlines.get(id)?.show();
+		// Wait a moment before drawing: sections only passed on the way somewhere else never start.
+		clearTimeout(pending);
+		if (!visible()) return;
+		if (underlineDelay <= 0) underlines.get(id)?.show();
+		else
+			pending = window.setTimeout(() => {
+				if (active === id && visible()) underlines.get(id)?.show();
+			}, underlineDelay * 1000);
 	};
 
 	root.addEventListener("section:change", (event) => select((event as CustomEvent<string>).detail));

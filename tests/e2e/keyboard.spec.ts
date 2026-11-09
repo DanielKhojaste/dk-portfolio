@@ -96,3 +96,33 @@ test.describe("keyboard", () => {
 		await expect.poll(() => sectionInView(page), { timeout: 8000 }).toBe("contact");
 	});
 });
+
+test.describe("side nav jumps", () => {
+	test("jumping far draws no underline under the sections passed on the way", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "the side nav is for wide screens");
+		await page.goto("/");
+		const link = (id: string) => page.locator(`[data-side-nav-link="${id}"]`);
+		await page.locator("#contact").scrollIntoViewIfNeeded();
+		await expect(link("contact")).toHaveAttribute("aria-current", "true", { timeout: 8000 });
+		await page.waitForTimeout(1000);
+		const drawn = () =>
+			page
+				.locator("[data-side-nav] [data-side-nav-link]")
+				.evaluateAll((links) =>
+					links
+						.filter((l) => l.querySelector("canvas[data-divine-flow-canvas]"))
+						.map((l) => (l as HTMLElement).dataset.sideNavLink!),
+				);
+		const before = await drawn();
+
+		await link("about").click();
+		await expect(link("about")).toHaveAttribute("aria-current", "true", { timeout: 8000 });
+		await page.waitForTimeout(1000);
+		// Background, Skills and Projects were passed on the way: none of them started an
+		// underline. Only About, where the jump ended, did.
+		const started = (await drawn()).filter((id) => !before.includes(id));
+		expect(started).toEqual(["about"]);
+	});
+});

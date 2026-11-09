@@ -144,6 +144,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Phones and tablets: the menu's section names shrink to fit the screen, so the longest
+  ("Background") is never cut off; and the DK logo tucks away while you scroll down, so it no longer
+  sits on the text, and comes back as soon as you scroll up (`scripts/logo-hide.ts`).
+- Side nav: a section's underline waits a moment (`animation.sideNav.underlineDelay`, 0.3 s) before
+  drawing, so jumping far (Contact to About) no longer flashes a dot under each section passed on
+  the way.
+- Urlocker Consulting uses Daniel's own crop of the Sell page screenshot.
 - The contact form has more room between its fields, and the Send button sits a little lower,
   clear of the message field.
 - The Projects and Background prompts read "Hover over an item for more details" ("Click an item

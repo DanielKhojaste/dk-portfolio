@@ -533,6 +533,12 @@ export const animation = {
 		labelEase: motion.ease.inOut.css,
 		/** How far (px) a hovered label slides to the right, on top of the glow (textHover). */
 		nudge: 4,
+		/**
+		 * Seconds a section must stay current before its underline starts drawing. Jumping far
+		 * (Contact to About) passes the sections in between; without this wait, each would flash a
+		 * tiny dot of underline on the way.
+		 */
+		underlineDelay: 0.3,
 	},
 
 	/**
