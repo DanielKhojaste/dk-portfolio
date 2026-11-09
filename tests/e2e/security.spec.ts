@@ -2,6 +2,13 @@ import { expect, test } from "@playwright/test";
 import { LIMITS } from "../../src/scripts/contact-limits";
 
 test.describe("security", () => {
+	// Never send a real message from a test.
+	test.beforeEach(async ({ page }) => {
+		await page.route("https://api.web3forms.com/**", (route) =>
+			route.fulfill({ json: { success: true }, status: 200 }),
+		);
+	});
+
 	test("the page carries a strict Content Security Policy and breaks none of it", async ({
 		page,
 	}) => {

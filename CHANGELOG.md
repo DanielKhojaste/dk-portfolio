@@ -90,6 +90,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the form's own choices, one message is sent at a time, a request that hangs gives up after 15
   seconds, and an incomplete form says what's missing (`contact.form.invalid`). Status messages
   are only ever set as plain text.
+- The contact form now sends through Web3Forms. Its access key is in `site.config.ts`
+  (`contact.form.accessKey`), public on purpose: it can only deliver messages to my inbox. Tests
+  answer every Web3Forms request themselves, so running them never sends a real message.
 - Contact section, last on the page: "Two ways to work together". Two cards side by side:
   "Hiring?" (a full-time role) and "Need a site?" (websites, web apps and redesigns, each with a
   line on what it covers). Each card's button glides down to the form with its choice already

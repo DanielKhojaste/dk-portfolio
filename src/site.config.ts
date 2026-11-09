@@ -413,11 +413,19 @@ export const contact = {
 		/** The "What do you need?" choices; the first is picked to start with. */
 		needs: ["A website", "A web app", "A redesign", "A full-time role", "Something else"],
 		/**
-		 * Web3Forms access key (free: web3forms.com, enter your email to get one). With a key, the
-		 * form sends messages straight to your inbox. Without one, Send opens the visitor's email
-		 * app with the message filled in.
+		 * The Web3Forms access key (free at web3forms.com; see notes/contact-form.md). With a key the
+		 * form sends messages straight to your inbox; set it to "" and Send opens the visitor's
+		 * email app instead.
+		 *
+		 * Why it's public, here in the code: this key isn't a secret. The visitor's browser sends it
+		 * with every message, so anyone can read it in the live page whatever we do, and all it can
+		 * do is deliver a message to my inbox: it can't read, change or delete anything. Web3Forms'
+		 * own setup puts it straight in the page's HTML. Their spam filter, and the form's Website
+		 * URL setting in Web3Forms, guard against misuse. If spam ever gets through, make a new key
+		 * at web3forms.com and replace this one. (Real secrets, like passwords or payment keys, must
+		 * never go in the code.)
 		 */
-		accessKey: "",
+		accessKey: "2161df19-2f7e-4c42-a52a-35aed6d5e4c3",
 		sent: "Thanks! Your message is on its way. I'll get back to you soon.",
 		failed: "That didn't send. Please try again, or email me directly.",
 		invalid: "Please add your name, a valid email and a few words.",

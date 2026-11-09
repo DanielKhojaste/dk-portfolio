@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 import { contact } from "../../src/site.config";
 
 test.describe("contact", () => {
+	// Never send a real message from a test, whether or not a Web3Forms key is set: answer every
+	// request to Web3Forms here instead.
+	test.beforeEach(async ({ page }) => {
+		await page.route("https://api.web3forms.com/**", (route) =>
+			route.fulfill({ json: { success: true }, status: 200 }),
+		);
+	});
+
 	test("comes last, after Background, with both paths, the form and the links", async ({
 		page,
 	}) => {
@@ -59,10 +67,9 @@ test.describe("contact", () => {
 		}).toPass();
 	});
 
-	test("without an access key, sending stays on the page and posts nothing", async ({ page }) => {
-		test.skip(contact.form.accessKey !== "", "a Web3Forms key is set");
-		// (It opens the visitor's email app with a mailto link; the link itself is checked in the
-		// unit tests.)
+	test("sending posts nothing for real: it either sends (faked here) or opens the email app", async ({
+		page,
+	}) => {
 		await page.goto("/");
 		await page.locator("#contact-form").scrollIntoViewIfNeeded();
 		const posts: string[] = [];
@@ -74,10 +81,17 @@ test.describe("contact", () => {
 		await expect(form.locator('input[name="need"]:checked')).toHaveValue("A web app");
 		await form.locator('textarea[name="message"]').fill("Booking for my studio.");
 		await form.getByRole("button", { name: "Send" }).click();
-		await page.waitForTimeout(500);
-		expect(posts).toEqual([]);
-		await expect(page).toHaveURL(/^http:/);
-		await expect(form).toBeVisible();
+		await page.waitForTimeout(800);
+		if (posts.length) {
+			// A key is set: it went to Web3Forms (answered above), and the form says so.
+			expect(posts).toEqual(["https://api.web3forms.com/submit"]);
+			await expect(form).toHaveAttribute("data-state", "sent");
+			await expect(form.locator("[data-form-status]")).toHaveText(contact.form.sent);
+		} else {
+			// No key: the email app opens, and the page stays.
+			await expect(page).toHaveURL(/^http:/);
+			await expect(form).toBeVisible();
+		}
 	});
 
 	test("the form needs a name, an email and a message", async ({ page }) => {
