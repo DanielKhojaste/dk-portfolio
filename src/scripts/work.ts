@@ -47,10 +47,14 @@ export function setupRows(
 	const isOpen = (row: HTMLElement) => row.classList.contains("is-open");
 	const isPinned = (row: HTMLElement) => row.classList.contains("is-pinned");
 
+	// A closed panel is out of reach: its links can't be tabbed to or read until it opens.
+	for (const row of rows) panel(row).inert = !isOpen(row);
+
 	const set = (row: HTMLElement, open: boolean) => {
 		if (isOpen(row) === open) return;
 		row.classList.toggle("is-open", open);
 		toggle(row).setAttribute("aria-expanded", String(open));
+		panel(row).inert = !open;
 		animate(panel(row), open, () => onResize?.());
 	};
 

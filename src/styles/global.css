@@ -165,6 +165,33 @@ button {
 	outline-offset: 3px;
 }
 
+/* Sections and the main area take focus when a link jumps to them; no ring around a whole section. */
+[tabindex="-1"]:focus {
+	outline: none;
+}
+
+/* "Skip to content": the first thing Tab reaches, shown only while it has focus. */
+.skip-link {
+	position: fixed;
+	top: 12px;
+	left: 50%;
+	z-index: 1000;
+	padding: 10px 18px;
+	border-radius: 999px;
+	background: var(--color-bg);
+	border: 1px solid rgb(var(--shade-bright) / 0.7);
+	font-size: 14px;
+	font-weight: 600;
+	color: #fff;
+	text-decoration: none;
+	translate: -50% -200%;
+	transition: translate 0.2s var(--ease-out);
+}
+
+.skip-link:focus-visible {
+	translate: -50% 0;
+}
+
 .sr-only {
 	position: absolute;
 	width: 1px;

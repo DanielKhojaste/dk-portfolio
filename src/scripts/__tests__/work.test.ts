@@ -37,6 +37,17 @@ const click = (row: HTMLElement, detail: number) =>
 const open = (list: HTMLElement[]) => list.map((r) => r.classList.contains("is-open"));
 
 describe("Work rows", () => {
+	it("keep closed panels out of reach (inert) and open ones reachable", () => {
+		const list = rows();
+		setupRows(list, { canHover: () => true, animate: (_p, _o, done) => done() });
+		const inert = () => list.map((r) => r.querySelector<HTMLElement>("[data-work-panel]")!.inert);
+		expect(inert()).toEqual([true, true, true]);
+		click(list[2]!, 1);
+		expect(inert()).toEqual([true, true, false]);
+		click(list[2]!, 1);
+		expect(inert()).toEqual([true, true, true]);
+	});
+
 	it("open on hover and close on leave with a mouse", () => {
 		const list = rows();
 		const animate = vi.fn((_p: HTMLElement, _o: boolean, done: () => void) => done());

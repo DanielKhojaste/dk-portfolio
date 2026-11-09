@@ -61,6 +61,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   big outlined type with the role and dates beside it; hovering (or tapping) opens the details
   underneath and fills the name, and clicking keeps it open. Copy in `site.config.ts`
   (`backgroundSection`, `animation.backgroundSection`). The side nav and menu list it.
+- Accessibility:
+  - a "Skip to content" link, the first thing Tab reaches;
+  - closed project and background rows are out of reach until opened, so Tab never lands on a
+    hidden link;
+  - jumping to a section from the side nav or menu moves keyboard focus there too;
+  - skill logos are no longer 39 separate tab stops (screen readers still read their names);
+  - axe checks the whole page (WCAG 2.2 AA) in the tests, with motion and without, with every
+    row open and with the menu open;
+  - new keyboard tests cover the skip link, opening rows with Enter, the side nav and the menu.
 - Security: a strict Content Security Policy on every page (scripts only from the site plus the
   one inline script by its hash, no plugins, requests only to the site and Web3Forms), worked out
   at build time (`integrations/security-headers.mjs`) and added as a `<meta>` tag, and a

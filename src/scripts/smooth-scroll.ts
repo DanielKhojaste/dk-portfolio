@@ -56,6 +56,9 @@ export function setupSmoothScroll(
 		history.pushState(null, "", `#${id}`);
 		// Let the menu close (and give scrolling back) first.
 		requestAnimationFrame(() => smoother.scrollTo(target, true, "top top"));
+		// Move keyboard focus there too, so the next Tab carries on from that section.
+		if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+		target.focus({ preventScroll: true });
 	});
 
 	return smoother;

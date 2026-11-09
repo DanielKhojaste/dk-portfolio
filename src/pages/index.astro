@@ -26,12 +26,13 @@ const throneSrcset = await throneAvifSrcset();
 		imagesizes={throneSizes}
 		fetchpriority="high"
 	/>
+	<a class="skip-link" href="#main">Skip to content</a>
 	<Header />
 	<SideNav />
 	<!-- ScrollSmoother moves everything in here; fixed things (header, side nav) stay outside. -->
 	<div id="smooth-wrapper">
 		<div id="smooth-content">
-			<main>
+			<main id="main">
 				<Hero />
 				<About />
 				<Work />
