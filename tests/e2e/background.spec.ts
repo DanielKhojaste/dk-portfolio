@@ -27,7 +27,7 @@ test.describe("background", () => {
 			.evaluateAll((els) => els.map((el) => el.id));
 		expect(ids.slice(-3)).toEqual(["skills", "background", "contact"]);
 		expect(sections.map((s) => s.label)).toEqual([
-			"Intro",
+			"Home",
 			"About",
 			"Projects",
 			"Skills",

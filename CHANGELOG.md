@@ -144,6 +144,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Contact: what I can build is now three services side by side, straight on the page (an icon,
+  the name and its line, with generous gaps), in place of the "Need a site?" card. The services' text
+  is bigger (16px). Copy in `contact.services`.
+- Copy pass across the site, from `notes/site-copy.md`:
+  - About: "I build web apps that are fast, reliable and built to scale."
+  - The side nav and menu call the hero "Home".
+  - Projects: Lineup's summary and points (it works for soccer, volleyball, basketball and other
+    team sports), "In development"; Urlocker Consulting's summary (the full brand and site, and
+    its newsletter) and points; ApotheonAI is a "Concept website" with new points (designed in
+    Figma, built with Astro, TypeScript and Tailwind CSS, a Sanity blog, GSAP and tests); ToDone's
+    points (the Sublime Text format in VS Code, priorities and states, multi-cursor commands, the
+    Outline view and theme-proof colours).
+  - Prompts: "Hover over a project for details" ("Tap a project for details" on touch screens);
+    Background says "an item".
+  - Background: Freelancer "Present" and "Accepting new projects"; Urlocker's design and
+    newsletter; Algonquin's coursework from the transcript.
+  - Search: the description says npm packages instead of editor extensions.
 - My legal name: the footer reads © Aref "Daniel" Khojaste, the search description starts with it,
   and search engines get all three names (Daniel Khojaste, Aref Khojaste, Aref "Daniel" Khojaste)
   as keywords, the author and the person's "also known as" names (`profile.legalName`,

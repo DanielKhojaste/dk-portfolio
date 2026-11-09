@@ -45,7 +45,7 @@ describe("splitHighlights", () => {
 
 	it("reads the About headline from the settings, with its red words", () => {
 		const words = splitHighlights(about.headline);
-		expect(words.filter((w) => w.highlight).map((w) => w.text)).toEqual(["fast", "sharp"]);
+		expect(words.filter((w) => w.highlight).map((w) => w.text)).toEqual(["fast", "reliable"]);
 		expect(words.map((w) => w.text + w.tail).join(" ")).toBe(about.headline.replace(/[[\]]/g, ""));
 	});
 });

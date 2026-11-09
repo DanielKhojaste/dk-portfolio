@@ -44,7 +44,7 @@ export const profile = {
 export const seo = {
 	title: "Daniel Khojaste | Software Developer",
 	description:
-		'Aref "Daniel" Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and editor extensions.',
+		'Aref "Daniel" Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and npm packages.',
 	/**
 	 * The site's address once it's hosted, e.g. "https://danielkhojaste.com" (no trailing slash).
 	 * Until then it's empty, and the canonical link and absolute share-image address are left out.
@@ -52,7 +52,7 @@ export const seo = {
 	url: "",
 	/** The picture shown when the site is shared (in public/), 1200×630. */
 	image: "/og.png",
-	imageAlt: "Daniel Khojaste, software developer: the hero of his portfolio.",
+	imageAlt: "Daniel Khojaste, software developer.",
 	/** Profiles, for search engines' "this person" card. */
 	sameAs: ["https://github.com/DanielKhojaste", "https://www.linkedin.com/in/aref-khojaste/"],
 };
@@ -65,7 +65,7 @@ export const hero = {
 
 /** Page sections, top to bottom. Used by the side nav (desktop) and the menu (phones and tablets). */
 export const sections: readonly LinkItem[] = [
-	{ label: "Intro", href: "#intro" },
+	{ label: "Home", href: "#intro" },
 	{ label: "About", href: "#about" },
 	{ label: "Projects", href: "#projects" },
 	{ label: "Skills", href: "#skills" },
@@ -84,7 +84,7 @@ export const about = {
 	/** Small label above the headline. */
 	eyebrow: "About",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
-	headline: "I build web apps that are [fast], look [sharp] and hold up.",
+	headline: "I build web apps that are [fast], [reliable] and built to scale.",
 	text: "I'm Daniel, a software developer based in Canada. I work across the stack, from the interface you touch to the systems behind it.",
 	facts: [
 		{ label: "Based in", value: profile.location },
@@ -136,20 +136,21 @@ export const work = {
 	headline: "Selected [work]",
 	/** The hint next to the headline, for mouse users and for touch screens. */
 	prompt: {
-		hover: "Hover over an item for more details",
-		click: "Click an item for more details",
+		hover: "Hover over a project for details",
+		click: "Tap a project for details",
 	},
 	projects: [
 		{
 			name: "Lineup",
 			kind: "Desktop app",
-			status: "In progress",
-			summary: "A tactical board for coaches, for planning how a team lines up and moves.",
+			status: "In development",
+			summary:
+				"A tactical board app for coaches to design lineups, animate plays and build session libraries.",
 			features: [
-				"Place players on a pitch and drag them into position",
+				"Drag and drop players on the pitch",
 				"Plan formations, training drills and set plays",
-				"Play a move back step by step to show how it unfolds",
-				"Works offline, with nothing to sign up for",
+				"Animate plays step by step to show how they unfold",
+				"Works for soccer, volleyball, basketball and other team sports",
 			],
 			stack: ["Tauri", "React", "TypeScript", "Rust"],
 			links: [{ label: "GitHub", href: "https://github.com/DanielKhojaste/lineup" }],
@@ -161,12 +162,12 @@ export const work = {
 			kind: "Client website",
 			status: "Live",
 			summary:
-				"The website of an Ontario consultancy that helps craft breweries sell, grow or buy, built for the client (Mar to Jul 2025).",
+				"A complete brand and website for an Ontario consultancy that helps craft breweries sell, grow or buy: I designed the logo and every page, built the site and set up its newsletter.",
 			features: [
 				"Built on Squarespace to the client's brief",
-				"Custom HTML, CSS and JavaScript for the layout, look and behaviour",
-				"Checked on every browser and screen size before each update went live",
-				"SEO best practices, with search performance tracked in Google Search Console",
+				"Wrote custom code to achieve the exact layout and behaviour",
+				"Tested across browsers and devices before each update",
+				"Implemented SEO best practices and monitored search performance in Google Search Console",
 			],
 			stack: ["Squarespace", "HTML", "CSS", "JavaScript", "Google Search Console"],
 			links: [{ label: "Live site", href: "https://www.urlockerconsulting.com/" }],
@@ -176,14 +177,14 @@ export const work = {
 		},
 		{
 			name: "ApotheonAI",
-			kind: "Website",
+			kind: "Concept website",
 			status: "Live",
 			summary: "The website of a made-up AI security company, built as if for a real client.",
 			features: [
-				"Five pages built from reusable parts",
-				"Blog posts published from an editor, no code",
-				"Fits any screen, and works with a keyboard",
-				"Main journeys checked by automated tests",
+				"Designed in Figma, from the brand and type to every responsive layout",
+				"Built with Astro, TypeScript and Tailwind CSS from reusable components",
+				"A blog run from Sanity CMS: posts go live without touching the code",
+				"Animated GSAP menu, keyboard-friendly navigation and end-to-end tests",
 			],
 			stack: ["Astro", "TypeScript", "Tailwind", "Sanity", "GSAP"],
 			links: [
@@ -199,10 +200,10 @@ export const work = {
 			status: "Published",
 			summary: "To-do lists kept as simple text files, right inside the code editor VS Code.",
 			features: [
-				"Write tasks as plain text, with no app or account",
-				"Mark a task urgent, done or cancelled with one shortcut",
-				"Rank tasks by priority and add notes under them",
-				"The same files open in the text editor Sublime Text too",
+				"Brings the Sublime Text ToDone format to VS Code, so the same files open in both",
+				"Five priority levels, plus emergency, done and cancelled states that carry to subtasks",
+				"Keyboard commands that work across multiple cursors and keep your notation",
+				"Tasks in the Outline view and Go to Symbol, in colours that work with any theme",
 			],
 			stack: ["TypeScript", "VS Code"],
 			links: [
@@ -332,8 +333,8 @@ export const backgroundSection = {
 	/** What I'm open to: a line with a pulsing dot under the headline. */
 	availability: ["Open to full-time roles, in Canada or remote"] as readonly string[],
 	prompt: {
-		hover: "Hover over an item for more details",
-		click: "Click an item for more details",
+		hover: "Hover over an item for details",
+		click: "Tap an item for details",
 	},
 	groups: [
 		{
@@ -342,22 +343,23 @@ export const backgroundSection = {
 				{
 					name: "Freelancer",
 					role: "Software developer",
-					when: "Now",
+					when: "Present",
 					summary:
-						"I build websites and web apps for clients, handling everything from design to launch.",
+						"I build websites and web apps for clients and businesses, handling everything from design to launch.",
 					points: [],
-					badge: "Taking on projects",
+					badge: "Accepting new projects",
 				},
 				{
 					name: "Urlocker Consulting",
 					role: "Web Designer & SEO Consultant",
 					when: "Mar – Jul 2025",
-					summary: "Built and maintained the company's public website, and handled its SEO.",
+					summary: "Built and maintained the company's public website, and managed its SEO.",
 					points: [
-						"Built and customized the website on Squarespace, to the client's brief",
+						"Designed the logo, the brand and every page, and built the site on Squarespace",
 						"Wrote custom HTML, CSS and JavaScript for the layout and features",
-						"Checked every change across browsers and screen sizes before it went live",
-						"Applied SEO best practices and tracked search performance in Google Search Console",
+						"Performed cross-browser and responsive testing before every release",
+						"Implemented SEO best practices and monitored search performance with Google Search Console",
+						"Set up a newsletter that grew the client's outreach",
 					],
 				},
 			],
@@ -370,7 +372,7 @@ export const backgroundSection = {
 					role: "College diploma",
 					when: "Jan 2024 – Aug 2025",
 					summary:
-						"Web Development and Internet Applications: front end, back end, databases and testing, with real client projects.",
+						"Web Development and Internet Applications: web programming, web app development, databases, web security and project management, ending with a capstone project.",
 					points: ["Dean's Honours List: Winter 2024, Fall 2024 and Spring 2025"],
 				},
 			],
@@ -396,24 +398,26 @@ export const contact = {
 		"Open to software developer roles",
 		"Available for freelance projects",
 	] as readonly string[],
-	projects: {
-		title: "Need a site?",
-		services: [
+	/** What I can build for you: one entry per service, each with an icon and a line. */
+	services: {
+		label: "What I can build for you",
+		items: [
 			{
 				title: "Websites",
+				icon: "website",
 				text: "A site for your business or project, designed and built from scratch, that looks sharp and loads fast on any screen.",
 			},
 			{
 				title: "Web apps",
+				icon: "web-app",
 				text: "Tools your customers or team log into: booking, dashboards, internal tools. Front end to database.",
 			},
 			{
 				title: "Redesigns",
+				icon: "redesign",
 				text: "An old site brought up to date: a new look, faster pages and better SEO.",
 			},
 		],
-		cta: "Start a project",
-		need: "A website",
 	},
 	form: {
 		/** The "What do you need?" choices; the first is picked to start with. */

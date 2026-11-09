@@ -22,15 +22,25 @@ test.describe("contact", () => {
 		await expect(page.locator("#contact-title")).toHaveAccessibleName(
 			contact.headline.replace(/[[\]]/g, ""),
 		);
-		await expect(page.locator("#contact h3")).toHaveText([contact.projects.title]);
+		// What I can build: a heading per service, straight on the page (no card around them).
+		await expect(page.locator("#contact h3")).toHaveText(
+			contact.services.items.map((o) => o.title),
+		);
+		const offer = page.locator("#contact .contact__offer").first();
+		expect(await offer.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("none");
+		expect(await offer.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+			"rgba(0, 0, 0, 0)",
+		);
 		// What I'm open to, under the headline: one line each, with a dot.
 		const open = page.locator("#contact .availability li");
 		await expect(open).toHaveText([...contact.availability]);
 		await expect(page.locator("#contact .availability__dot")).toHaveCount(
 			contact.availability.length,
 		);
-		for (const s of contact.projects.services) {
-			await expect(page.locator("#contact .contact__service", { hasText: s.title })).toBeVisible();
+		for (const s of contact.services.items) {
+			await expect(
+				page.locator("#contact .contact__offer", { hasText: s.title }).locator("svg").first(),
+			).toBeVisible();
 		}
 		await expect(page.locator('#contact input[name="need"]')).toHaveCount(
 			contact.form.needs.length,
@@ -50,22 +60,6 @@ test.describe("contact", () => {
 		await expect(links.filter({ hasText: "Email" })).not.toHaveAttribute("target", /.*/);
 		await expect(links.filter({ hasText: "GitHub" })).toHaveAttribute("target", "_blank");
 		await expect(page.locator("#contact")).not.toContainText(contact.email);
-	});
-
-	test("the card's button picks its choice in the form and takes you there", async ({ page }) => {
-		await page.goto("/");
-		await page.locator("#contact").scrollIntoViewIfNeeded();
-		const checked = () => page.locator('#contact input[name="need"]:checked');
-		// Pick something else first, so the button has something to change.
-		await page.locator("#contact-form").getByText("Something else").click();
-		await expect(checked()).toHaveValue("Something else");
-
-		await expect(async () => {
-			await page.getByRole("link", { name: contact.projects.cta }).click();
-			await expect(checked()).toHaveValue(contact.projects.need, { timeout: 500 });
-		}).toPass();
-		await expect(page.locator("#contact-form")).toBeInViewport();
-		await expect(page.locator('#contact input[name="name"]')).toBeFocused({ timeout: 3000 });
 	});
 
 	test("sending posts nothing for real: it either sends (faked here) or opens the email app", async ({

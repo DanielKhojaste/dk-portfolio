@@ -278,7 +278,7 @@ test.describe("menu", () => {
 		await expect(button).toHaveAttribute("aria-expanded", "true");
 		await expect(button).toHaveAccessibleName("Close menu");
 		await expect(menu).toBeVisible();
-		await expect(menu.getByRole("link", { name: "Intro", exact: true })).toBeFocused();
+		await expect(menu.getByRole("link", { name: "Home", exact: true })).toBeFocused();
 		expect(await page.locator("#smooth-wrapper").evaluate((el) => (el as HTMLElement).inert)).toBe(
 			true,
 		);
@@ -352,10 +352,7 @@ test.describe("menu", () => {
 		await expect(flow.locator("canvas[data-divine-flow-canvas]")).toHaveCount(1);
 		// The menu's own focus on open doesn't light up the first link for mouse users.
 		await expect(
-			page
-				.locator("#site-menu")
-				.getByRole("link", { name: "Intro", exact: true })
-				.locator("canvas"),
+			page.locator("#site-menu").getByRole("link", { name: "Home", exact: true }).locator("canvas"),
 		).toHaveCount(0);
 	});
 

@@ -51,7 +51,7 @@ test.describe("about", () => {
 		await expect(
 			section.getByRole("heading", { level: 2, name: about.headline.replace(/[[\]]/g, "") }),
 		).toBeVisible();
-		await expect(section.locator("[data-fill]")).toHaveText(["fast", "sharp"]);
+		await expect(section.locator("[data-fill]")).toHaveText(["fast", "reliable"]);
 		await expect(section.locator("[data-fill]").first()).toHaveAttribute("aria-hidden", "true");
 		await expect(section).toContainText("Canada");
 		await expect(section).not.toContainText("Ottawa");

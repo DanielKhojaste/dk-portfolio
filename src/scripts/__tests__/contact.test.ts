@@ -179,11 +179,6 @@ describe("setupPicks", () => {
 		expect(checked()).toBe("A website");
 		vi.useRealTimers();
 	});
-
-	it("each card's choice is one of the form's", () => {
-		expect(contact.form.needs).toContain("A full-time role");
-		expect(contact.form.needs).toContain(contact.projects.need);
-	});
 });
 
 describe("safety", () => {
