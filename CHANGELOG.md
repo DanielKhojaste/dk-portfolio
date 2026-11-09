@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-09
+
+The portfolio goes live: every section (Projects, Skills, Background and Contact join the hero and
+About), the working contact form, a security policy, accessibility and speed checks in CI, and
+Cloudflare hosting.
+
 ### Added
 
 - README titled "Daniel's Portfolio", showing the desktop home page with a button to a screenshot gallery
@@ -264,5 +270,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SVG favicon from the DK logo.
 - Unit tests for the site's client scripts (Vitest) and end-to-end tests for the hero, header and menu.
 
-[Unreleased]: https://github.com/DanielKhojaste/dk-portfolio/compare/v0.1.0-alpha.1...dev
+[Unreleased]: https://github.com/DanielKhojaste/dk-portfolio/compare/v1.0.0...dev
+[1.0.0]: https://github.com/DanielKhojaste/dk-portfolio/compare/v0.1.0-alpha.1...v1.0.0
 [0.1.0-alpha.1]: https://github.com/DanielKhojaste/dk-portfolio/releases/tag/v0.1.0-alpha.1
