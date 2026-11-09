@@ -1,0 +1,10 @@
+// Cloudflare: serves the built site (dist) as static assets on Workers. Cloudflare builds it from
+// GitHub with `npm run build`, then deploys with `npx wrangler deploy`, which reads this file.
+// dist/_headers (written by integrations/security-headers.mjs) adds the security headers.
+{
+	"name": "dk-portfolio",
+	"compatibility_date": "2026-11-01",
+	"assets": {
+		"directory": "./dist",
+	},
+}
