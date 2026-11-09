@@ -144,6 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The contact form has more room between its fields, and the Send button sits a little lower,
+  clear of the message field.
 - The Projects and Background prompts read "Hover over an item for more details" ("Click an item
   for more details" on touch screens), and the red stars beside their points are centred on the
   first line of each point.

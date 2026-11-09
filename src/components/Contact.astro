@@ -371,20 +371,20 @@ const links = contact.links.filter((l) => l.href);
 	}
 
 	.contact__form--compact {
-		gap: 14px;
+		gap: 24px;
 	}
 
 	.contact__form-row {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 16px;
+		gap: 24px 20px;
 	}
 
 	.contact__form-field,
 	.contact__form-needs {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 10px;
 		margin: 0;
 		padding: 0;
 		border: 0;
@@ -531,11 +531,13 @@ const links = contact.links.filter((l) => l.href);
 		opacity: 0;
 	}
 
+	/* Some room between the message field and the Send button. */
 	.contact__form-end {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 12px 20px;
+		margin-top: 10px;
 	}
 
 	.contact__form-status {
