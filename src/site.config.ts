@@ -161,8 +161,7 @@ export const work = {
 			name: "Urlocker Consulting",
 			kind: "Client website",
 			status: "Live",
-			summary:
-				"A complete brand and website for an Ontario consultancy that helps craft breweries sell, grow or buy: I designed the logo and every page, built the site and set up its newsletter.",
+			summary: "Designed and built the site for an Ontario craft brewery consultant.",
 			features: [
 				"Built on Squarespace to the client's brief",
 				"Wrote custom code to achieve the exact layout and behaviour",
