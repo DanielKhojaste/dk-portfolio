@@ -25,3 +25,17 @@ test.describe("smoke", () => {
 		expect(fontsLoaded).toBe(true);
 	});
 });
+
+test("serves the tab icon and the app icons", async ({ page, request }) => {
+	await page.goto("/");
+	for (const [rel, href, type] of [
+		["icon", "/favicon.svg", "image/svg+xml"],
+		["icon", "/favicon-32.png", "image/png"],
+		["apple-touch-icon", "/apple-touch-icon.png", "image/png"],
+	]) {
+		await expect(page.locator(`link[rel="${rel}"][href="${href}"]`)).toHaveCount(1);
+		const response = await request.get(href!);
+		expect(response.ok(), href).toBe(true);
+		expect(response.headers()["content-type"]).toContain(type);
+	}
+});

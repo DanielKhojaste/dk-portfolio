@@ -61,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   big outlined type with the role and dates beside it; hovering (or tapping) opens the details
   underneath and fills the name, and clicking keeps it open. Copy in `site.config.ts`
   (`backgroundSection`, `animation.backgroundSection`). The side nav and menu list it.
+- Icons made from the DK signature and the main colour, so they follow `brand`: a clear tab icon
+  (white on dark tabs, the main colour on light ones, sized to read at 16 px), a 32 px PNG for
+  browsers without SVG icons, and a 180 px home-screen icon for Apple devices
+  (`scripts/favicon.ts`, built by the `favicon.svg`, `favicon-32.png` and `apple-touch-icon.png`
+  pages).
 - Accessibility:
   - a "Skip to content" link, the first thing Tab reaches;
   - closed project and background rows are out of reach until opened, so Tab never lands on a
