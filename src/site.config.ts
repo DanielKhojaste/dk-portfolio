@@ -330,7 +330,7 @@ export const backgroundSection = {
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "How I [got] here",
 	/** What I'm open to: a line with a pulsing dot under the headline. */
-	availability: ["Open to full-time roles"] as readonly string[],
+	availability: ["Open to full-time roles, in Canada or remote"] as readonly string[],
 	prompt: {
 		hover: "Hover over an item for more details",
 		click: "Click an item for more details",
@@ -393,7 +393,7 @@ export const contact = {
 	] as readonly LinkItem[],
 	/** What I'm open to: lines with a pulsing dot under the headline. */
 	availability: [
-		"Open to full-time software developer roles, in Canada or remote",
+		"Open to software developer roles",
 		"Available for freelance projects",
 	] as readonly string[],
 	projects: {

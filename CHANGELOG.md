@@ -149,9 +149,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as keywords, the author and the person's "also known as" names (`profile.legalName`,
   `profile.fullName`, `profile.searchNames`).
 - Contact no longer has the "Hiring?" card. Under its headline, now "Let's work together", two
-  lines with a pulsing dot say what I'm open to: full-time software developer roles (in Canada or
-  remote) and freelance projects. Background says "Open to full-time roles" the same way, under its
-  headline (`components/Availability.astro`; the lines are `availability` in `contact` and
+  short lines with a pulsing dot say what I'm open to: "Open to software developer roles" and
+  "Available for freelance projects". Background says "Open to full-time roles, in Canada or
+  remote" the same way, under its headline (`components/Availability.astro`; the lines are `availability` in `contact` and
   `backgroundSection`). "Need a site?" now spans the full width.
 - Phones and tablets: the menu's section names shrink to fit the screen, so the longest
   ("Background") is never cut off; and the DK logo tucks away while you scroll down, so it no longer
