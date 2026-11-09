@@ -61,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   big outlined type with the role and dates beside it; hovering (or tapping) opens the details
   underneath and fills the name, and clicking keeps it open. Copy in `site.config.ts`
   (`backgroundSection`, `animation.backgroundSection`). The side nav and menu list it.
+- A Lighthouse budget in CI (`lighthouserc.json`, a `lighthouse` job, `npm run lighthouse` locally):
+  three runs on the built page fail the build if performance drops under 80, accessibility under
+  95, best practices or SEO under 95, the largest paint passes 4 s, layout shifts pass 0.1 or
+  blocking time passes 300 ms. Reports are kept as a CI artifact. Today: 89 / 96 / 100 / 100.
 - Icons made from the DK signature and the main colour, so they follow `brand`: a clear tab icon
   (white on dark tabs, the main colour on light ones, sized to read at 16 px), a 32 px PNG for
   browsers without SVG icons, and a 180 px home-screen icon for Apple devices

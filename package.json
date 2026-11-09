@@ -15,6 +15,7 @@
 		"test": "npm run test:unit && npm run test:e2e",
 		"test:unit": "vitest run",
 		"test:e2e": "playwright test",
+		"lighthouse": "npm run build && npx -y @lhci/cli@0.15.1 autorun",
 		"format": "prettier --write .",
 		"format:check": "prettier --check ."
 	},
