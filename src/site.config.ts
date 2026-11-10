@@ -49,7 +49,7 @@ export const seo = {
 	 * The site's address (no trailing slash): the canonical link and the absolute share-image
 	 * address. Empty leaves both out. The same address is the Website URL in Web3Forms.
 	 */
-	url: "",
+	url: "https://www.danielkhojaste.com",
 	/** The picture shown when the site is shared (in public/), 1200×630. */
 	image: "/og.png",
 	imageAlt: "Daniel Khojaste, software developer.",
