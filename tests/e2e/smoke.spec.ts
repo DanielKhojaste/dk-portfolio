@@ -24,6 +24,24 @@ test.describe("smoke", () => {
 		const fontsLoaded = await page.evaluate(() => document.fonts.check('16px "Inter Variable"'));
 		expect(fontsLoaded).toBe(true);
 	});
+
+	test("every colour and timing from site.config.ts wins over the stylesheet's defaults", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const wrong = await page.evaluate(() => {
+			const config = [...document.querySelectorAll("style")]
+				.map((s) => s.textContent ?? "")
+				.find((t) => t.startsWith(":root:root{"))!;
+			const root = getComputedStyle(document.documentElement);
+			return config
+				.slice(":root:root{".length, -1)
+				.split(";")
+				.map((kv) => [kv.slice(0, kv.indexOf(":")), kv.slice(kv.indexOf(":") + 1)])
+				.filter(([k, v]) => root.getPropertyValue(k!).trim() !== v!.trim());
+		});
+		expect(wrong).toEqual([]);
+	});
 });
 
 test("serves the tab icon and the app icons", async ({ page, request }) => {

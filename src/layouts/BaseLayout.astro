@@ -73,11 +73,13 @@ const timings = {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		{
 			/* The colours and timings from site.config.ts, for every component's styles. In a style
-		    block rather than on <html>, so the charset above stays in the first bytes of the page. */
+		    block rather than on <html>, so the charset above stays in the first bytes of the page.
+		    ":root:root" outranks the defaults in global.css (plain :root, loaded later), so whatever
+		    site.config.ts says always wins. */
 		}
 		<style
 			is:inline
-			set:html={`:root{${Object.entries({ ...shadeVariables(shades), ...timings })
+			set:html={`:root:root{${Object.entries({ ...shadeVariables(shades), ...timings })
 				.map(([k, v]) => `${k}:${v}`)
 				.join(";")}}`}
 		></style>

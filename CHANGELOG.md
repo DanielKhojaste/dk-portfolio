@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Colours and timings set in `site.config.ts` now always win over the stylesheet's defaults. The
+  hero photo filter, for one, was being reset to none (BaseLayout's `:root:root`).
+
 ### Changed
 
+- Skills: a hovered logo's name shows beside its row, left of the logos and level with them, and it
+  always stays fully on screen (`skills.captionAt`: "beside", "under" or "above"; `placeCaption` in
+  `scripts/skills.ts`). The logos there no longer pop up the browser's tooltip as well; screen
+  readers still get each name.
 - Phones and tablets: the DK logo only shows in the hero; further down it stays hidden whichever way
   you scroll. The menu button hides as you scroll down past the hero and comes back as soon as you
   scroll up, and always shows while the menu is open (`scripts/header-hide.ts`, which replaces
