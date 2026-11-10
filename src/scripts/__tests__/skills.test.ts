@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { skills, work } from "../../site.config";
 
 let setupFilter: typeof import("../skills").setupFilter;
+let placeCaption: typeof import("../skills").placeCaption;
 
 beforeAll(async () => {
 	// GSAP's ScrollTrigger asks for matchMedia when it loads; jsdom doesn't have it.
@@ -15,7 +16,7 @@ beforeAll(async () => {
 		addListener() {},
 		removeListener() {},
 	})) as unknown as typeof window.matchMedia;
-	({ setupFilter } = await import("../skills"));
+	({ setupFilter, placeCaption } = await import("../skills"));
 });
 
 function section() {
@@ -103,5 +104,56 @@ describe("Skills settings", () => {
 			expect(match, s.name).not.toBeNull();
 			expect(files).toContain(`${match![1]}.svg`);
 		}
+	});
+});
+
+describe("placeCaption", () => {
+	const view = { width: 1000, height: 800 };
+	const caption = { width: 100, height: 20 };
+	const logos = { left: 600, top: 300, right: 980, bottom: 330 };
+	const name = { left: 100, top: 300, right: 400, bottom: 340 };
+	const logoAt = (left: number, top = 300) => ({ left, top, right: left + 26, bottom: top + 26 });
+
+	it("centres the name right under the logo", () => {
+		const p = placeCaption("under", { logo: logoAt(700), logos, name, caption, view });
+		expect(p).toEqual({ left: 713 - 50 - 600, top: 326 + 8 - 300, at: "under" });
+	});
+
+	it("centres the name right over the logo", () => {
+		const p = placeCaption("above", { logo: logoAt(700), logos, name, caption, view });
+		expect(p).toEqual({ left: 63, top: 300 - 8 - 20 - 300, at: "above" });
+	});
+
+	it("never runs off the left or right of the window", () => {
+		const right = placeCaption("under", { logo: logoAt(960), logos, name, caption, view });
+		expect(right.left + logos.left + caption.width).toBe(view.width - 8);
+		const left = placeCaption("under", {
+			logo: logoAt(0),
+			logos: { ...logos, left: 0 },
+			name: null,
+			caption,
+			view,
+		});
+		expect(left.left).toBe(8);
+	});
+
+	it("flips over or under when there's no room at the bottom or top", () => {
+		const low = placeCaption("under", { logo: logoAt(700, 770), logos, name, caption, view });
+		expect(low.at).toBe("above");
+		const high = placeCaption("above", { logo: logoAt(700, 10), logos, name, caption, view });
+		expect(high.at).toBe("under");
+	});
+
+	it("sits beside the row's logos when it fits, and falls back to under when it doesn't", () => {
+		const beside = placeCaption("beside", { logo: logoAt(700), logos, name, caption, view });
+		expect(beside).toEqual({ left: -16 - 100, top: 15 - 10, at: "beside" });
+		const tight = placeCaption("beside", {
+			logo: logoAt(700),
+			logos,
+			name: { ...name, right: 560 },
+			caption,
+			view,
+		});
+		expect(tight.at).toBe("under");
 	});
 });

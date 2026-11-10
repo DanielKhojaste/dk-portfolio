@@ -10,6 +10,7 @@
  */
 import type { DivineFlowOptions, DivineFlowPalette, RGB } from "./lib/divine-flow";
 import { brandFlow, brandShades, type Shades } from "./scripts/brand";
+import type { CaptionAt } from "./scripts/skills";
 import { dkLogoPens } from "./assets/brand/dk-logo-pens";
 
 /* ------------------------------------------------------------------------------------------------
@@ -235,6 +236,11 @@ export const skills = {
 	headline: "What I [build] with",
 	/** The filter: every project in the Work section, plus this site ("Portfolio"). */
 	projects: [...work.projects.map((p) => p.name), "Portfolio"] as readonly string[],
+	/**
+	 * Where a hovered logo's name shows: "under" (right under the logo), "above" (right over it) or
+	 * "beside" (left of the row's logos, level with the row). It always stays on screen.
+	 */
+	captionAt: "beside" as CaptionAt,
 	groups: [
 		{
 			title: "Languages",

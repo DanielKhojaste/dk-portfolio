@@ -153,4 +153,40 @@ test.describe("skills", () => {
 				.evaluate((el) => getComputedStyle(el).fontSize);
 		expect(await size("#skills .skills__name")).toBe(await size("#projects .work__name"));
 	});
+
+	test("a hovered logo's name is always fully on screen, wherever it's set to show", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "needs a mouse");
+		for (const size of [
+			{ width: 1440, height: 900 },
+			{ width: 1024, height: 700 },
+		]) {
+			await page.setViewportSize(size);
+			await page.goto("/");
+			await page.locator("#skills [data-skill-row]").last().scrollIntoViewIfNeeded();
+			await page.waitForTimeout(1500);
+			for (const at of ["under", "above", "beside"]) {
+				await page.locator("#skills").evaluate((el, at) => (el.dataset.captionAt = at), at);
+				const rows = page.locator("#skills [data-skill-row]");
+				for (let i = 0; i < (await rows.count()); i++) {
+					for (const logo of [
+						rows.nth(i).locator("[data-skill]").first(),
+						rows.nth(i).locator("[data-skill]").last(),
+					]) {
+						await page.mouse.move(0, 0);
+						await logo.hover();
+						const caption = rows.nth(i).locator("[data-caption].is-shown");
+						await expect(caption).toHaveText((await logo.getAttribute("data-skill"))!);
+						const box = (await caption.boundingBox())!;
+						const where = `${at}, ${size.width}px, ${await logo.getAttribute("data-skill")}`;
+						expect(box.x, where).toBeGreaterThanOrEqual(0);
+						expect(box.x + box.width, where).toBeLessThanOrEqual(size.width);
+						expect(box.y, where).toBeGreaterThanOrEqual(0);
+						expect(box.y + box.height, where).toBeLessThanOrEqual(size.height);
+					}
+				}
+			}
+		}
+	});
 });
