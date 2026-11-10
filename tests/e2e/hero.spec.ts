@@ -390,12 +390,14 @@ test.describe("header", () => {
 		expect(rect!.height).toBeGreaterThanOrEqual(44);
 	});
 
-	test("keeps the menu button on screen after scrolling down", async ({ page }) => {
+	test("brings the menu button back on screen when you scroll up a little", async ({ page }) => {
 		await page.goto("/");
 		await useMenuLayout(page);
 		await page.locator("#contact").scrollIntoViewIfNeeded();
 		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
 		const button = page.getByRole("button", { name: "Open menu" });
+		await expect(button).toBeHidden();
+		await page.evaluate(() => scrollBy(0, -200));
 		await expect(button).toBeInViewport();
 		await button.click();
 		await expect(page.locator("#site-menu")).toBeVisible();

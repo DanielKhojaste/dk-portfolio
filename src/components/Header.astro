@@ -55,12 +55,14 @@ const underline = animation.logoUnderline.style !== "off";
 	import { animation } from "../site.config";
 	import { drawLogos } from "../scripts/logo-draw";
 	import { setupMenu } from "../scripts/menu";
-	import { setupLogoHide } from "../scripts/logo-hide";
+	import { setupHeaderHide } from "../scripts/header-hide";
 
 	drawLogos(document, animation.logo);
 	setupMenu();
-	const home = document.querySelector<HTMLElement>(".site-header__home");
-	if (home) setupLogoHide(home);
+	const logo = document.querySelector<HTMLElement>(".site-header__home");
+	const button = document.querySelector<HTMLElement>("[data-menu-button]");
+	const hero = document.querySelector<HTMLElement>("#intro");
+	if (logo && button && hero) setupHeaderHide({ logo, button, hero });
 </script>
 
 <style>
@@ -99,9 +101,11 @@ const underline = animation.logoUnderline.style !== "off";
 			visibility 0s linear 0s;
 	}
 
-	/* Phones and tablets, scrolling down: tucked away so it doesn't sit on the text
-	   (scripts/logo-hide.ts). Scrolling up brings it back. */
-	.site-header__home:global(.is-tucked) {
+	/* Phones and tablets, past the hero: tucked away so it doesn't sit on the text
+	   (scripts/header-hide.ts). The logo comes back in the hero; the menu button also comes back
+	   when you scroll up. */
+	.site-header__home:global(.is-tucked),
+	.menu-button:global(.is-tucked) {
 		opacity: 0;
 		translate: 0 -14px;
 		visibility: hidden;
@@ -141,7 +145,10 @@ const underline = animation.logoUnderline.style !== "off";
 		cursor: pointer;
 		transition:
 			border-color var(--hover-duration) var(--ease-out),
-			background-color var(--hover-duration) var(--ease-out);
+			background-color var(--hover-duration) var(--ease-out),
+			opacity 0.35s var(--ease-out),
+			translate 0.35s var(--ease-out),
+			visibility 0s linear 0s;
 	}
 
 	/* Desktop has the side nav instead (same breakpoint as components/SideNav.astro). */

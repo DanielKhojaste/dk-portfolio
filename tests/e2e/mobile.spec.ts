@@ -21,20 +21,26 @@ test.describe("phones", () => {
 		}
 	});
 
-	test("the logo tucks away scrolling down and comes back scrolling up", async ({ page }, info) => {
+	test("past the hero the logo stays hidden, and the menu button only comes back scrolling up", async ({
+		page,
+	}, info) => {
 		test.skip(info.project.name !== "mobile", "only on phones and tablets");
 		await page.goto("/");
 		const logo = page.getByRole("link", { name: "Daniel Khojaste, home" });
+		const button = page.locator("[data-menu-button]");
 		await expect(logo).toBeVisible();
-		await page.evaluate(() => scrollTo(0, 1600));
+		await expect(button).toBeVisible();
+		await page.evaluate(() => scrollTo(0, 2400));
 		await expect(logo).toBeHidden();
-		await page.evaluate(() => scrollTo(0, 1200));
-		await expect(logo).toBeVisible();
+		await expect(button).toBeHidden();
+		// Scrolling up a little: the menu button comes back, the logo doesn't.
+		await page.evaluate(() => scrollTo(0, 2000));
+		await expect(button).toBeVisible();
+		await expect(logo).toBeHidden();
+		// Back in the hero, both show.
 		await page.evaluate(() => scrollTo(0, 0));
 		await expect(logo).toBeVisible();
-		// The menu button never hides.
-		await page.evaluate(() => scrollTo(0, 2400));
-		await expect(page.locator("[data-menu-button]")).toBeVisible();
+		await expect(button).toBeVisible();
 	});
 
 	test("on desktop the logo always stays", async ({ page }, info) => {
