@@ -8,6 +8,7 @@ import {
 	ORIGINAL_RED,
 	follow,
 	hex,
+	darkenFilter,
 	photoFilter,
 	shadeVariables,
 } from "../brand";
@@ -77,5 +78,21 @@ describe("brand colours", () => {
 		const turn = Number(blue.match(/hue-rotate\((-?[\d.]+)deg/)![1]);
 		expect(Math.abs(turn)).toBeLessThanOrEqual(180);
 		expect(photoFilter([128, 128, 128])).toContain("saturate(0)");
+	});
+});
+
+describe("darkenFilter", () => {
+	it("leaves the filter alone at 0, and adds brightness otherwise", () => {
+		expect(darkenFilter("none", 0)).toBe("none");
+		expect(darkenFilter("none", 0.1)).toBe("brightness(0.9)");
+		expect(darkenFilter("none", 0.05)).toBe("brightness(0.95)");
+		expect(darkenFilter("hue-rotate(10deg) saturate(1.2)", 0.3)).toBe(
+			"hue-rotate(10deg) saturate(1.2) brightness(0.7)",
+		);
+	});
+
+	it("keeps the amount sensible", () => {
+		expect(darkenFilter("none", -1)).toBe("none");
+		expect(darkenFilter("none", 2)).toBe("brightness(0.1)");
 	});
 });

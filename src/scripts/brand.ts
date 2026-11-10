@@ -131,6 +131,17 @@ export function photoFilter(brand: RGB): string {
 	return `hue-rotate(${turn}deg) saturate(${saturate})`;
 }
 
+/**
+ * Adds darkening to a photo filter: `darken` 0.1 is 10% darker (brightness 0.9). Kept between 0 and
+ * 0.9; 0 leaves the filter as it is.
+ */
+export function darkenFilter(filter: string, darken: number): string {
+	const amount = Math.min(Math.max(darken, 0), 0.9);
+	if (amount === 0) return filter;
+	const brightness = `brightness(${Math.round((1 - amount) * 100) / 100})`;
+	return filter === "none" ? brightness : `${filter} ${brightness}`;
+}
+
 /** "r g b", for CSS like `rgb(var(--brand-bright) / 0.5)`. */
 export const channels = ([r, g, b]: RGB) => `${r} ${g} ${b}`;
 

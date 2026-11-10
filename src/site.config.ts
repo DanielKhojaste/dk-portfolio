@@ -62,6 +62,11 @@ export const seo = {
 export const hero = {
 	/** The prompt that fades in at the bottom of the hero after a few seconds. */
 	scrollHint: "Scroll to see more",
+	/**
+	 * How much darker the throne photo is: 0 is the original, 0.05 is 5% darker, 0.1 is 10%, up to
+	 * 0.5 for half as bright. Try 0.05, 0.1, 0.2, 0.3, 0.4 or 0.5.
+	 */
+	photoDarken: 0,
 };
 
 /** Page sections, top to bottom. Used by the side nav (desktop) and the menu (phones and tablets). */
