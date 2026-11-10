@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Hero: the throne photo is 5% darker (`hero.photoDarken`, from 0 for the original up to 0.9).
+- Menu (phones and tablets): `menu.align` sets the section names centred (as now) or left-aligned,
+  lined up with the logo.
 - Skills: a hovered logo's name shows beside its row, left of the logos and level with them, and it
   always stays fully on screen (`skills.captionAt`: "beside", "under" or "above"; `placeCaption` in
   `scripts/skills.ts`). The logos there no longer pop up the browser's tooltip as well; screen
