@@ -79,6 +79,12 @@ export const sections: readonly LinkItem[] = [
 	{ label: "Contact", href: "#contact" },
 ];
 
+/** The full-screen menu on phones and tablets. */
+export const menu = {
+	/** The section names: "left" (lined up with the logo) or "center". */
+	align: "left" as "left" | "center",
+};
+
 /** The section list down the left on desktop. */
 export const sideNav = {
 	/** Shown before each label; the current section's glows. Set to "" to drop it. */

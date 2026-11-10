@@ -7,7 +7,7 @@
  * Open/close animations are CSS transitions on opacity/transform only, so the compositor runs them
  * even when the main thread is busy.
  */
-import { colors, menuUnderlineFlow, sections } from "../site.config";
+import { colors, menu, menuUnderlineFlow, sections } from "../site.config";
 import { underlineHeight, underlineOptions } from "../scripts/underline-options";
 import DivineFlow from "./DivineFlow.astro";
 
@@ -30,6 +30,7 @@ const longest = Math.max(...sections.map((s) => s.label.length));
 	aria-modal="true"
 	aria-label="Menu"
 	data-menu
+	data-align={menu.align}
 	style={`--rule-h: ${ruleHeight}px; --menu-longest: ${longest}`}
 >
 	<div class="menu__glow" aria-hidden="true"></div>
@@ -185,6 +186,17 @@ const longest = Math.max(...sections.map((s) => s.label.length));
 		pointer-events: none;
 		-webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
 		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+	}
+
+	/* Left-aligned (menu.align in site.config.ts): the names line up with the logo, and the
+	   underline still runs out a little past the start of the word. */
+	.menu[data-align="left"] .menu__list,
+	.menu[data-align="left"] .menu__link {
+		align-items: flex-start;
+	}
+
+	.menu[data-align="left"] .menu__rule {
+		margin-left: -40px;
 	}
 
 	/* Phones: as big as fits. A letter of this type is about 1em wide, so the longest name
