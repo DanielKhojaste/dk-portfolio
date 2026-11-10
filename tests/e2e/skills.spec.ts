@@ -189,4 +189,14 @@ test.describe("skills", () => {
 			}
 		}
 	});
+
+	test("the logos name themselves for screen readers, but don't pop up the browser's tooltip", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		const logos = page.locator("#skills [data-skill]");
+		expect(await logos.count()).toBeGreaterThan(0);
+		await expect(page.locator("#skills [data-skill][title]")).toHaveCount(0);
+		await expect(logos.first()).toHaveAttribute("aria-label", /.+/);
+	});
 });

@@ -1,7 +1,7 @@
 ---
 /**
- * A tool's logo (an SVG in src/assets/tech), in the current text colour, with its name as a tooltip
- * and for screen readers. Tools without a logo there show their name as small text instead.
+ * A tool's logo (an SVG in src/assets/tech), in the current text colour, with its name for screen
+ * readers and, unless `tooltip` is false, as a tooltip. Tools without a logo there show their name as small text instead.
  */
 const files = import.meta.glob<string>("../assets/tech/*.svg", {
 	query: "?raw",
@@ -60,11 +60,13 @@ interface Props {
 	/** Logo size in px. */
 	size?: number;
 	class?: string;
+	/** Show the name as the browser's tooltip on hover. Off where the page names the logo itself. */
+	tooltip?: boolean;
 	/** Extra attributes for the wrapper (data-*, tabindex). */
 	[attr: string]: unknown;
 }
 
-const { name, size = 18, class: className, ...rest } = Astro.props;
+const { name, size = 18, class: className, tooltip = true, ...rest } = Astro.props;
 const svg = TECH[name] ? files[`../assets/tech/${TECH[name]}.svg`] : undefined;
 // Only the shapes and the viewBox: the title and role come from the wrapper, so the name isn't read
 // twice, and the colour comes from the text (any fill in the file is dropped).
@@ -76,7 +78,7 @@ const viewBox = svg?.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 24 24";
 	paths.length ? (
 		<span
 			class:list={["tech", className]}
-			title={name}
+			title={tooltip ? name : undefined}
 			role="img"
 			aria-label={name}
 			style={`--tech-size: ${size}px`}
