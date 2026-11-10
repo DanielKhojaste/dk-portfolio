@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Phones and tablets: the DK logo only shows in the hero; further down it stays hidden whichever way
+  you scroll. The menu button hides as you scroll down past the hero and comes back as soon as you
+  scroll up, and always shows while the menu is open (`scripts/header-hide.ts`, which replaces
+  `logo-hide.ts`). Tall tablets in the menu-button layout get it too.
+- Background: no availability line under the headline; "Open to software developer roles" stays
+  under the Contact headline.
+- `seo.url` is `https://www.danielkhojaste.com`, so the page has a canonical link and an absolute
+  share-image address.
 - README: new screenshots of the whole site, a table of the sections, an "Under the hood" list (one
   config file, contact form, security, accessibility, speed, search), the `lighthouse` script, an
   updated project layout and a Hosting section for Cloudflare Workers.

@@ -43,9 +43,8 @@ test.describe("background", () => {
 	test("has Experience and Education, each with its places as rows", async ({ page }) => {
 		await page.goto("/");
 		await expect(page.locator("#background h3")).toHaveText(["Experience", "Education"]);
-		await expect(page.locator("#background .availability li")).toHaveText([
-			...background.availability,
-		]);
+		// No availability line here: it's under the Contact headline.
+		await expect(page.locator("#background .availability")).toHaveCount(0);
 		await expect(rows(page)).toHaveCount(entries.length);
 		for (const [i, entry] of entries.entries()) {
 			const row = rows(page).nth(i);

@@ -46,8 +46,8 @@ export const seo = {
 	description:
 		'Aref "Daniel" Khojaste is a full-stack software developer in Canada, building web apps, desktop tools and npm packages.',
 	/**
-	 * The site's address once it's hosted, e.g. "https://danielkhojaste.com" (no trailing slash).
-	 * Until then it's empty, and the canonical link and absolute share-image address are left out.
+	 * The site's address (no trailing slash): the canonical link and the absolute share-image
+	 * address. Empty leaves both out. The same address is the Website URL in Web3Forms.
 	 */
 	url: "",
 	/** The picture shown when the site is shared (in public/), 1200×630. */
@@ -329,8 +329,6 @@ export const backgroundSection = {
 	eyebrow: "Background",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
 	headline: "How I [got] here",
-	/** What I'm open to: a line with a pulsing dot under the headline. */
-	availability: ["Open to full-time roles, in Canada or remote"] as readonly string[],
 	prompt: {
 		hover: "Hover over an item for details",
 		click: "Tap an item for details",

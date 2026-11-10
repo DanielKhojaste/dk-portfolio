@@ -8,7 +8,6 @@
  */
 import { backgroundSection as background } from "../site.config";
 import { splitHighlights } from "../scripts/highlights";
-import Availability from "./Availability.astro";
 
 const words = splitHighlights(background.headline);
 const headline = background.headline.replace(/[[\]]/g, "");
@@ -43,7 +42,6 @@ const groups = background.groups.map((group) => ({
 						)
 					}
 				</h2>
-				<Availability items={background.availability} />
 			</div>
 			<p class="bg__prompt">
 				<span class="bg__prompt-hover">{background.prompt.hover}</span>
