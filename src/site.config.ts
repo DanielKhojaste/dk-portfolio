@@ -81,8 +81,8 @@ export const sections: readonly LinkItem[] = [
 
 /** The full-screen menu on phones and tablets. */
 export const menu = {
-	/** The section names: "left" (lined up with the logo) or "center". */
-	align: "left" as "left" | "center",
+	/** The section names: "center" or "left" (lined up with the logo). */
+	align: "center" as "left" | "center",
 };
 
 /** The section list down the left on desktop. */
