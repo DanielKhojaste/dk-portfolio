@@ -53,7 +53,7 @@ export const seo = {
 	url: "https://www.danielkhojaste.com",
 	/** The picture shown when the site is shared (in public/), 1200×630. */
 	image: "/og.png",
-	imageAlt: "Daniel Khojaste, software developer.",
+	imageAlt: 'Aref "Daniel" Khojaste, software developer.',
 	/** Profiles, for search engines' "this person" card. */
 	sameAs: ["https://github.com/DanielKhojaste", "https://www.linkedin.com/in/aref-khojaste/"],
 };
