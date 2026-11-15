@@ -4,7 +4,7 @@ Personal portfolio of Aref "Daniel" Khojaste, software developer. A one-page sit
 [Astro](https://astro.build), [GSAP](https://gsap.com) and DivineFlow, a canvas light-filament
 background in [`src/lib/divine-flow`](src/lib/divine-flow).
 
-![Home page on desktop: Daniel on a throne of golf clubs, with red DivineFlow light filaments behind](screenshots/home-desktop.webp)
+![Home page on desktop: Aref "Daniel" Khojaste on a throne of golf clubs, with red DivineFlow light filaments behind](screenshots/home-desktop.webp)
 
 <p align="center">
   <a href="SCREENSHOTS.md"><img src="https://img.shields.io/badge/View_all_screenshots-C8202B?style=for-the-badge" alt="View all screenshots" /></a>

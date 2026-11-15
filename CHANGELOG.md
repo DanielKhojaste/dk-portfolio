@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Search: the hero photo's alt text and the share image's alt text use the full name, Aref "Daniel"
+  Khojaste.
 - Hero: the throne photo is 5% darker (`hero.photoDarken`, from 0 for the original up to 0.9).
 - Menu (phones and tablets): `menu.align` sets the section names centred (as now) or left-aligned,
   lined up with the logo.
