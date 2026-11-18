@@ -1,10 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { FILL_EMPTY } from "../../src/scripts/about";
+import { darkenFilter, photoFilter } from "../../src/scripts/brand";
 import {
 	about,
 	animation,
 	brand,
 	colors,
+	hero,
 	sections,
 	shades,
 	sideNavUnderlineFlow,
@@ -362,10 +364,11 @@ test.describe("main colour", () => {
 			getComputedStyle(document.documentElement).getPropertyValue("--shade-accent").trim(),
 		);
 		expect(accent).toBe(brand.join(" "));
-		// The hero photo is only regraded for a different main colour.
+		// The hero photo is only regraded for a different main colour, then darkened by
+		// hero.photoDarken (none when both are off).
 		expect(
 			await page.locator(".hero__figure img").evaluate((el) => getComputedStyle(el).filter),
-		).toBe("none");
+		).toBe(darkenFilter(photoFilter(brand), hero.photoDarken));
 		// The other shades are worked out from it.
 		const bright = await page.evaluate(() =>
 			getComputedStyle(document.documentElement).getPropertyValue("--shade-bright").trim(),
