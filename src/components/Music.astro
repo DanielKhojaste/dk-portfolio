@@ -407,8 +407,9 @@ const rgb = (c: readonly number[]) => c.join(" ");
 	.song:hover,
 	.song:focus-visible {
 		border-color: rgb(var(--c-border));
-		/* An even glow all round: a shadow cast downwards would make the card look like it lifts. */
-		box-shadow: 0 0 40px rgb(var(--c-border) / 0.25);
+		box-shadow:
+			0 20px 50px rgb(0 0 0 / 0.55),
+			0 0 40px rgb(var(--c-border) / 0.25);
 	}
 
 	.song:hover::before,
