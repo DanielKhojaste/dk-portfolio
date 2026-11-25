@@ -17,7 +17,7 @@ test.describe("contact", () => {
 		const ids = await page
 			.locator("main > section[id]")
 			.evaluateAll((els) => els.map((el) => el.id));
-		expect(ids).toEqual(["intro", "about", "projects", "skills", "background", "contact"]);
+		expect(ids).toEqual(["intro", "about", "projects", "skills", "background", "music", "contact"]);
 
 		await expect(page.locator("#contact-title")).toHaveAccessibleName(
 			contact.headline.replace(/[[\]]/g, ""),

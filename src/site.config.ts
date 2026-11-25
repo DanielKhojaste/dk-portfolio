@@ -76,6 +76,7 @@ export const sections: readonly LinkItem[] = [
 	{ label: "Projects", href: "#projects" },
 	{ label: "Skills", href: "#skills" },
 	{ label: "Background", href: "#background" },
+	{ label: "Music", href: "#music" },
 	{ label: "Contact", href: "#contact" },
 ];
 
@@ -393,6 +394,181 @@ export const backgroundSection = {
 	] as readonly { title: string; entries: readonly BackgroundEntry[] }[],
 };
 
+/** A song in the Music section. The colours are taken from the song's card in MUSIC.md. */
+export interface Song {
+	title: string;
+	artist: string;
+	album: string;
+	/** Its Spotify track. */
+	url: string;
+	/** The cover, in src/assets/music. */
+	cover: string;
+	colors: {
+		/** The card's outline. */
+		border: RGB;
+		/** The card's fill when hovered: dark top left to light bottom right. */
+		dark: RGB;
+		light: RGB;
+		/** The artist's name. */
+		artist: RGB;
+	};
+}
+
+/**
+ * The Music section, after Background: the songs from MUSIC.md on my GitHub profile, as cards that
+ * link to Spotify. The cards are hollow (an outline and outlined title) until hovered, then fill in
+ * with the song's colours. Lines too long for a card slide to show the rest (scripts/marquee.ts).
+ */
+export const music = {
+	eyebrow: "Music",
+	/** Words in [brackets] are highlighted in red when the section comes into view. */
+	headline: "Songs I [code] to",
+	text: "The songs I have on while I work on my projects. Mostly film and series scores, plus a few tracks I keep coming back to.",
+	prompt: {
+		hover: "Click a song to play it on Spotify",
+		click: "Tap a song to play it on Spotify",
+	},
+	/** The small line over each title, as on the README cards. */
+	label: "Recently played",
+	/**
+	 * The artist's name on a card: "quiet" keeps it grey until the card is hovered, then it takes the
+	 * song's colour; "color" shows the song's colour all the time.
+	 */
+	artist: "quiet" as "quiet" | "color",
+	songs: [
+		{
+			title: "Desert Chant",
+			artist: "Timothée Chalamet & Hans Zimmer",
+			album: "Dune: Part Three",
+			url: "https://open.spotify.com/track/1aQUGQ7AcRxk96SX69gd4S",
+			cover: "desert-chant.jpg",
+			colors: {
+				border: [226, 186, 108],
+				dark: [52, 30, 13],
+				light: [97, 54, 17],
+				artist: [240, 196, 119],
+			},
+		},
+		{
+			title: "What Are You Going To Do When You're Not Saving The World?",
+			artist: "Hans Zimmer",
+			album: "Live in Prague",
+			url: "https://open.spotify.com/track/44klKbTwlsqhIku1IyzowX",
+			cover: "man-of-steel.jpg",
+			colors: {
+				border: [241, 107, 251],
+				dark: [38, 14, 49],
+				light: [57, 22, 77],
+				artist: [219, 178, 249],
+			},
+		},
+		{
+			title: "Arsène",
+			artist: "Mathieu Lamboley",
+			album: "Lupin",
+			url: "https://open.spotify.com/track/4vkmFustYM7mqMVZDIRDbj",
+			cover: "arsene.jpg",
+			colors: {
+				border: [229, 127, 76],
+				dark: [37, 26, 20],
+				light: [103, 60, 36],
+				artist: [240, 123, 70],
+			},
+		},
+		{
+			title: "Válgame Dios",
+			artist: "Niña Pastori & Antonio Orozco",
+			album: "Realmente Volando (En Directo)",
+			url: "https://open.spotify.com/track/6GnHyBBUwSC0hvdi3G6ZVW",
+			cover: "valgame-dios.jpg",
+			colors: {
+				border: [219, 85, 158],
+				dark: [34, 30, 59],
+				light: [104, 50, 105],
+				artist: [243, 123, 186],
+			},
+		},
+		{
+			title: "Challenger",
+			artist: "Leo Birenberg & Zach Robinson",
+			album: "Cobra Kai: Season 3",
+			url: "https://open.spotify.com/track/3vWZKWs92Q7eq0ySsekcaB",
+			cover: "challenger.jpg",
+			colors: {
+				border: [153, 153, 179],
+				dark: [40, 47, 51],
+				light: [83, 102, 108],
+				artist: [230, 220, 203],
+			},
+		},
+		{
+			title: "November Sky",
+			artist: "Yanni",
+			album: "If I Could Tell You",
+			url: "https://open.spotify.com/track/3zFLqLlp8jnOSJJW9p8Iwh",
+			cover: "november-sky.jpg",
+			colors: {
+				border: [127, 153, 204],
+				dark: [24, 35, 59],
+				light: [62, 90, 140],
+				artist: [159, 182, 237],
+			},
+		},
+		{
+			title: "Dark Horse",
+			artist: "Amanda Marshall",
+			album: "Amanda Marshall",
+			url: "https://open.spotify.com/track/170yC1xDfjyYRkL2JFFAL1",
+			cover: "dark-horse.jpg",
+			colors: {
+				border: [229, 204, 204],
+				dark: [45, 45, 42],
+				light: [112, 108, 97],
+				artist: [228, 218, 200],
+			},
+		},
+		{
+			title: "Now We Are Free",
+			artist: "Ekaterina Shelehova & Emanuele Tedeschi",
+			album: "Now We Are Free",
+			url: "https://open.spotify.com/track/2MRzU88isUimYDUhPgxcEw",
+			cover: "now-we-are-free.jpg",
+			colors: {
+				border: [255, 204, 128],
+				dark: [46, 34, 30],
+				light: [131, 96, 67],
+				artist: [242, 194, 126],
+			},
+		},
+		{
+			title: "Clean",
+			artist: "Taylor Swift",
+			album: "1989",
+			url: "https://open.spotify.com/track/06WgOCf0LV2h4keYXDRnuh",
+			cover: "clean.jpg",
+			colors: {
+				border: [200, 182, 158],
+				dark: [47, 42, 41],
+				light: [110, 97, 91],
+				artist: [221, 201, 168],
+			},
+		},
+		{
+			title: "Supermen",
+			artist: "Dino Merlin & Željko Joksimović",
+			album: "Burek",
+			url: "https://open.spotify.com/track/3p6gkqKpSDUwIVY2ACcM2T",
+			cover: "supermen.jpg",
+			colors: {
+				border: [239, 66, 66],
+				dark: [66, 30, 13],
+				light: [152, 39, 32],
+				artist: [252, 240, 75],
+			},
+		},
+	] as readonly Song[],
+};
+
 /** The Contact section, last on the page: two ways to work together, and one form for both. */
 export const contact = {
 	eyebrow: "Contact",
@@ -640,6 +816,15 @@ export const animation = {
 		/** The rows rising in on arrival, one after another. */
 		rows: 0.8,
 		rowStagger: 0.08,
+	},
+
+	/** The Music section: the headline's red word, the cards rising in, and long lines sliding. */
+	music: {
+		highlight: motion.draw,
+		rows: 0.8,
+		rowStagger: 0.06,
+		/** Lines too long for their card: how fast they slide (px a second), and the waits (s). */
+		marquee: { speed: 100, wait: 1.8, fade: 0.45 },
 	},
 
 	/** The Contact section: the headline's red word, and the cards and form rising in. */

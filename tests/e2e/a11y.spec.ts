@@ -52,7 +52,7 @@ test.describe("accessibility", () => {
 
 test("with motion, once every section has played in, the page passes axe", async ({ page }) => {
 	await page.goto("/");
-	for (const id of ["about", "projects", "skills", "background", "contact"]) {
+	for (const id of ["about", "projects", "skills", "background", "music", "contact"]) {
 		await page.locator(`#${id}`).scrollIntoViewIfNeeded();
 		await page.waitForTimeout(2500);
 	}

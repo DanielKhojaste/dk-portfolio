@@ -30,7 +30,7 @@ test.describe("security", () => {
 		expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
 
 		// Walk the whole page so every script, image, video and font loads.
-		for (const id of ["about", "projects", "skills", "background", "contact"]) {
+		for (const id of ["about", "projects", "skills", "background", "music", "contact"]) {
 			await page.locator(`#${id}`).scrollIntoViewIfNeeded();
 			await page.waitForTimeout(400);
 		}

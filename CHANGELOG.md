@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Music section, after Background (preview): the ten songs from MUSIC.md on my GitHub profile, as
+  cards modelled on the README's "Recently played" cards. Each is hollow until hovered (an outline
+  in the song's colour, a grey cover, the title in outlined type like the project names), then
+  fills in with the song's colours, and links to the song on Spotify. Lines too long for a card
+  slide with GSAP to show the rest (`scripts/marquee.ts`). The artist's colour is a setting
+  (`music.artist`: "quiet" until hover, or "color"). Side nav and menu list it.
+
 ### Fixed
 
 - Jumping to a section from the side nav, the menu or the skip link no longer flashes the

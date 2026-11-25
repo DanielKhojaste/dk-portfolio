@@ -20,18 +20,19 @@ async function showBackground(page: Page) {
 }
 
 test.describe("background", () => {
-	test("sits between Skills and Contact, and the side nav and menu list it", async ({ page }) => {
+	test("sits between Skills and Music, and the side nav and menu list it", async ({ page }) => {
 		await page.goto("/");
 		const ids = await page
 			.locator("main > section[id]")
 			.evaluateAll((els) => els.map((el) => el.id));
-		expect(ids.slice(-3)).toEqual(["skills", "background", "contact"]);
+		expect(ids.slice(-4)).toEqual(["skills", "background", "music", "contact"]);
 		expect(sections.map((s) => s.label)).toEqual([
 			"Home",
 			"About",
 			"Projects",
 			"Skills",
 			"Background",
+			"Music",
 			"Contact",
 		]);
 		await expect(page.locator('a[href="#background"]').first()).toBeAttached();
