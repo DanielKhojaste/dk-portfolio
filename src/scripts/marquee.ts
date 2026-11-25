@@ -20,8 +20,8 @@ import { gsap } from "gsap";
 export interface MarqueeTiming {
 	/** Slide speed, px a second. */
 	speed: number;
-	/** Slide speed on phones (up to 767px wide), px a second: the text is smaller there. */
-	phoneSpeed: number;
+	/** Slide speed on phones and tablets (up to 1023px wide), px a second: the text is smaller there. */
+	mobileSpeed: number;
 	/** Seconds from the hover to the first move. */
 	start: number;
 	/** Seconds to rest on the end before fading back. */
@@ -50,8 +50,8 @@ export function setupMarquee(
 	} = {},
 ) {
 	const cards = [...root.querySelectorAll<HTMLElement>("[data-marquee-trigger]")];
-	const phone = matchMedia("(max-width: 767px)");
-	const speed = () => (phone.matches ? timing.phoneSpeed : timing.speed);
+	const mobile = matchMedia("(max-width: 1023px)");
+	const speed = () => (mobile.matches ? timing.mobileSpeed : timing.speed);
 	const players = cards.map((card) => {
 		const boxes = [...card.querySelectorAll<HTMLElement>("[data-marquee]")];
 		let run: gsap.core.Timeline | null = null;

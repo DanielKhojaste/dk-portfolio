@@ -32,7 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Music (phones): long lines slide at their own, slower speed (`animation.music.marquee.phoneSpeed`).
+- Music (phones and tablets): long lines slide at their own, slower speed
+  (`animation.music.marquee.mobileSpeed`).
 - Music (phones): a hovered song title drops its outline and a step of weight, so the filled
   letters don't close up.
 - Contact (phones and tablets): the Email, GitHub and LinkedIn links sit a little in from "Or reach
