@@ -422,8 +422,8 @@ export interface Song {
 export const music = {
 	eyebrow: "Music",
 	/** Words in [brackets] are highlighted in red when the section comes into view. */
-	headline: "Songs I [code] to",
-	text: "The songs I have on while I work on my projects. Mostly film and series scores, plus a few tracks I keep coming back to.",
+	headline: "My coding [soundtrack]",
+	text: "I love soundtracks, and since most have no vocals, they give me room to think while I code. These are the ones I play the most.",
 	prompt: {
 		hover: "Click a song to play it on Spotify",
 		click: "Tap a song to play it on Spotify",
