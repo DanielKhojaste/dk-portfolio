@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Music (phones and tablets): long lines no longer slide on their own when a card scrolls into view
+  (after a jump from the menu, say); only a tap on the card starts them, as a hover does on desktop.
 - Menu (phones and tablets): no scrollbars when the links fit. The glow in the corner counted as
   content and made the menu scroll both ways; it's clipped to the screen now, and the menu only
   scrolls up and down, when the links don't fit.

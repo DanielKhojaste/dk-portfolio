@@ -9,7 +9,8 @@
  * is: a short pause, every long line in the card slides left until its end shows, a pause on the
  * end, then the lines fade back to the start. Leaving the card doesn't stop a run: it finishes on
  * its own and then rests at the start. Still hovered at the end of a run, it goes again.
- * Touch screens have no hover, so there a card runs once each time it scrolls into view.
+ * Touch screens have no hover: there a tap on the card counts as one, and starts one run. Nothing
+ * runs on its own, not even when a card scrolls into view.
  * With reduced motion nothing moves (the lines end in an ellipsis instead, in CSS).
  *
  * Markup: `<a data-marquee-trigger> … <span data-marquee><span>Text</span></span> … </a>`. The outer
@@ -101,6 +102,10 @@ export function setupMarquee(
 			card.addEventListener("pointerenter", enter);
 			card.addEventListener("pointerleave", leave);
 		}
+		// A touch is a hover that ends straight away: one run.
+		card.addEventListener("pointerdown", (event) => {
+			if (event.pointerType !== "mouse") play();
+		});
 		card.addEventListener("focusin", enter);
 		card.addEventListener("focusout", leave);
 
@@ -117,19 +122,6 @@ export function setupMarquee(
 		timer = setTimeout(measureAll, 150);
 	});
 	cards.forEach((card) => resized.observe(card));
-
-	// Touch screens: run a card once each time it comes into view.
-	if (!canHover && !reducedMotion) {
-		const seen = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (entry.isIntersecting) players.find((p) => p.card === entry.target)?.play();
-				}
-			},
-			{ threshold: 0.75 },
-		);
-		cards.forEach((card) => seen.observe(card));
-	}
 
 	return players;
 }

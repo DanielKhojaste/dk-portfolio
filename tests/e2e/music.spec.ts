@@ -102,18 +102,23 @@ test.describe("music", () => {
 		expect(await x()).toBeLessThan(d - 20);
 	});
 
-	test("on touch screens, a long line runs when its card scrolls into view", async ({
+	test("on touch screens, nothing slides on its own: not after a jump to the section, not when a card scrolls into view", async ({
 		page,
 	}, info) => {
 		test.skip(info.project.name !== "mobile", "touch only");
 		await page.goto("/");
 		const long = music.songs.findIndex((s) => s.title.length > 40);
 		const card = page.locator("#music a.song").nth(long);
-		await card.scrollIntoViewIfNeeded();
 		const x = () =>
 			card
 				.locator(".song__title > span")
 				.evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).m41);
-		await expect.poll(x, { timeout: 6000 }).toBeLessThan(-10);
+		// Jump there from the menu, like a visitor would.
+		await page.locator("[data-menu-button]").click();
+		await page.locator('#site-menu a[href="#music"]').click();
+		await page.waitForTimeout(2500);
+		await card.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(2500);
+		expect(await x()).toBe(0);
 	});
 });
