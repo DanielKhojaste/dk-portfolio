@@ -20,6 +20,8 @@ import { gsap } from "gsap";
 export interface MarqueeTiming {
 	/** Slide speed, px a second. */
 	speed: number;
+	/** Slide speed on phones (up to 767px wide), px a second: the text is smaller there. */
+	phoneSpeed: number;
 	/** Seconds from the hover to the first move. */
 	start: number;
 	/** Seconds to rest on the end before fading back. */
@@ -48,6 +50,8 @@ export function setupMarquee(
 	} = {},
 ) {
 	const cards = [...root.querySelectorAll<HTMLElement>("[data-marquee-trigger]")];
+	const phone = matchMedia("(max-width: 767px)");
+	const speed = () => (phone.matches ? timing.phoneSpeed : timing.speed);
 	const players = cards.map((card) => {
 		const boxes = [...card.querySelectorAll<HTMLElement>("[data-marquee]")];
 		let run: gsap.core.Timeline | null = null;
@@ -58,7 +62,7 @@ export function setupMarquee(
 			boxes.flatMap((box) => {
 				const text = box.firstElementChild as HTMLElement | null;
 				if (!text) return [];
-				const slide = marqueeSlide(text.scrollWidth, box.clientWidth, timing.speed);
+				const slide = marqueeSlide(text.scrollWidth, box.clientWidth, speed());
 				box.classList.toggle("is-overflowing", slide.distance > 0);
 				return slide.distance > 0 ? [{ text, ...slide }] : [];
 			});
