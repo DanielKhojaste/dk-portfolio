@@ -494,5 +494,14 @@ const rgb = (c: readonly number[]) => c.join(" ");
 		.music__list {
 			grid-template-columns: minmax(0, 1fr);
 		}
+
+		/* At phone sizes the heavy display type plus its outline closes up the letters once it fills
+		   in, so the filled title drops the outline, a step of weight and opens up a little. */
+		.song:hover .song__title,
+		.song:focus-visible .song__title {
+			-webkit-text-stroke-width: 0;
+			font-weight: 800;
+			letter-spacing: 0.04em;
+		}
 	}
 </style>
