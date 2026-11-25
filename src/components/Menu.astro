@@ -33,7 +33,7 @@ const longest = Math.max(...sections.map((s) => s.label.length));
 	data-align={menu.align}
 	style={`--rule-h: ${ruleHeight}px; --menu-longest: ${longest}`}
 >
-	<div class="menu__glow" aria-hidden="true"></div>
+	<div class="menu__glow-clip" aria-hidden="true"><div class="menu__glow"></div></div>
 
 	<nav class="menu__nav" aria-label="Sections">
 		<ol class="menu__list">
@@ -72,7 +72,8 @@ const longest = Math.max(...sections.map((s) => s.label.length));
 		inset: 0;
 		z-index: 9;
 		display: flex;
-		overflow-y: auto;
+		/* Scrolls only when the links don't fit (short landscape phones); never sideways. */
+		overflow: hidden auto;
 		overscroll-behavior: contain;
 		/* See-through enough to keep the hero's colour, blurred so nothing behind competes with the links. */
 		background: rgb(var(--shade-bg) / 0.62);
@@ -92,8 +93,17 @@ const longest = Math.max(...sections.map((s) => s.label.length));
 		transition: opacity var(--menu-fade) var(--menu-ease);
 	}
 
-	.menu__glow {
+	/* The glow hangs off the bottom right corner, so it's clipped to the screen here: otherwise it
+	   counts as content and gives the menu scrollbars it doesn't need. */
+	.menu__glow-clip {
 		position: fixed;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.menu__glow {
+		position: absolute;
 		inset: auto -20% -40% auto;
 		width: min(90vw, 900px);
 		aspect-ratio: 1;

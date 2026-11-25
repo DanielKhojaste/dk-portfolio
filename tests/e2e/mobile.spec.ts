@@ -50,4 +50,23 @@ test.describe("phones", () => {
 		await page.waitForTimeout(500);
 		await expect(page.getByRole("link", { name: "Daniel Khojaste, home" })).toBeVisible();
 	});
+
+	test("the menu only scrolls when its links don't fit, and never sideways", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "mobile", "the menu is for phones and tablets");
+		const scroll = () =>
+			page.locator("[data-menu]").evaluate((m) => ({
+				down: m.scrollHeight > m.clientHeight,
+				sideways: m.scrollWidth > m.clientWidth && getComputedStyle(m).overflowX !== "hidden",
+			}));
+		await page.goto("/");
+		await page.locator("[data-menu-button]").click();
+		await page.waitForTimeout(1200);
+		expect(await scroll()).toEqual({ down: false, sideways: false });
+		// A phone on its side: too short for every link, so it scrolls, but still not sideways.
+		await page.setViewportSize({ width: 844, height: 390 });
+		await page.waitForTimeout(400);
+		expect(await scroll()).toEqual({ down: true, sideways: false });
+	});
 });
