@@ -828,7 +828,7 @@ export const animation = {
 		 * px a second (steady, no easing), then seconds before the first move, resting on the end,
 		 * and for each half of the fade back.
 		 */
-		marquee: { speed: 50, start: 0.3, wait: 1.5, fade: 0.4 },
+		marquee: { speed: 90, start: 0.3, wait: 1.5, fade: 0.4 },
 	},
 
 	/** The Contact section: the headline's red word, and the cards and form rising in. */
