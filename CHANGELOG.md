@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Menu (phones and tablets): no scrollbars when the links fit. The glow in the corner counted as
+  content and made the menu scroll both ways; it's clipped to the screen now, and the menu only
+  scrolls up and down, when the links don't fit.
 - Jumping to a section from the side nav, the menu or the skip link no longer flashes the
   destination for a frame before gliding there. Focusing the section early made the browser bring it
   into view; it's now focused once the glide arrives (and not at all if you scroll on your own
@@ -29,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Music (phones): a hovered song title drops its outline and a step of weight, so the filled
+  letters don't close up.
+- Contact (phones and tablets): the Email, GitHub and LinkedIn links sit a little in from "Or reach
+  me directly".
 - Music: the cards no longer lift on hover; the outline, colours and glow still change.
 - Search: the hero photo's alt text and the share image's alt text use the full name, Aref "Daniel"
   Khojaste.
