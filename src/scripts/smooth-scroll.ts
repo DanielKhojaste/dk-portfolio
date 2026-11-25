@@ -47,6 +47,43 @@ export function setupSmoothScroll(
 		smoother.scrollTop(smoother.scrollTop() + by);
 	});
 
+	// Where a section starts, in scroll px: its distance from the top of the content (both move
+	// together, so the smoother's current offset cancels out), up to the furthest the page scrolls.
+	// Worked out here rather than with scrollTo(element): measuring an element makes the smoother
+	// jump the content to it for a frame, which shows as a flash of the destination before the glide.
+	const content = smoother.content();
+	const sectionTop = (el: Element) => {
+		const top = el.getBoundingClientRect().top - content.getBoundingClientRect().top;
+		const max = ScrollTrigger.maxScroll(window);
+		return Math.max(0, Math.min(top, max));
+	};
+
+	// Focus the section once the glide gets there. Focusing it any earlier, even with
+	// preventScroll, makes the browser bring it into view for a frame: a flash of the destination
+	// before the glide (and on touch screens it can scroll the page for real). If the visitor
+	// scrolls on their own before it arrives, it isn't focused at all.
+	let arrival = 0;
+	const focusOnArrival = (target: HTMLElement, y: number) => {
+		cancelAnimationFrame(arrival);
+		const started = performance.now();
+		let interrupted = false;
+		const stop = () => (interrupted = true);
+		const events = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+		events.forEach((e) => root.addEventListener(e, stop, { once: true, passive: true }));
+		const done = () => events.forEach((e) => root.removeEventListener(e, stop));
+		const check = () => {
+			if (interrupted) return done();
+			const shown = -new DOMMatrix(getComputedStyle(content).transform).m42;
+			if (Math.abs(shown - y) < 2 || performance.now() - started > 4000) {
+				done();
+				target.focus({ preventScroll: true });
+				return;
+			}
+			arrival = requestAnimationFrame(check);
+		};
+		arrival = requestAnimationFrame(check);
+	};
+
 	root.addEventListener("click", (event) => {
 		const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
 		const id = link?.getAttribute("href")?.slice(1);
@@ -56,12 +93,11 @@ export function setupSmoothScroll(
 		history.pushState(null, "", `#${id}`);
 		// Move keyboard focus there too, so the next Tab carries on from that section.
 		if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
-		// Let the menu close (and give scrolling back) first. Focus after the glide has started:
-		// on touch screens focusing can still scroll the page, and the glide would then be measured
-		// from the wrong place.
+		// Let the menu close (and give scrolling back) first, then glide.
 		requestAnimationFrame(() => {
-			smoother.scrollTo(target, true, "top top");
-			target.focus({ preventScroll: true });
+			const y = sectionTop(target);
+			smoother.scrollTo(y, true);
+			focusOnArrival(target, y);
 		});
 	});
 

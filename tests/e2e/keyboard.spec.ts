@@ -125,4 +125,33 @@ test.describe("side nav jumps", () => {
 		const started = (await drawn()).filter((id) => !before.includes(id));
 		expect(started).toEqual(["about"]);
 	});
+
+	test("a jump glides the whole way, without flashing the destination first", async ({
+		page,
+	}, info) => {
+		test.skip(info.project.name !== "desktop", "the side nav is for wide screens");
+		await page.goto("/");
+		await page.evaluate(() => scrollTo(0, 1200));
+		await expect(page.locator('[data-side-nav-link="contact"]')).toBeVisible({ timeout: 8000 });
+		await page.waitForTimeout(2500);
+		// Where the content is drawn, every frame, while it glides to Contact.
+		await page.evaluate(() => {
+			const content = document.getElementById("smooth-content")!;
+			const frames: number[] = [];
+			(window as unknown as { frames_: number[] }).frames_ = frames;
+			const start = performance.now();
+			const tick = () => {
+				frames.push(-new DOMMatrix(getComputedStyle(content).transform).m42);
+				if (performance.now() - start < 3000) requestAnimationFrame(tick);
+			};
+			requestAnimationFrame(tick);
+		});
+		await page.locator('[data-side-nav-link="contact"]').click();
+		await page.waitForTimeout(3300);
+		const frames = await page.evaluate(() => (window as unknown as { frames_: number[] }).frames_);
+		const jumps = frames.slice(1).map((y, i) => Math.abs(y - frames[i]!));
+		// A glide moves a few hundred px a frame at most; a flash would jump thousands and back.
+		expect(Math.max(...jumps)).toBeLessThan(400);
+		await expect(page.locator("#contact")).toBeFocused();
+	});
 });

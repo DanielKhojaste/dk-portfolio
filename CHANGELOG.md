@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Jumping to a section from the side nav, the menu or the skip link no longer flashes the
+  destination for a frame before gliding there. Focusing the section early made the browser bring it
+  into view; it's now focused once the glide arrives (and not at all if you scroll on your own
+  first).
 - Colours and timings set in `site.config.ts` now always win over the stylesheet's defaults. The
   hero photo filter, for one, was being reset to none (BaseLayout's `:root:root`).
 
