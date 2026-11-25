@@ -14,7 +14,10 @@ describe("marqueeSlide", () => {
 		});
 	});
 
-	it("never slides faster than 1.4 seconds, however short the overflow", () => {
-		expect(marqueeSlide(320, 300, 100).duration).toBe(1.4);
+	it("keeps the same pace for short and long overflows", () => {
+		const short = marqueeSlide(320, 300, 50);
+		const long = marqueeSlide(1200, 300, 50);
+		expect(short.distance / short.duration).toBe(50);
+		expect(long.distance / long.duration).toBe(50);
 	});
 });

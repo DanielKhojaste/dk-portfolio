@@ -823,8 +823,12 @@ export const animation = {
 		highlight: motion.draw,
 		rows: 0.8,
 		rowStagger: 0.06,
-		/** Lines too long for their card: how fast they slide (px a second), and the waits (s). */
-		marquee: { speed: 100, wait: 1.8, fade: 0.45 },
+		/**
+		 * Lines too long for their card slide when the card is hovered (scripts/marquee.ts): speed in
+		 * px a second (steady, no easing), then seconds before the first move, resting on the end,
+		 * and for each half of the fade back.
+		 */
+		marquee: { speed: 50, start: 0.3, wait: 1.5, fade: 0.4 },
 	},
 
 	/** The Contact section: the headline's red word, and the cards and form rising in. */

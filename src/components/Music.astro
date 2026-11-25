@@ -4,8 +4,8 @@
  * modelled on the README's "Recently played" cards (cover; Spotify mark, label, title, artist,
  * album). Each card is hollow until hovered: an outline in the song's colour, a grey cover and the
  * title in outlined type like the project names. Hovering fills it with the song's colours. Every
- * card links to the song on Spotify. Lines too long for a card slide to show the rest
- * (scripts/marquee.ts). Copy and songs live in site.config.ts (`music`).
+ * card links to the song on Spotify. Lines too long for a card slide to show the rest when the card
+ * is hovered (scripts/marquee.ts). Copy and songs live in site.config.ts (`music`).
  */
 import { Image } from "astro:assets";
 import { music } from "../site.config";
@@ -72,6 +72,7 @@ const rgb = (c: readonly number[]) => c.join(" ");
 					<li class="music__item" data-music-card>
 						<a
 							class="song"
+							data-marquee-trigger
 							href={song.url}
 							target="_blank"
 							rel="noopener noreferrer"
@@ -129,7 +130,7 @@ const rgb = (c: readonly number[]) => c.join(" ");
 	if (section) {
 		const timing = animation.music;
 		const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-		setupMarquee(section, timing.marquee, reducedMotion);
+		setupMarquee(section, timing.marquee, { reducedMotion });
 
 		if (!reducedMotion) {
 			// On arrival: the headline's red word wipes in and the cards rise in, like Background.
@@ -465,7 +466,7 @@ const rgb = (c: readonly number[]) => c.join(" ");
 		display: inline-block;
 	}
 
-	[data-marquee]:global(.is-moving) {
+	[data-marquee]:global(.is-overflowing) {
 		-webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
 		mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
 	}
