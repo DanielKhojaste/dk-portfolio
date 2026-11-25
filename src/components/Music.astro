@@ -301,8 +301,7 @@ const rgb = (c: readonly number[]) => c.join(" ");
 		transition:
 			background-color var(--text-hover-duration) var(--text-hover-ease),
 			border-color var(--text-hover-duration) var(--text-hover-ease),
-			box-shadow var(--text-hover-duration) var(--text-hover-ease),
-			translate var(--text-hover-duration) var(--text-hover-ease);
+			box-shadow var(--text-hover-duration) var(--text-hover-ease);
 	}
 
 	/* The song's colours, faded in under the hollow card (a gradient can't transition itself). */
@@ -411,7 +410,6 @@ const rgb = (c: readonly number[]) => c.join(" ");
 		box-shadow:
 			0 20px 50px rgb(0 0 0 / 0.55),
 			0 0 40px rgb(var(--c-border) / 0.25);
-		translate: 0 -4px;
 	}
 
 	.song:hover::before,
@@ -478,11 +476,6 @@ const rgb = (c: readonly number[]) => c.join(" ");
 
 		[data-marquee] > span {
 			display: inline;
-		}
-
-		.song:hover,
-		.song:focus-visible {
-			translate: none;
 		}
 	}
 

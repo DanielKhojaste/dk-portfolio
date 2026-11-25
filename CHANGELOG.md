@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Music: the cards no longer lift on hover; the outline, colours and glow still change.
 - Search: the hero photo's alt text and the share image's alt text use the full name, Aref "Daniel"
   Khojaste.
 - Hero: the throne photo is 5% darker (`hero.photoDarken`, from 0 for the original up to 0.9).
